@@ -1,15 +1,13 @@
-<<<<<<< HEAD
 gunicorn
 flask
 flask-cors
 google-generativeai
 python-dotenv
 numpy
-=======
 gunicorn
 flask
 flask-cors
 google-generativeai
 python-dotenv
 numpy
->>>>>>> b085d8752ec6e036452dc8644956ec103b68f476
+
