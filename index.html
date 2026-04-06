@@ -1,11 +1,3 @@
-<?php
-/*
- * Template Name: 升志 ScoreWise 落點分析 v2
- * ⚠️ 只需修改下方一行：填入你的 Render 後端網址
- */
-define( 'SCOREWISE_API', 'https://college-ai-api.onrender.com' );
-if ( ! defined( 'ABSPATH' ) ) exit;
-?><!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -482,7 +474,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-fa
 <div class="notif" id="notif"><span id="notifMsg">✓ 完成</span></div>
 
 <script>
-const API_BASE='<?php echo esc_js( SCOREWISE_API ); ?>';
+const API_BASE='https://college-ai-api.onrender.com';
 function getAPI(){return document.getElementById('api-url').value.trim()||API_BASE;}
 
 const PR_TABLE={
