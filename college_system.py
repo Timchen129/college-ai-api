@@ -16,19 +16,16 @@ if not os.getenv("GEMINI_API_KEY"):
 
 MODEL_NAME = "gemini-1.5-flash"   # ← 唯一需要改模型的地方
 
+# 修改後的初始化
 try:
-    import google.generativeai as genai
-    raw_key = os.getenv('GEMINI_API_KEY')
-    if raw_key:
-        # 印出前 6 碼與總長度，方便你去 AI Studio 比對
-        print(f"DEBUG: Key Found! Starts with: {raw_key[:6]}, Length: {len(raw_key)}")
-    else:
-        print("DEBUG: ERROR - GEMINI_API_KEY IS EMPTY!")
-
-    genai.configure(api_key=raw_key)
+    from google import genai # 使用最新的套件
+    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
+
+# 修改後的生成函式 (generate_advice 內)
+# res = client.models.generate_content(model=MODEL_NAME, contents=prompt)
 
 app = Flask(__name__)
 CORS(app)
