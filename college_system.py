@@ -10,14 +10,22 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 
 # === 初始化 ===
-load_dotenv()
+# 只有在本地環境沒有變數時才讀取 .env 檔
+if not os.getenv("GEMINI_API_KEY"):
+    load_dotenv()
 
-MODEL_NAME = "gemini-2.5-flash"   # ← 唯一需要改模型的地方
+MODEL_NAME = "gemini-1.5-flash"   # ← 唯一需要改模型的地方
 
 try:
     import google.generativeai as genai
-    print(f"Current Key Check: {os.getenv('GEMINI_API_KEY')[:10]}...")
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    raw_key = os.getenv('GEMINI_API_KEY')
+    if raw_key:
+        # 印出前 6 碼與總長度，方便你去 AI Studio 比對
+        print(f"DEBUG: Key Found! Starts with: {raw_key[:6]}, Length: {len(raw_key)}")
+    else:
+        print("DEBUG: ERROR - GEMINI_API_KEY IS EMPTY!")
+
+    genai.configure(api_key=raw_key)
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
