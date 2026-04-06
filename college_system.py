@@ -16,6 +16,7 @@ MODEL_NAME = "gemini-2.5-flash"   # ← 唯一需要改模型的地方
 
 try:
     import google.generativeai as genai
+    print(f"Current Key Check: {os.getenv('GEMINI_API_KEY')[:10]}...")
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
     GEMINI_AVAILABLE = True
 except ImportError:
