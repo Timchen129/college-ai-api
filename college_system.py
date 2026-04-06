@@ -17,18 +17,22 @@ if not os.getenv("GEMINI_API_KEY"):
 MODEL_NAME = "gemini-1.5-flash"   # ← 唯一需要改模型的地方
 
 # 修改後的初始化
+# === 修正後的初始化 ===
 try:
-    from google import genai # 使用最新的套件
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-    GEMINI_AVAILABLE = True
-except ImportError:
+    from google import genai
+    # 明確從環境變數讀取並傳入
+    api_key_val = os.getenv("GEMINI_API_KEY")
+    
+    if api_key_val:
+        client = genai.Client(api_key=api_key_val) # 確保這裡有傳入變數
+        GEMINI_AVAILABLE = True
+        print(f"DEBUG: Client initialized with key starting with {api_key_val[:4]}")
+    else:
+        GEMINI_AVAILABLE = False
+        print("DEBUG: GEMINI_API_KEY is missing in environment variables!")
+except Exception as e:
     GEMINI_AVAILABLE = False
-
-# 修改後的生成函式 (generate_advice 內)
-# res = client.models.generate_content(model=MODEL_NAME, contents=prompt)
-
-app = Flask(__name__)
-CORS(app)
+    print(f"DEBUG: Initialization error: {e}")
 
 # ============================================================
 # 快取層（減少重複 API 呼叫，節省費用）
