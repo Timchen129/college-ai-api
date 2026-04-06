@@ -10,7 +10,7 @@ from flask_cors import CORS
  
 # === 初始化 ===
  
-MODEL_NAME = "gemini-2.5-flash"
+MODEL_NAME = "gemini-1.5-flash"
  
 try:
     import google.generativeai as genai
