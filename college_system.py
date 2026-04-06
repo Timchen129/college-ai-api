@@ -10,29 +10,19 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 
 # === 初始化 ===
-# 只有在本地環境沒有變數時才讀取 .env 檔
-if not os.getenv("GEMINI_API_KEY"):
-    load_dotenv()
+load_dotenv()
 
-MODEL_NAME = "gemini-1.5-flash"   # ← 唯一需要改模型的地方
+MODEL_NAME = "gemini-2.5-flash"   # ← 唯一需要改模型的地方
 
-# 修改後的初始化
-# === 修正後的初始化 ===
 try:
-    from google import genai
-    # 明確從環境變數讀取並傳入
-    api_key_val = os.getenv("GEMINI_API_KEY")
-    
-    if api_key_val:
-        client = genai.Client(api_key=api_key_val) # 確保這裡有傳入變數
-        GEMINI_AVAILABLE = True
-        print(f"DEBUG: Client initialized with key starting with {api_key_val[:4]}")
-    else:
-        GEMINI_AVAILABLE = False
-        print("DEBUG: GEMINI_API_KEY is missing in environment variables!")
-except Exception as e:
+    import google.generativeai as genai
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    GEMINI_AVAILABLE = True
+except ImportError:
     GEMINI_AVAILABLE = False
-    print(f"DEBUG: Initialization error: {e}")
+
+app = Flask(__name__)
+CORS(app)
 
 # ============================================================
 # 快取層（減少重複 API 呼叫，節省費用）
