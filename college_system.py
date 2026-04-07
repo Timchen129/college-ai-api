@@ -7,7 +7,10 @@ import numpy as np
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
- 
+
+#寫入所有系所數據
+with open('majors.json', 'r', encoding='utf-8') as f:
+    majors_db = json.load(f)
 # ============================================================
 # 初始化
 # ============================================================
