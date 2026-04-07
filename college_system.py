@@ -25,7 +25,7 @@ except ImportError:
  
 app = Flask(__name__)
 CORS(app)
- 
+
 # ============================================================
 # 快取層
 # ============================================================
@@ -245,6 +245,24 @@ majors_db = [
 # ============================================================
  
 memory_store = []
+
+# ✅ 先定義 function
+def store_memory(text, tag="general"):
+    vec = get_embedding(text)
+    memory_store.append({
+        "text": text,
+        "vec": vec,
+        "tag": tag
+    })
+
+# ✅ 再呼叫
+store_memory("""
+AI衝擊：基層程式員下降
+半導體：持續擴編
+護理：薪資上升
+AI職缺暴增
+商管出路惡化
+""", tag="knowledge")
  
 def get_embedding(text):
     if not GEMINI_AVAILABLE:
@@ -290,36 +308,142 @@ def predict_cutoff(m: dict) -> float:
     base += {"高": +1, "中": 0, "低": -1}.get(m["stability"], 0)
     base += {"正面": +1, "穩定": 0, "負面": -2}.get(m.get("industry_outlook", "穩定"), 0)
     return round(base, 1)
- 
-def match_majors(scores: dict, min_gap: float = -5) -> list:
+
+# PR 值 Mock 邏輯（依據 CEEC 累積人數分布）
+# 真實數據應從大考中心累積人數表取得，這裡用 sigmoid 近似
+def calculate_pr(score: int, subject: str = "general") -> int:
+    """
+    根據科目級分估算 PR 值。
+    score: 1~15 的學測級分
+    回傳: 0~99 的 PR 值
+    """
+    # Mock 分布：各級分對應的大約 PR（根據歷年五標估算）
+    pr_table = {
+        15: 99, 14: 96, 13: 90, 12: 82, 11: 72,
+        10: 60, 9: 48, 8: 36, 7: 25, 6: 16,
+        5: 9,  4: 5,  3: 2,  2: 1,  1: 0
+    }
+    return pr_table.get(score, 0)
+
+def calculate_combined_pr(scores: dict) -> int:
+    """計算多科組合的 PR 值（取各科 PR 的加權平均，簡化版）"""
+    if not scores:
+        return 0
+    total = sum(calculate_pr(v) for v in scores.values())
+    return round(total / len(scores))
+
+def match_majors(scores: dict, min_gap: int = -3) -> list:
     results = []
+
     for m in majors_db:
-        student_score = calculate_score(scores, m["weights"])
-        cutoff = predict_cutoff(m)
-        gap = student_score - cutoff
-        if gap >= min_gap:
-            safety = "穩上" if gap >= 3 else ("邊緣" if gap >= 0 else "衝刺")
-            results.append({
-                "school": m["school"],
-                "major": m["major"],
-                "group": m["group"],
-                "student_score": round(student_score, 1),
-                "cutoff": cutoff,
-                "gap": round(gap, 1),
-                "safety": safety,
-                "salary_avg": m.get("salary_avg", 0),
-                "employment_rate": m.get("employment_rate", 0),
-                "career": m["career"],
-                "industry_outlook": m.get("industry_outlook", "穩定"),
-                "ai_impact": m.get("ai_impact", "未知"),
-                "notes": m.get("notes", ""),
-                "overseas_ratio": m.get("overseas_ratio", 0),
-                "license_required": m.get("license_required", False),
-                "double_major_friendly": m.get("double_major_friendly", False),
-            })
+        thresholds = m.get("thresholds", {})
+        multipliers = m.get("multipliers", m.get("weights", {}))
+        cutoff_by_subject = m.get("last_year_cutoff_by_subject", {})
+
+        # ── STEP 1：檢定門檻過濾 ──
+        failed_threshold = False
+        for subject, required in thresholds.items():
+            student_score = scores.get(subject, 0)
+            if student_score < required:
+                failed_threshold = True
+                break
+        if failed_threshold:
+            continue
+
+        # ── STEP 2：倍率篩選模擬 ──
+        # 找出「最低倍率」的科目（決勝科目）
+        if not multipliers:
+            continue
+
+        min_mult = min(multipliers.values())
+        # 取所有最低倍率科目（可能有並列）
+        tiebreak_subjects = [s for s, w in multipliers.items() if w == min_mult]
+
+        # 計算決勝科目的 gap（學生分 vs 去年最低錄取分）
+        # 若有多個決勝科目，取最不利（gap 最小）的那個
+        gap = None
+        tiebreak_subject = None
+        for subj in tiebreak_subjects:
+            student_val = scores.get(subj, 0)
+            cutoff_val = cutoff_by_subject.get(subj, m.get("last_year_score", 10))
+            g = student_val - cutoff_val
+            if gap is None or g < gap:
+                gap = g
+                tiebreak_subject = subj
+
+        if gap is None or gap < min_gap:
+            continue
+
+        # ── STEP 3：分類 ──
+        if gap >= 2:
+            safety = "穩上"
+        elif -1 <= gap <= 1:
+            safety = "目標"
+        elif -3 <= gap < -1:
+            safety = "衝刺"
+        else:
+            continue  # gap < -3，不列入
+
+        # PR 值計算
+        subject_prs = {s: calculate_pr(scores.get(s, 0)) for s in multipliers}
+        combined_pr = calculate_combined_pr({s: scores.get(s, 0) for s in multipliers})
+
+        results.append({
+            "school": m["school"],
+            "major": m["major"],
+            "group": m["group"],
+            "tiebreak_subject": tiebreak_subject,      # 決勝科目
+            "tiebreak_multiplier": min_mult,            # 最低倍率
+            "student_tiebreak_score": scores.get(tiebreak_subject, 0),
+            "cutoff_tiebreak_score": cutoff_by_subject.get(tiebreak_subject, m.get("last_year_score", 10)),
+            "gap": gap,                                  # 決勝級分差
+            "safety": safety,
+            "multipliers": multipliers,                 # 完整倍率資訊
+            "salary_avg": m.get("salary_avg", 0),
+            "employment_rate": m.get("employment_rate", 0),
+            "career": m["career"],
+            "industry_outlook": m.get("industry_outlook", "穩定"),
+            "ai_impact": m.get("ai_impact", "未知"),
+            "notes": m.get("notes", ""),
+            "overseas_ratio": m.get("overseas_ratio", 0),
+            "license_required": m.get("license_required", False),
+            "double_major_friendly": m.get("double_major_friendly", False),
+            "combined_pr": combined_pr,
+            "subject_prs": subject_prs,
+        })
+
     results.sort(key=lambda x: x["gap"], reverse=True)
     return results
+# def match_majors(scores: dict, min_gap: float = -5) -> list:
+#     results = []
+#     for m in majors_db:
+#         student_score = calculate_score(scores, m["weights"])
+#         cutoff = predict_cutoff(m)
+#         gap = student_score - cutoff
+#         if gap >= min_gap:
+#             safety = "穩上" if gap >= 3 else ("邊緣" if gap >= 0 else "衝刺")
+#             results.append({
+#                 "school": m["school"],
+#                 "major": m["major"],
+#                 "group": m["group"],
+#                 "student_score": round(student_score, 1),
+#                 "cutoff": cutoff,
+#                 "gap": round(gap, 1),
+#                 "safety": safety,
+#                 "salary_avg": m.get("salary_avg", 0),
+#                 "employment_rate": m.get("employment_rate", 0),
+#                 "career": m["career"],
+#                 "industry_outlook": m.get("industry_outlook", "穩定"),
+#                 "ai_impact": m.get("ai_impact", "未知"),
+#                 "notes": m.get("notes", ""),
+#                 "overseas_ratio": m.get("overseas_ratio", 0),
+#                 "license_required": m.get("license_required", False),
+#                 "double_major_friendly": m.get("double_major_friendly", False),
+#             })
+#     results.sort(key=lambda x: x["gap"], reverse=True)
+#     return results
  
+
 # ============================================================
 # Markdown → HTML 轉換
 # ============================================================
@@ -338,69 +462,57 @@ def md_to_html(text: str) -> str:
 # ============================================================
 # AI 分析建議
 # ============================================================
- 
+
+def compress_matches(matches):
+    return [
+        {
+            "校": m["school"],
+            "系": m["major"],
+            "落點": m["safety"],
+            "薪資": m["salary_avg"],
+            "AI": m["ai_impact"]
+        }
+        for m in matches[:3]
+    ]
+
 def generate_advice(profile: dict, matches: list) -> str:
     cache_key = make_cache_key(profile, [m["major"] for m in matches[:5]])
     cached = cache_get(cache_key)
     if cached:
         return cached
  
-    context = retrieve_memory(str(profile))
+    context = retrieve_memory(str(profile), top_k=2) + "\n" + retrieve_memory("產業趨勢", tag="knowledge")
     abroad = profile.get("出國意願", "n")
     abroad_text = (
         "請提供國外升學策略（美國/英國/日本/新加坡），包含推薦研究所、準備方向、TOEFL/GRE門檻"
         if abroad == "y"
         else "出國升學部分略過"
     )
-    top_matches = matches[:5]
+    top_matches = compress_matches(matches)
  
     prompt = f"""
-你是台灣頂尖升學顧問，有15年實戰經驗，精通學測落點分析。
- 
-【學生基本資料】
-稱呼：{profile.get("name", "同學")}
-學測各科分數：{json.dumps(profile.get("scores", {}), ensure_ascii=False)}
-興趣領域：{profile.get("interests", "未填")}
-擅長科目：{profile.get("strengths", "未填")}
-個人特質：{profile.get("personality", "未填")}
-出國意願：{"有" if abroad == "y" else "無"}
-優先考量：{profile.get("偏好", "未填")}
- 
-【落點分析結果（前5名）】
-{json.dumps(top_matches, ensure_ascii=False, indent=2)}
- 
-【歷史諮詢參考】
-{context if context else "（無相關歷史紀錄）"}
- 
-【2025 產業時事】
-- AI工具普及衝擊：基層程式員、翻譯、文字工作需求明顯下降
-- 半導體持續缺工：台積電、聯發科持續擴編
-- 護理缺工嚴重：政策薪資補貼，月薪已逼近 7-8 萬
-- AI人才需求爆增：機器學習、MLOps、資料科學職缺同比翻倍
-- 非頂尖商管科系出路持續惡化，需靠雙主修或輔系突圍
- 
-請提供以下分析（務實、直接、像顧問在面對面諮詢，不要空話）：
- 
-**1. 志願推薦序（最多4個，明確標出穩上/目標/衝刺）**
-每個志願說明：推薦原因 + 風險評估 + 與學生特質契合度
- 
-**2. 能力匹配警告**
-哪些科系只有興趣符合但能力不足（直接說，不要客氣）
- 
-**3. 英文影響力分析**
-英文加權對這位學生的具體影響（加幾分？差幾個科系？）
- 
-**4. 薪資與出路務實評估**
-各推薦科系：畢業即薪 / 3年後 / 10年後的薪資預期，AI時代下的風險與機會
- 
-**5. {abroad_text}**
- 
-**6. 雙主修 / 輔系建議**
-根據落點，哪些雙主修組合能讓這位學生大幅提升競爭力
- 
-**7. 給這位同學的一句話**
-語氣：務實、直接、像朋友不是業務員
-格式：條列式，重點加粗
+你是台灣升學顧問（務實、直接）。
+
+學生：
+{profile}
+
+推薦科系（前3）：
+{json.dumps(top_matches[:3], ensure_ascii=False)}
+
+參考背景：
+{context}
+
+請輸出：
+
+1. 志願排序（標註 穩上/目標/衝刺 + 原因）
+2. 能力不匹配警告
+3. 英文影響（具體差距）
+4. 薪資與出路（短中長期 + AI影響）
+5. {"出國建議" if abroad=="y" else "略過出國"}
+6. 雙主修建議
+7. 一句話建議（務實）
+
+用條列式，避免廢話
 """
  
     if not GEMINI_AVAILABLE:
@@ -476,9 +588,9 @@ def analyze():
  
         summary = {
             "total": len(matches),
-            "safe":       sum(1 for m in matches if m["safety"] == "穩上"),
-            "borderline": sum(1 for m in matches if m["safety"] == "邊緣"),
-            "reach":      sum(1 for m in matches if m["safety"] == "衝刺"),
+            "safe":   sum(1 for m in matches if m["safety"] == "穩上"),
+            "target": sum(1 for m in matches if m["safety"] == "目標"),
+            "reach":  sum(1 for m in matches if m["safety"] == "衝刺"),
         }
  
         ai_result = generate_advice(profile, matches)
