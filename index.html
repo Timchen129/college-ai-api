@@ -102,8 +102,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;ali
 /* ── ANALYZER ── */
 #analyzer-wrap{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 2rem}
 .analyzer-inner{max-width:1120px;margin:0 auto}
-.analyzer-grid{display:grid;grid-template-columns:1fr;gap:1.5rem}
-.input-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start}
+
+/* ── NEW: Two-column input layout ── */
+.input-row{display:grid;grid-template-columns:450px 1fr;gap:1.5rem;align-items:start}
 
 /* Glass panel */
 .panel{background:var(--glass2);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.6);border-radius:var(--r2);overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04)}
@@ -139,10 +140,6 @@ input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(200,80,4
 .sv-label{font-size:9px;color:var(--text3);font-family:var(--font-mono);text-align:center;margin-top:2px}
 .sv-val{font-size:11px;font-family:var(--font-mono);font-weight:500}
 
-/* Rolling number animation */
-@keyframes rollUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-.rolling{animation:rollUp 0.3s cubic-bezier(.16,1,.3,1) both}
-
 /* Personality traits */
 .trait-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
 .trait-card{border:1.5px solid var(--border2);border-radius:var(--r);padding:10px;cursor:pointer;transition:all .2s;text-align:center;background:var(--glass)}
@@ -177,7 +174,48 @@ input[type=range].priority-slider{height:4px}
 .spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── LOADING STATE ── */
+/* ── FULLSCREEN LOADER (新增) ── */
+#fullscreen-loader{
+  display:none;
+  position:fixed;inset:0;z-index:500;
+  background:rgba(247,245,240,0.97);
+  backdrop-filter:blur(8px);
+  flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:1.5rem;
+}
+#fullscreen-loader .fl-brand{
+  font-family:var(--font-serif);font-size:2rem;color:var(--text);
+}
+#fullscreen-loader .fl-text{
+  font-family:var(--font-mono);font-size:14px;color:var(--text2);
+  transition:opacity 0.3s;
+}
+#fullscreen-loader .fl-bar-wrap{
+  width:280px;height:2px;background:var(--surface);border-radius:2px;overflow:hidden;
+}
+#loader-bar{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,var(--accent),var(--amber));
+  border-radius:2px;
+  transition:width 0.8s ease;
+}
+
+/* ── RESULTS PANEL (full-width below inputs) ── */
+#results-panel{
+  display:none;
+  margin-top:1.5rem;
+}
+
+/* Result filter tabs */
+.result-tabs{display:flex;gap:2px;background:var(--surface);border-radius:var(--r);padding:3px;margin-bottom:1.4rem;max-width:380px}
+.result-tab{flex:1;text-align:center;padding:7px 8px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--text3);transition:all .2s;border:none;background:transparent;font-family:var(--font)}
+.result-tab.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.result-tab.safe-tab.active{color:var(--green)}
+.result-tab.edge-tab.active{color:var(--amber)}
+.result-tab.reach-tab.active{color:var(--red)}
+
+/* ── LOADING STATE (inside results panel) ── */
 .loading-overlay{padding:1.5rem 0}
 .progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
 .progress-title{font-family:var(--font-serif);font-size:1rem}
@@ -197,13 +235,6 @@ input[type=range].priority-slider{height:4px}
 /* Rolling total animation */
 #total-score-display{display:inline-block;min-width:120px;font-family:var(--font-mono);color:var(--accent);font-weight:500;font-size:15px}
 
-/* Results empty */
-.results-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:500px;gap:1rem;text-align:center}
-.empty-icon{width:60px;height:60px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:26px}
-.empty-steps{display:flex;flex-direction:column;gap:6px;width:100%;max-width:260px;margin-top:.5rem}
-.empty-step{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:9px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px}
-.step-num{font-family:var(--font-mono);color:var(--accent);font-size:11px;font-weight:500}
-
 /* ── RADAR CHART ── */
 .radar-wrap{background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;margin-bottom:1.2rem}
 .radar-title{font-size:11px;font-family:var(--font-mono);color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px}
@@ -218,7 +249,7 @@ input[type=range].priority-slider{height:4px}
 .sum-num.red{color:var(--red)}
 
 /* Match cards */
-.match-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.4rem}
+.match-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-bottom:1.4rem}
 .match-card{background:var(--glass2);border:1px solid rgba(255,255,255,0.5);border-radius:var(--r);padding:1rem 1.2rem;transition:all .25s;cursor:default;backdrop-filter:blur(8px)}
 .match-card:hover{border-color:rgba(200,80,42,0.2);box-shadow:0 4px 16px rgba(0,0,0,0.06);transform:translateY(-1px)}
 .mc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
@@ -237,15 +268,12 @@ input[type=range].priority-slider{height:4px}
 .axis-border{position:absolute;height:100%;background:linear-gradient(90deg,var(--red) 0%,var(--amber) 45%,var(--green) 100%);border-radius:3px;opacity:0.35}
 .axis-marker{position:absolute;top:-2px;width:10px;height:10px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.2);transform:translateX(-50%)}
 .axis-labels{display:flex;justify-content:space-between;font-size:9px;font-family:var(--font-mono);color:var(--text3);margin-top:3px}
-.axis-my-score{position:absolute;bottom:8px;transform:translateX(-50%);font-size:8px;font-family:var(--font-mono);white-space:nowrap;color:var(--text)}
 
 .mc-stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}
 .mc-stat{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3)}
 .career-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
 .ctag{padding:2px 8px;background:var(--blueL);border:1px solid rgba(37,99,235,0.15);color:var(--blue);border-radius:4px;font-size:10px;font-family:var(--font-mono)}
 .hot-tag{padding:2px 7px;background:rgba(200,80,42,0.08);border:1px solid rgba(200,80,42,0.2);color:var(--accent);border-radius:4px;font-size:10px;font-family:var(--font-mono)}
-.mc-detail-btn{font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;font-family:var(--font-mono);padding:4px 0;display:flex;align-items:center;gap:4px;margin-top:4px}
-.mc-detail-btn:hover{text-decoration:underline}
 
 /* Salary chart */
 .salary-chart{margin-top:10px;padding:10px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)}
@@ -266,8 +294,8 @@ input[type=range].priority-slider{height:4px}
 .gauge-label.med{color:var(--amber)}
 .gauge-label.high{color:var(--red)}
 
-/* Compare mode */
-.compare-bar{position:sticky;bottom:0;background:rgba(247,245,240,0.95);backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:10px 1.4rem;display:none;align-items:center;justify-content:space-between;gap:12px;z-index:10}
+/* Compare bar */
+.compare-bar{background:rgba(247,245,240,0.95);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--r);padding:10px 1.4rem;display:none;align-items:center;justify-content:space-between;gap:12px;margin-bottom:1rem}
 .compare-bar.show{display:flex}
 .compare-slots{display:flex;gap:8px}
 .compare-slot{min-width:120px;padding:5px 10px;border:1.5px dashed var(--border2);border-radius:var(--r);font-size:12px;color:var(--text3);text-align:center;font-family:var(--font-mono)}
@@ -415,8 +443,8 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
 .footer-note{font-size:11px;color:var(--text3);margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);max-width:1120px;margin-left:auto;margin-right:auto;text-align:center}
 
 /* Responsive */
-@media(max-width:860px){
-  .analyzer-grid{grid-template-columns:1fr}
+@media(max-width:900px){
+  .input-row{grid-template-columns:1fr}
   .nav-links{display:none}
   .features-grid{grid-template-columns:1fr;gap:0}
   .comp-table td:nth-child(4),.comp-table th:nth-child(4){display:none}
@@ -425,6 +453,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
   .ttab:last-child{border-bottom:none}
   .trait-grid{grid-template-columns:1fr 1fr}
   .compare-grid{grid-template-columns:1fr}
+  .match-list{grid-template-columns:1fr}
 }
 @media(max-width:500px){
   .hero h1{font-size:2.4rem}
@@ -508,183 +537,172 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
   <h2 class="sec-title" style="margin-bottom:.4rem">輸入分數，AI 幫你算</h2>
   <p class="sec-sub" style="margin-bottom:2rem;font-size:14px">填入學測各科成績，幾秒內取得個人化落點報告與 AI 升學建議</p>
 
-  <div class="analyzer-grid">
-    <!-- INPUT PANEL -->
+  <!-- ── TWO-COLUMN INPUT ROW ── -->
+  <div class="input-row">
+
+    <!-- LEFT: 學測成績 -->
     <div class="panel">
       <div class="panel-hd">
-        <span class="panel-title">📋 輸入資料</span>
-        <span style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">STEP 1/2</span>
+        <span class="panel-title">📊 學測成績</span>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">STEP 1</span>
       </div>
       <div class="panel-body">
-        <div class="tabs">
-          <button class="tab active" onclick="switchTab('scores',this)">學測分數</button>
-          <button class="tab" onclick="switchTab('profile',this)">個人特質</button>
-          <button class="tab" onclick="switchTab('prefs',this)">優先偏好</button>
-        </div>
-
-        <!-- SCORES TAB -->
-        <div id="tab-scores">
-          <div class="score-section-label">必考科目（1–15 級分）</div>
-          <div class="subject-grid">
-            <div class="sub-item">
-              <div class="sub-label">國文 <span class="sub-val" id="v-chi">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-chi" oninput="updateSub('chi',this.value,'#8b5cf6')">
-            </div>
-            <div class="sub-item">
-              <div class="sub-label">英文 <span class="sub-val" id="v-eng">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-eng" oninput="updateSub('eng',this.value,'#2563eb')">
-            </div>
-            <div class="sub-item">
-              <div class="sub-label">數學 A <span class="sub-val" id="v-matA">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-matA" oninput="updateSub('matA',this.value,'#c8502a')">
-            </div>
-            <div class="sub-item">
-              <div class="sub-label">自然 <span class="sub-val" id="v-sci">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-sci" oninput="updateSub('sci',this.value,'#2d7a4f')">
-            </div>
+        <div class="score-section-label">必考科目（1–15 級分）</div>
+        <div class="subject-grid">
+          <div class="sub-item">
+            <div class="sub-label">國文 <span class="sub-val" id="v-chi">10</span></div>
+            <input type="range" min="1" max="15" value="10" id="s-chi" oninput="updateSub('chi',this.value,'#8b5cf6')">
           </div>
-
-          <!-- Score visualizer bars -->
-          <div class="score-viz" id="scoreViz"></div>
-
-          <div class="score-section-label">選考科目（沒考設為 0）</div>
-          <div class="subject-grid">
-            <div class="sub-item">
-              <div class="sub-label">數學 B <span class="sub-optional" id="matB-opt">未選考</span><span class="sub-val" id="v-matB" style="display:none">0</span></div>
-              <input type="range" min="0" max="15" value="0" id="s-matB" oninput="updateOptional('matB',this.value,'#b5720a')">
-            </div>
-            <div class="sub-item">
-              <div class="sub-label">社會 <span class="sub-optional" id="soc-opt">未選考</span><span class="sub-val" id="v-soc" style="display:none">0</span></div>
-              <input type="range" min="0" max="15" value="0" id="s-soc" oninput="updateOptional('soc',this.value,'#ec4899')">
-            </div>
+          <div class="sub-item">
+            <div class="sub-label">英文 <span class="sub-val" id="v-eng">10</span></div>
+            <input type="range" min="1" max="15" value="10" id="s-eng" oninput="updateSub('eng',this.value,'#2563eb')">
           </div>
-          <div class="optional-note">⚠ 數B 供文法商科系；社會供人文社科科系。理工科通常採國英數A自。</div>
-
-          <div class="total-strip">
-            <span class="total-label">加權總分（理工估算）</span>
-            <span id="total-score-display">—</span>
+          <div class="sub-item">
+            <div class="sub-label">數學 A <span class="sub-val" id="v-matA">10</span></div>
+            <input type="range" min="1" max="15" value="10" id="s-matA" oninput="updateSub('matA',this.value,'#c8502a')">
+          </div>
+          <div class="sub-item">
+            <div class="sub-label">自然 <span class="sub-val" id="v-sci">10</span></div>
+            <input type="range" min="1" max="15" value="10" id="s-sci" oninput="updateSub('sci',this.value,'#2d7a4f')">
           </div>
         </div>
 
-        <!-- PROFILE TAB — Personality Icons -->
-        <div id="tab-profile" style="display:none">
-          <div class="fg">
-            <label class="fl">你是哪種思考類型？（可多選）</label>
-            <div class="trait-grid">
-              <div class="trait-card" onclick="toggleTrait(this,'logic')">
-                <div class="trait-icon">🧮</div>
-                <div class="trait-label">邏輯推理型</div>
-                <div class="trait-sub">數理強、喜歡解題</div>
-              </div>
-              <div class="trait-card" onclick="toggleTrait(this,'create')">
-                <div class="trait-icon">🎨</div>
-                <div class="trait-label">創意表達型</div>
-                <div class="trait-sub">設計、寫作、藝術</div>
-              </div>
-              <div class="trait-card" onclick="toggleTrait(this,'social')">
-                <div class="trait-icon">🤝</div>
-                <div class="trait-label">人際溝通型</div>
-                <div class="trait-sub">喜歡與人互動</div>
-              </div>
-              <div class="trait-card" onclick="toggleTrait(this,'research')">
-                <div class="trait-icon">🔬</div>
-                <div class="trait-label">深度研究型</div>
-                <div class="trait-sub">喜歡鑽研、獨立思考</div>
-              </div>
-              <div class="trait-card" onclick="toggleTrait(this,'leadership')">
-                <div class="trait-icon">🏆</div>
-                <div class="trait-label">領導執行型</div>
-                <div class="trait-sub">組織規劃、帶領團隊</div>
-              </div>
-              <div class="trait-card" onclick="toggleTrait(this,'care')">
-                <div class="trait-icon">❤️</div>
-                <div class="trait-label">服務關懷型</div>
-                <div class="trait-sub">醫療、教育、社工</div>
-              </div>
+        <!-- Score visualizer bars -->
+        <div class="score-viz" id="scoreViz"></div>
+
+        <div class="score-section-label">選考科目（沒考設為 0）</div>
+        <div class="subject-grid">
+          <div class="sub-item">
+            <div class="sub-label">數學 B <span class="sub-optional" id="matB-opt">未選考</span><span class="sub-val" id="v-matB" style="display:none">0</span></div>
+            <input type="range" min="0" max="15" value="0" id="s-matB" oninput="updateOptional('matB',this.value,'#b5720a')">
+          </div>
+          <div class="sub-item">
+            <div class="sub-label">社會 <span class="sub-optional" id="soc-opt">未選考</span><span class="sub-val" id="v-soc" style="display:none">0</span></div>
+            <input type="range" min="0" max="15" value="0" id="s-soc" oninput="updateOptional('soc',this.value,'#ec4899')">
+          </div>
+        </div>
+        <div class="optional-note">⚠ 數B 供文法商科系；社會供人文社科科系。理工科通常採國英數A自。</div>
+
+        <div class="total-strip">
+          <span class="total-label">加權總分（理工估算）</span>
+          <span id="total-score-display">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: 個人特質與偏好 -->
+    <div class="panel">
+      <div class="panel-hd">
+        <span class="panel-title">👤 個人特質與偏好</span>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">STEP 2</span>
+      </div>
+      <div class="panel-body">
+        <!-- Personality traits -->
+        <div class="fg">
+          <label class="fl">你是哪種思考類型？（可多選）</label>
+          <div class="trait-grid">
+            <div class="trait-card" onclick="toggleTrait(this,'logic')">
+              <div class="trait-icon">🧮</div>
+              <div class="trait-label">邏輯推理型</div>
+              <div class="trait-sub">數理強、喜歡解題</div>
             </div>
-          </div>
-          <div class="fg">
-            <label class="fl">稱呼（選填）</label>
-            <input type="text" class="fi" id="name" placeholder="如：小明">
-          </div>
-          <div class="fg">
-            <label class="fl">興趣領域</label>
-            <div class="tg-group">
-              <button class="tg-btn" onclick="toggleTag(this,'int')">科技工程</button>
-              <button class="tg-btn" onclick="toggleTag(this,'int')">醫療健康</button>
-              <button class="tg-btn" onclick="toggleTag(this,'int')">商業金融</button>
-              <button class="tg-btn" onclick="toggleTag(this,'int')">法律政治</button>
-              <button class="tg-btn" onclick="toggleTag(this,'int')">藝術設計</button>
-              <button class="tg-btn" onclick="toggleTag(this,'int')">教育社會</button>
+            <div class="trait-card" onclick="toggleTrait(this,'create')">
+              <div class="trait-icon">🎨</div>
+              <div class="trait-label">創意表達型</div>
+              <div class="trait-sub">設計、寫作、藝術</div>
+            </div>
+            <div class="trait-card" onclick="toggleTrait(this,'social')">
+              <div class="trait-icon">🤝</div>
+              <div class="trait-label">人際溝通型</div>
+              <div class="trait-sub">喜歡與人互動</div>
+            </div>
+            <div class="trait-card" onclick="toggleTrait(this,'research')">
+              <div class="trait-icon">🔬</div>
+              <div class="trait-label">深度研究型</div>
+              <div class="trait-sub">喜歡鑽研、獨立思考</div>
+            </div>
+            <div class="trait-card" onclick="toggleTrait(this,'leadership')">
+              <div class="trait-icon">🏆</div>
+              <div class="trait-label">領導執行型</div>
+              <div class="trait-sub">組織規劃、帶領團隊</div>
+            </div>
+            <div class="trait-card" onclick="toggleTrait(this,'care')">
+              <div class="trait-icon">❤️</div>
+              <div class="trait-label">服務關懷型</div>
+              <div class="trait-sub">醫療、教育、社工</div>
             </div>
           </div>
         </div>
 
-        <!-- PREFS TAB — Priority sliders -->
-        <div id="tab-prefs" style="display:none">
-          <div class="fg">
-            <label class="fl">調整優先考量權重（總計不限，數字越高代表越重視）</label>
-            <div class="priority-row" id="priority-sliders">
-              <div class="priority-item">
-                <div class="priority-label">💰 薪資潛力 <span class="priority-pct" id="pct-salary">50%</span></div>
-                <input type="range" class="priority-slider" min="0" max="100" value="50" id="w-salary" oninput="updateWeight('salary',this.value)">
-              </div>
-              <div class="priority-item">
-                <div class="priority-label">🛡️ 就業穩定 <span class="priority-pct" id="pct-stable">50%</span></div>
-                <input type="range" class="priority-slider" min="0" max="100" value="50" id="w-stable" oninput="updateWeight('stable',this.value)">
-              </div>
-              <div class="priority-item">
-                <div class="priority-label">❤️ 個人興趣 <span class="priority-pct" id="pct-interest">50%</span></div>
-                <input type="range" class="priority-slider" min="0" max="100" value="50" id="w-interest" oninput="updateWeight('interest',this.value)">
-              </div>
-              <div class="priority-item">
-                <div class="priority-label">✈️ 出國機會 <span class="priority-pct" id="pct-abroad">30%</span></div>
-                <input type="range" class="priority-slider" min="0" max="100" value="30" id="w-abroad" oninput="updateWeight('abroad',this.value)">
-              </div>
-              <div class="priority-item">
-                <div class="priority-label">📈 分數最大化 <span class="priority-pct" id="pct-score">40%</span></div>
-                <input type="range" class="priority-slider" min="0" max="100" value="40" id="w-score" oninput="updateWeight('score',this.value)">
-              </div>
+        <div class="fg">
+          <label class="fl">稱呼（選填）</label>
+          <input type="text" class="fi" id="name" placeholder="如：小明">
+        </div>
+
+        <div class="fg">
+          <label class="fl">興趣領域</label>
+          <div class="tg-group">
+            <button class="tg-btn" onclick="toggleTag(this,'int')">科技工程</button>
+            <button class="tg-btn" onclick="toggleTag(this,'int')">醫療健康</button>
+            <button class="tg-btn" onclick="toggleTag(this,'int')">商業金融</button>
+            <button class="tg-btn" onclick="toggleTag(this,'int')">法律政治</button>
+            <button class="tg-btn" onclick="toggleTag(this,'int')">藝術設計</button>
+            <button class="tg-btn" onclick="toggleTag(this,'int')">教育社會</button>
+          </div>
+        </div>
+
+        <hr class="divider" style="margin:1rem 0">
+
+        <!-- Priority sliders -->
+        <div class="fg">
+          <label class="fl">優先考量權重</label>
+          <div class="priority-row" id="priority-sliders">
+            <div class="priority-item">
+              <div class="priority-label">💰 薪資潛力 <span class="priority-pct" id="pct-salary">50%</span></div>
+              <input type="range" class="priority-slider" min="0" max="100" value="50" id="w-salary" oninput="updateWeight('salary',this.value)">
+            </div>
+            <div class="priority-item">
+              <div class="priority-label">🛡️ 就業穩定 <span class="priority-pct" id="pct-stable">50%</span></div>
+              <input type="range" class="priority-slider" min="0" max="100" value="50" id="w-stable" oninput="updateWeight('stable',this.value)">
+            </div>
+            <div class="priority-item">
+              <div class="priority-label">❤️ 個人興趣 <span class="priority-pct" id="pct-interest">50%</span></div>
+              <input type="range" class="priority-slider" min="0" max="100" value="50" id="w-interest" oninput="updateWeight('interest',this.value)">
+            </div>
+            <div class="priority-item">
+              <div class="priority-label">✈️ 出國機會 <span class="priority-pct" id="pct-abroad">30%</span></div>
+              <input type="range" class="priority-slider" min="0" max="100" value="30" id="w-abroad" oninput="updateWeight('abroad',this.value)">
             </div>
           </div>
-          <div class="fg">
-            <label class="fl">學校偏好</label>
-            <select class="fs" id="school-pref">
-              <option value="any">不限，最大化分數效益</option>
-              <option value="top3">頂大（台清交成）為主</option>
-              <option value="north">偏好北部學校</option>
-              <option value="south">偏好南部學校</option>
-              <option value="private">私立大學也可以接受</option>
-            </select>
-          </div>
+        </div>
+
+        <div class="fg">
+          <label class="fl">學校偏好</label>
+          <select class="fs" id="school-pref">
+            <option value="any">不限，最大化分數效益</option>
+            <option value="top3">頂大（台清交成）為主</option>
+            <option value="north">偏好北部學校</option>
+            <option value="south">偏好南部學校</option>
+            <option value="private">私立大學也可以接受</option>
+          </select>
         </div>
 
         <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">
-          <span id="btn-text">✦ 開始 AI 落點分析</span>
+          <span id="btn-text">✦ 開始深度分析</span>
           <div class="spinner" id="btn-spinner"></div>
         </button>
       </div>
     </div>
+  </div><!-- end .input-row -->
 
-    <!-- RESULTS PANEL -->
-    <div class="panel" id="results-panel">
+  <!-- ── RESULTS PANEL (full-width, below inputs) ── -->
+  <div id="results-panel">
+    <div class="panel" style="margin-top:0">
       <div class="panel-hd">
         <span class="panel-title">📈 分析結果</span>
         <span style="font-size:11px;color:var(--text3);font-family:var(--font-mono)" id="result-time">—</span>
       </div>
       <div class="panel-body" style="position:relative">
-
-        <!-- EMPTY STATE -->
-        <div class="results-empty" id="results-empty">
-          <div class="empty-icon">🎓</div>
-          <div style="font-family:var(--font-serif);font-size:1.15rem">準備好了嗎？</div>
-          <div style="font-size:13px;color:var(--text3);max-width:220px;line-height:1.7">填入學測分數後按下分析，AI 在幾秒內完成完整報告</div>
-          <div class="empty-steps">
-            <div class="empty-step"><span class="step-num">01</span>拖動滑桿輸入各科分數</div>
-            <div class="empty-step"><span class="step-num">02</span>（選填）個人特質讓結果更精準</div>
-            <div class="empty-step"><span class="step-num">03</span>點擊「開始 AI 落點分析」</div>
-          </div>
-        </div>
 
         <!-- LOADING STATE -->
         <div id="loading-state" style="display:none">
@@ -704,7 +722,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
           </div>
         </div>
 
-        <!-- RESULTS -->
+        <!-- RESULTS CONTENT -->
         <div id="results-content" style="display:none">
           <div class="summary-row">
             <div class="sum-card"><div class="sum-num green" id="r-safe">0</div><div class="sum-label">穩上志願</div></div>
@@ -718,11 +736,16 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
             <canvas id="radarResult" width="260" height="200" style="display:block;margin:0 auto"></canvas>
           </div>
 
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">// 落點校系（點選勾選框可比較）</div>
-            <button class="mc-detail-btn" id="compare-toggle-btn" onclick="toggleCompareMode()" style="margin-top:0">⚖️ 對比模式</button>
+          <!-- Result filter tabs -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:10px">
+            <div class="result-tabs">
+              <button class="result-tab safe-tab active" onclick="filterMatches('穩上',this)">✅ 穩上</button>
+              <button class="result-tab edge-tab" onclick="filterMatches('邊緣',this)">⚠️ 邊緣</button>
+              <button class="result-tab reach-tab" onclick="filterMatches('衝刺',this)">🚀 衝刺</button>
+              <button class="result-tab" onclick="filterMatches('all',this)">全部</button>
+            </div>
+            <button class="mc-detail-btn" id="compare-toggle-btn" onclick="toggleCompareMode()" style="margin-top:0;font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;font-family:var(--font-mono);padding:4px 0;display:flex;align-items:center;gap:4px">⚖️ 對比模式</button>
           </div>
-          <div class="match-list" id="match-list"></div>
 
           <!-- Compare bar -->
           <div class="compare-bar" id="compare-bar">
@@ -735,6 +758,8 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
             </div>
             <button class="btn-compare" onclick="openCompare()">📊 開始比較</button>
           </div>
+
+          <div class="match-list" id="match-list"></div>
 
           <hr class="divider">
           <!-- AI analysis box -->
@@ -753,9 +778,10 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
         </div>
       </div>
     </div>
-  </div>
-</div>
-</div>
+  </div><!-- end #results-panel -->
+
+</div><!-- end .analyzer-inner -->
+</div><!-- end #analyzer-wrap -->
 
 <!-- COMPARISON MODAL -->
 <div class="modal-overlay" id="compareModal">
@@ -984,46 +1010,50 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
   </div>
   <button class="chat-fab" onclick="toggleChat()">💬</button>
 </div>
+
+<!-- ── FULLSCREEN LOADER (新增) ── -->
+<div id="fullscreen-loader">
+  <div class="fl-brand">升志 ScoreWise</div>
+  <div id="loader-text" class="fl-text">初始化分析...</div>
+  <div class="fl-bar-wrap">
+    <div id="loader-bar"></div>
+  </div>
+</div>
+
 <div class="notif" id="notif"><span id="notif-msg">✓ 分析完成</span></div>
 
 <script>
 // ── CONFIG ──
 const API_BASE = 'https://college-ai-api-1.onrender.com';
-const USE_DIRECT_API = false; // 設為 true 並填入 API_KEY 即可直接呼叫
 
-// ── SCHOOL DATABASE with actual subject weights ──
+// ── SCHOOL DATABASE ──
 const SCHOOLS_DB = [
-  // 台大
   { school:'台灣大學', major:'資訊工程學系', subjects:{chi:1,eng:2,matA:3,sci:3}, minScore:73, salary:55000, salaryGrowth:[55,75,100,130], employment:98, aiImpact:'受益', aiRisk:15, hot:true, careers:['軟體工程師','AI研究員','技術主管'], notes:'競爭最激烈，需數A+自然接近滿分', overseas:45, category:'tech' },
   { school:'台灣大學', major:'電機工程學系', subjects:{chi:1,eng:2,matA:3,sci:3}, minScore:74, salary:52000, salaryGrowth:[52,72,98,128], employment:98, aiImpact:'受益', aiRisk:15, hot:true, careers:['晶片設計師','系統工程師','研發工程師'], notes:'台大電機為全台頂尖，分數與資工相當', overseas:50, category:'tech' },
   { school:'台灣大學', major:'醫學系', subjects:{chi:1,eng:2,matA:3,sci:3}, minScore:75, salary:70000, salaryGrowth:[70,95,120,150], employment:99, aiImpact:'部分', aiRisk:25, hot:true, careers:['臨床醫師','研究醫師','醫療主管'], notes:'全台最高門檻，需要強大的心理準備', overseas:30, category:'medical' },
   { school:'台灣大學', major:'護理學系', subjects:{chi:1,eng:2,matA:2,sci:3}, minScore:60, salary:65000, salaryGrowth:[65,72,80,90], employment:98, aiImpact:'低', aiRisk:10, hot:false, careers:['護理師','護理長','醫療管理'], notes:'台大護理就業率極高，薪資成長穩定', overseas:20, category:'medical' },
   { school:'台灣大學', major:'法律學系', subjects:{chi:2,eng:3,soc:1}, minScore:68, salary:36000, salaryGrowth:[36,48,72,100], employment:88, aiImpact:'部分衝擊', aiRisk:45, hot:false, careers:['律師','法官','法務主管'], notes:'需要社會科，司法改革中轉型機會多', overseas:15, category:'law' },
   { school:'台灣大學', major:'外文學系', subjects:{chi:2,eng:3,soc:1}, minScore:62, salary:32000, salaryGrowth:[32,38,44,55], employment:75, aiImpact:'高度衝擊', aiRisk:80, hot:false, careers:['翻譯','行銷','外貿'], notes:'AI翻譯衝擊大，建議搭配程式或商業技能', overseas:35, category:'liberal' },
-  // 清大
   { school:'清華大學', major:'電機工程學系', subjects:{chi:1,eng:2,matA:3,sci:3}, minScore:70, salary:50000, salaryGrowth:[50,70,95,125], employment:97, aiImpact:'受益', aiRisk:12, hot:true, careers:['晶片設計','台積電工程師','研發'], notes:'清大電機與台積電連結緊密，產學合作強', overseas:45, category:'tech' },
   { school:'清華大學', major:'資訊工程學系', subjects:{chi:1,eng:2,matA:3,sci:3}, minScore:71, salary:53000, salaryGrowth:[53,73,98,128], employment:98, aiImpact:'受益', aiRisk:12, hot:true, careers:['軟體工程師','AI工程師','CTO'], notes:'清大資工新竹科技圈優勢，就業超強', overseas:48, category:'tech' },
   { school:'清華大學', major:'數學系', subjects:{chi:1,eng:2,matA:3,sci:3}, minScore:65, salary:45000, salaryGrowth:[45,62,88,120], employment:90, aiImpact:'受益', aiRisk:8, hot:false, careers:['數據科學家','量化分析師','AI研究員'], notes:'AI時代數學系價值大幅提升，建議雙主修資工', overseas:55, category:'tech' },
-  // 交大（陽明交大）
   { school:'陽明交通大學', major:'電機工程學系', subjects:{matA:3,sci:3,eng:2}, minScore:72, salary:50000, salaryGrowth:[50,70,95,125], employment:97, aiImpact:'受益', aiRisk:12, hot:true, careers:['晶片設計','IC設計','研發工程師'], notes:'交大電機以數A和自然計算，英文加權，國文不採計', overseas:48, category:'tech' },
   { school:'陽明交通大學', major:'資訊工程學系', subjects:{matA:3,sci:3,eng:2}, minScore:73, salary:53000, salaryGrowth:[53,73,100,132], employment:98, aiImpact:'受益', aiRisk:10, hot:true, careers:['軟體工程師','AI工程師','系統架構師'], notes:'交大資工僅計數A、自然、英文三科，國文不採計', overseas:50, category:'tech' },
   { school:'陽明交通大學', major:'生醫工程學系', subjects:{chi:1,eng:2,matA:3,sci:3}, minScore:60, salary:42000, salaryGrowth:[42,58,78,105], employment:88, aiImpact:'受益', aiRisk:20, hot:true, careers:['醫療器材工程師','生技研發','AI醫療'], notes:'跨領域新星，結合生醫與AI，未來需求大增', overseas:40, category:'biotech' },
-  // 成大
   { school:'成功大學', major:'醫學系', subjects:{chi:1,eng:2,matA:3,sci:3}, minScore:75, salary:70000, salaryGrowth:[70,95,120,150], employment:99, aiImpact:'部分', aiRisk:25, hot:true, careers:['臨床醫師','研究醫師'], notes:'南台灣頂尖醫學院，南部就業優先', overseas:25, category:'medical' },
   { school:'成功大學', major:'電機工程學系', subjects:{chi:1,eng:2,matA:3,sci:3}, minScore:68, salary:48000, salaryGrowth:[48,66,88,118], employment:96, aiImpact:'受益', aiRisk:12, hot:false, careers:['晶片設計','系統工程師'], notes:'南部半導體聚落，台南科技廊帶優勢', overseas:40, category:'tech' },
   { school:'成功大學', major:'航空太空工程學系', subjects:{chi:1,eng:2,matA:3,sci:3}, minScore:62, salary:45000, salaryGrowth:[45,60,80,110], employment:85, aiImpact:'中等', aiRisk:30, hot:false, careers:['航空工程師','國防科技','太空產業'], notes:'台灣航太產業起飛中，未來需求增加', overseas:50, category:'eng' },
-  // 政大
   { school:'政治大學', major:'財務管理學系', subjects:{chi:1,eng:2,matB:3,soc:3}, minScore:67, salary:38000, salaryGrowth:[38,52,70,95], employment:92, aiImpact:'部分', aiRisk:40, hot:false, careers:['金融分析師','投資銀行','財務主管'], notes:'需要數B和社會科，文法商首選', overseas:35, category:'business' },
   { school:'政治大學', major:'法律學系', subjects:{chi:2,eng:2,soc:2}, minScore:65, salary:34000, salaryGrowth:[34,46,68,95], employment:86, aiImpact:'部分衝擊', aiRisk:42, hot:false, careers:['律師','法官','企業法務'], notes:'政大法律為北部文法商強勢科系', overseas:12, category:'law' },
   { school:'政治大學', major:'經濟學系', subjects:{chi:1,eng:2,matB:3,soc:2}, minScore:64, salary:36000, salaryGrowth:[36,50,68,92], employment:88, aiImpact:'中等', aiRisk:38, hot:false, careers:['經濟分析師','政策研究','國際機構'], notes:'量化經濟學在AI時代價值回升', overseas:40, category:'business' },
 ];
 
 // ── STATE ──
-let selTraits = [], selInt = [], abroad = 'n';
+let selTraits = [], abroad = 'n';
 let weights = {salary:50, stable:50, interest:50, abroad:30, score:40};
-let lastScores = {};
 let compareMode = false;
 let compareList = [];
+let allMatches = [];   // ← 儲存全部落點（新增）
 let lastMatches = [];
 let lastProfile = {};
 let lastAIText = '';
@@ -1038,12 +1068,6 @@ function notify(msg, ok=true){
   el.style.borderLeft=`3px solid ${ok?'var(--green)':'var(--red)'}`;
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),3200);
-}
-
-function switchTab(name,btn){
-  ['scores','profile','prefs'].forEach(t=>document.getElementById('tab-'+t).style.display=t===name?'':'none');
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
 }
 
 function switchTrack(name,btn){
@@ -1090,7 +1114,6 @@ function getSubjectLabel(subjects){
   return Object.entries(subjects).map(([k,v])=>`${map[k]}×${v}`).join(' ');
 }
 
-// Calculate total for main display (理工估算)
 function calcDisplayTotal(scores){
   return scores.chi*1 + scores.eng*2 + scores.matA*3 + scores.sci*3;
 }
@@ -1119,22 +1142,16 @@ function renderScoreViz(){
   viz.innerHTML = html;
 }
 
-function updateSub(id, v){
-  document.getElementById('v-'+id).textContent = v;
-  updateTotal();
-  renderScoreViz();
-}
+function updateSub(id, v){ document.getElementById('v-'+id).textContent=v; updateTotal(); renderScoreViz(); }
 
 function updateOptional(id, v){
-  const optEl = document.getElementById(id+'-opt');
-  const valEl = document.getElementById('v-'+id);
+  const optEl=document.getElementById(id+'-opt');
+  const valEl=document.getElementById('v-'+id);
   if(+v===0){optEl.style.display='';valEl.style.display='none';}
   else{optEl.style.display='none';valEl.style.display='';valEl.textContent=v;}
-  updateTotal();
-  renderScoreViz();
+  updateTotal(); renderScoreViz();
 }
 
-// Rolling number animation for total score
 let rollTimer = null;
 function updateTotal(){
   const scores = getScores();
@@ -1144,133 +1161,86 @@ function updateTotal(){
   let current = parseInt(el.dataset.val)||0;
   const step = Math.max(1, Math.ceil(Math.abs(target-current)/12));
   rollTimer = setInterval(()=>{
-    if(current < target) current = Math.min(current+step, target);
-    else if(current > target) current = Math.max(current-step, target);
-    el.textContent = current + ' 分（理工估算）';
-    el.dataset.val = current;
-    if(current === target) clearInterval(rollTimer);
+    if(current<target) current=Math.min(current+step,target);
+    else if(current>target) current=Math.max(current-step,target);
+    el.textContent=current+' 分（理工估算）';
+    el.dataset.val=current;
+    if(current===target) clearInterval(rollTimer);
   }, 30);
 }
 
-function toggleTag(btn, type){ btn.classList.toggle('active'); }
+function toggleTag(btn){ btn.classList.toggle('active'); }
 function toggleTrait(card, trait){
   card.classList.toggle('active');
   if(card.classList.contains('active')) selTraits.push(trait);
   else selTraits = selTraits.filter(t=>t!==trait);
 }
 function updateWeight(key, val){
-  weights[key] = +val;
-  document.getElementById('pct-'+key).textContent = val+'%';
+  weights[key]=+val;
+  document.getElementById('pct-'+key).textContent=val+'%';
 }
 
 // ── RADAR CHART ──
 function drawRadar(canvasId, scores, animated=false){
-  const canvas = document.getElementById(canvasId);
+  const canvas=document.getElementById(canvasId);
   if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const cx = W/2, cy = H/2+10;
-  const R = Math.min(W,H)*0.38;
-  const labels = ['邏輯', '語言', '科學', '穩定', '高薪'];
-  const colors = ['#c8502a','#2563eb','#2d7a4f','#b5720a','#8b5cf6'];
-
-  // Compute data from scores
-  const sc = getScores();
-  const data = [
-    (sc.matA/15)*100,                           // 邏輯
-    (sc.eng/15)*100,                             // 語言
-    (sc.sci/15)*100,                             // 科學
-    ((sc.chi+sc.eng)/30)*100,                   // 穩定（人文均衡）
-    ((sc.matA+sc.sci)/30)*100,                  // 高薪潛力
-  ];
-
-  let frame = 0;
-  const totalFrames = animated ? 40 : 1;
-
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  const cx=W/2, cy=H/2+10;
+  const R=Math.min(W,H)*0.38;
+  const labels=['邏輯','語言','科學','穩定','高薪'];
+  const colors=['#c8502a','#2563eb','#2d7a4f','#b5720a','#8b5cf6'];
+  const sc=getScores();
+  const data=[(sc.matA/15)*100,(sc.eng/15)*100,(sc.sci/15)*100,((sc.chi+sc.eng)/30)*100,((sc.matA+sc.sci)/30)*100];
+  let frame=0;
+  const totalFrames=animated?40:1;
   function draw(progress){
     ctx.clearRect(0,0,W,H);
-    const sides = 5;
-    const angleOffset = -Math.PI/2;
-
-    // Grid
+    const sides=5; const angleOffset=-Math.PI/2;
     for(let ring=1;ring<=5;ring++){
-      const r = R*(ring/5);
+      const r=R*(ring/5);
       ctx.beginPath();
       for(let i=0;i<sides;i++){
-        const angle = angleOffset + (i/sides)*Math.PI*2;
-        const x = cx + r*Math.cos(angle);
-        const y = cy + r*Math.sin(angle);
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        const angle=angleOffset+(i/sides)*Math.PI*2;
+        if(i===0) ctx.moveTo(cx+r*Math.cos(angle),cy+r*Math.sin(angle));
+        else ctx.lineTo(cx+r*Math.cos(angle),cy+r*Math.sin(angle));
       }
-      ctx.closePath();
-      ctx.strokeStyle = 'rgba(0,0,0,0.07)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      ctx.closePath(); ctx.strokeStyle='rgba(0,0,0,0.07)'; ctx.lineWidth=1; ctx.stroke();
     }
-
-    // Axes + labels
     for(let i=0;i<sides;i++){
-      const angle = angleOffset + (i/sides)*Math.PI*2;
-      ctx.beginPath();
-      ctx.moveTo(cx,cy);
-      ctx.lineTo(cx+R*Math.cos(angle), cy+R*Math.sin(angle));
-      ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-      ctx.stroke();
-      const lx = cx+(R+18)*Math.cos(angle);
-      const ly = cy+(R+18)*Math.sin(angle);
-      ctx.fillStyle = colors[i];
-      ctx.font = 'bold 11px "DM Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(labels[i], lx, ly);
+      const angle=angleOffset+(i/sides)*Math.PI*2;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+R*Math.cos(angle),cy+R*Math.sin(angle));
+      ctx.strokeStyle='rgba(0,0,0,0.1)'; ctx.stroke();
+      const lx=cx+(R+18)*Math.cos(angle); const ly=cy+(R+18)*Math.sin(angle);
+      ctx.fillStyle=colors[i]; ctx.font='bold 11px "DM Mono",monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(labels[i],lx,ly);
     }
-
-    // Data polygon
     ctx.beginPath();
     for(let i=0;i<sides;i++){
-      const angle = angleOffset + (i/sides)*Math.PI*2;
-      const r = R*(data[i]/100)*progress;
-      const x = cx+r*Math.cos(angle);
-      const y = cy+r*Math.sin(angle);
-      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      const angle=angleOffset+(i/sides)*Math.PI*2;
+      const r=R*(data[i]/100)*progress;
+      if(i===0) ctx.moveTo(cx+r*Math.cos(angle),cy+r*Math.sin(angle));
+      else ctx.lineTo(cx+r*Math.cos(angle),cy+r*Math.sin(angle));
     }
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(200,80,42,0.12)';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(200,80,42,0.7)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Dots
+    ctx.closePath(); ctx.fillStyle='rgba(200,80,42,0.12)'; ctx.fill();
+    ctx.strokeStyle='rgba(200,80,42,0.7)'; ctx.lineWidth=2; ctx.stroke();
     for(let i=0;i<sides;i++){
-      const angle = angleOffset + (i/sides)*Math.PI*2;
-      const r = R*(data[i]/100)*progress;
-      ctx.beginPath();
-      ctx.arc(cx+r*Math.cos(angle), cy+r*Math.sin(angle), 3, 0, Math.PI*2);
-      ctx.fillStyle = colors[i];
-      ctx.fill();
+      const angle=angleOffset+(i/sides)*Math.PI*2;
+      const r=R*(data[i]/100)*progress;
+      ctx.beginPath(); ctx.arc(cx+r*Math.cos(angle),cy+r*Math.sin(angle),3,0,Math.PI*2);
+      ctx.fillStyle=colors[i]; ctx.fill();
     }
   }
-
-  if(animated){
-    const anim = ()=>{
-      frame++;
-      draw(Math.min(frame/totalFrames,1));
-      if(frame<totalFrames) requestAnimationFrame(anim);
-    };
-    anim();
-  } else {
-    draw(1);
-  }
+  if(animated){ const anim=()=>{ frame++; draw(Math.min(frame/totalFrames,1)); if(frame<totalFrames) requestAnimationFrame(anim); }; anim(); }
+  else draw(1);
 }
 
 // ── SAFETY AXIS ──
 function buildSafetyAxis(userScore, minScore){
-  const range = 8;
-  const low = minScore - range, high = minScore + range;
-  const pct = Math.min(100,Math.max(0,((userScore-low)/(high-low))*100));
-  const markerColor = userScore >= minScore+2 ? 'var(--green)' : userScore >= minScore-2 ? 'var(--amber)' : 'var(--red)';
-  const gapText = userScore >= minScore ? `+${userScore-minScore}分` : `${userScore-minScore}分`;
+  const range=8; const low=minScore-range; const high=minScore+range;
+  const pct=Math.min(100,Math.max(0,((userScore-low)/(high-low))*100));
+  const markerColor=userScore>=minScore+2?'var(--green)':userScore>=minScore-2?'var(--amber)':'var(--red)';
+  const gapText=userScore>=minScore?`+${userScore-minScore}分`:`${userScore-minScore}分`;
   return `<div class="safety-axis">
     <div style="font-size:10px;font-family:var(--font-mono);color:var(--text3);margin-bottom:4px">落點安全區間（級分）</div>
     <div class="axis-track">
@@ -1288,14 +1258,10 @@ function buildSafetyAxis(userScore, minScore){
 
 // ── SALARY CHART ──
 function buildSalaryChart(entry){
-  const years = ['畢業', '3年', '5年', '10年'];
-  const vals = entry.salaryGrowth;
-  const maxVal = Math.max(...vals);
-  const avgVals = [28,35,42,55]; // 平均線
-  const barH = 55;
-  let bars = vals.map((v,i)=>{
-    const pct = (v/maxVal)*100;
-    const avgPct = (avgVals[i]/maxVal)*100;
+  const years=['畢業','3年','5年','10年']; const vals=entry.salaryGrowth;
+  const maxVal=Math.max(...vals); const avgVals=[28,35,42,55]; const barH=55;
+  let bars=vals.map((v,i)=>{
+    const pct=(v/maxVal)*100; const avgPct=(avgVals[i]/maxVal)*100;
     return `<div class="sal-bar-col">
       <div class="sal-val">${v}K</div>
       <div class="sal-bar" style="height:${pct*barH/100}px;background:linear-gradient(to top,var(--accent),rgba(200,80,42,0.4))"></div>
@@ -1311,34 +1277,30 @@ function buildSalaryChart(entry){
 
 // ── AI GAUGE ──
 function buildAIGauge(entry){
-  const risk = entry.aiRisk;
-  const pct = risk;
-  const label = risk<30?'受益':risk<60?'中度衝擊':'高風險';
-  const cls = risk<30?'low':risk<60?'med':'high';
+  const risk=entry.aiRisk; const pct=risk;
+  const label=risk<30?'受益':risk<60?'中度衝擊':'高風險';
+  const cls=risk<30?'low':risk<60?'med':'high';
   return `<div class="ai-gauge-row">
     <span style="font-size:11px;font-family:var(--font-mono);color:var(--text3)">AI 衝擊</span>
-    <div class="gauge-wrap">
-      <div class="gauge-track">
-        <div class="gauge-needle" style="left:${pct}%"></div>
-      </div>
-    </div>
+    <div class="gauge-wrap"><div class="gauge-track"><div class="gauge-needle" style="left:${pct}%"></div></div></div>
     <span class="gauge-label ${cls}">${label}</span>
   </div>`;
 }
 
-// ── MATCH CARDS ──
-function buildMatchCard(entry, userScore, index){
+// ── BUILD MATCH CARD (獨立函式，支援頁籤過濾) ──
+function buildMatchCard(entry, index){
+  const scores = getScores();
+  const userScore = entry.userScore !== undefined ? entry.userScore : calcWeightedScore(entry, scores);
   const minScore = entry.minScore;
   const gap = userScore - minScore;
-  const safety = gap >= 2 ? '穩上' : gap >= -2 ? '邊緣' : '衝刺';
+  const safety = gap>=2?'穩上':gap>=-2?'邊緣':'衝刺';
   const safetyClass = safety==='穩上'?'safe':safety==='邊緣'?'edge':'reach';
-  const careers = (entry.careers||[]).map(c=>`<span class="ctag">${c}</span>`).join('');
-  const hotTag = entry.hot ? `<span class="hot-tag">🔥 熱門</span>` : '';
-  const subjLabel = getSubjectLabel(entry.subjects);
-  const aiGauge = buildAIGauge(entry);
-  const salaryChart = buildSalaryChart(entry);
-  const safetyAxis = buildSafetyAxis(userScore, minScore);
-
+  const careers=(entry.careers||[]).map(c=>`<span class="ctag">${c}</span>`).join('');
+  const hotTag=entry.hot?`<span class="hot-tag">🔥 熱門</span>`:'';
+  const subjLabel=getSubjectLabel(entry.subjects);
+  const aiGauge=buildAIGauge(entry);
+  const salaryChart=buildSalaryChart(entry);
+  const safetyAxis=buildSafetyAxis(userScore, minScore);
   return `<div class="match-card" id="mc-${index}">
     <div class="mc-top">
       <div>
@@ -1365,79 +1327,73 @@ function buildMatchCard(entry, userScore, index){
   </div>`;
 }
 
+// ── FILTER MATCHES (新增頁籤過濾) ──
+function filterMatches(safety, btn){
+  document.querySelectorAll('.result-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const ml=document.getElementById('match-list');
+  const scores=getScores();
+  let filtered = safety==='all' ? allMatches : allMatches.filter(m=>{
+    const gap = m.userScore - m.minScore;
+    const s = gap>=2?'穩上':gap>=-2?'邊緣':'衝刺';
+    return s===safety;
+  });
+  if(filtered.length===0){
+    ml.innerHTML=`<div style="padding:2rem;color:var(--text3);font-family:var(--font-mono);font-size:13px">此類別暫無志願建議</div>`;
+  } else {
+    ml.innerHTML=filtered.map((entry,i)=>buildMatchCard(entry,i)).join('');
+  }
+}
+
 // ── COMPARE ──
 function toggleCompareMode(){
-  compareMode = !compareMode;
-  compareList = [];
-  document.getElementById('compare-bar').classList.toggle('show', compareMode);
-  document.getElementById('cslot-0').textContent = '選擇 A';
-  document.getElementById('cslot-1').textContent = '選擇 B';
+  compareMode=!compareMode;
+  compareList=[];
+  document.getElementById('compare-bar').classList.toggle('show',compareMode);
+  document.getElementById('cslot-0').textContent='選擇 A';
+  document.getElementById('cslot-1').textContent='選擇 B';
   document.getElementById('cslot-0').classList.remove('filled');
   document.getElementById('cslot-1').classList.remove('filled');
-  rerenderMatches();
+  filterMatches('all', null);
 }
 
 function toggleCompare(idx, major, school){
-  if(compareList.includes(idx)){
-    compareList = compareList.filter(i=>i!==idx);
-  } else if(compareList.length<2){
-    compareList.push(idx);
-  } else {
-    notify('最多選擇 2 個科系進行比較',false);
-    return;
-  }
-  // Update slots
-  const slot0 = document.getElementById('cslot-0');
-  const slot1 = document.getElementById('cslot-1');
-  if(compareList.length>=1){
-    const e0 = lastMatches[compareList[0]];
-    slot0.textContent = e0?e0.major:'選擇 A';
-    slot0.classList.toggle('filled',true);
-  } else { slot0.textContent='選擇 A'; slot0.classList.remove('filled'); }
-  if(compareList.length>=2){
-    const e1 = lastMatches[compareList[1]];
-    slot1.textContent = e1?e1.major:'選擇 B';
-    slot1.classList.toggle('filled',true);
-  } else { slot1.textContent='選擇 B'; slot1.classList.remove('filled'); }
-  rerenderMatches();
-}
-
-function rerenderMatches(){
-  const scores = getScores();
-  const ml = document.getElementById('match-list');
-  ml.innerHTML = lastMatches.map((entry,i)=>{
-    const userScore = calcWeightedScore(entry, scores);
-    return buildMatchCard(entry, userScore, i);
-  }).join('');
+  if(compareList.includes(idx)){ compareList=compareList.filter(i=>i!==idx); }
+  else if(compareList.length<2){ compareList.push(idx); }
+  else { notify('最多選擇 2 個科系進行比較',false); return; }
+  const slot0=document.getElementById('cslot-0');
+  const slot1=document.getElementById('cslot-1');
+  if(compareList.length>=1){ const e0=allMatches[compareList[0]]; slot0.textContent=e0?e0.major:'選擇 A'; slot0.classList.toggle('filled',true); }
+  else { slot0.textContent='選擇 A'; slot0.classList.remove('filled'); }
+  if(compareList.length>=2){ const e1=allMatches[compareList[1]]; slot1.textContent=e1?e1.major:'選擇 B'; slot1.classList.toggle('filled',true); }
+  else { slot1.textContent='選擇 B'; slot1.classList.remove('filled'); }
+  filterMatches('all', null);
 }
 
 function openCompare(){
   if(compareList.length<2){ notify('請先選擇 2 個科系',false); return; }
-  const scores = getScores();
-  const [a,b] = compareList.map(i=>lastMatches[i]);
-  const scoreA = calcWeightedScore(a, scores);
-  const scoreB = calcWeightedScore(b, scores);
-  const gapA = scoreA - a.minScore;
-  const gapB = scoreB - b.minScore;
-  const rows = [
-    ['採計科目', getSubjectLabel(a.subjects), getSubjectLabel(b.subjects)],
-    ['加權總分', `${scoreA} 分`, `${scoreB} 分`],
-    ['今年預測', `${a.minScore} 分`, `${b.minScore} 分`],
-    ['分數差距', `${gapA>=0?'+':''}${gapA} 分`, `${gapB>=0?'+':''}${gapB} 分`],
-    ['起薪', `NT$${Math.round(a.salary/1000)}K`, `NT$${Math.round(b.salary/1000)}K`],
-    ['10年後薪資', `NT$${a.salaryGrowth[3]}K`, `NT$${b.salaryGrowth[3]}K`],
-    ['就業率', `${a.employment}%`, `${b.employment}%`],
-    ['出國比例', `${a.overseas}%`, `${b.overseas}%`],
-    ['AI 風險', `${a.aiRisk}%`, `${b.aiRisk}%`],
-    ['AI 衝擊評估', a.aiImpact, b.aiImpact],
+  const scores=getScores();
+  const [a,b]=compareList.map(i=>allMatches[i]);
+  const scoreA=calcWeightedScore(a,scores); const scoreB=calcWeightedScore(b,scores);
+  const gapA=scoreA-a.minScore; const gapB=scoreB-b.minScore;
+  const rows=[
+    ['採計科目',getSubjectLabel(a.subjects),getSubjectLabel(b.subjects)],
+    ['加權總分',`${scoreA} 分`,`${scoreB} 分`],
+    ['今年預測',`${a.minScore} 分`,`${b.minScore} 分`],
+    ['分數差距',`${gapA>=0?'+':''}${gapA} 分`,`${gapB>=0?'+':''}${gapB} 分`],
+    ['起薪',`NT$${Math.round(a.salary/1000)}K`,`NT$${Math.round(b.salary/1000)}K`],
+    ['10年後薪資',`NT$${a.salaryGrowth[3]}K`,`NT$${b.salaryGrowth[3]}K`],
+    ['就業率',`${a.employment}%`,`${b.employment}%`],
+    ['出國比例',`${a.overseas}%`,`${b.overseas}%`],
+    ['AI 風險',`${a.aiRisk}%`,`${b.aiRisk}%`],
+    ['AI 衝擊評估',a.aiImpact,b.aiImpact],
   ];
-  const tableRows = rows.map(([label,va,vb])=>`
-    <tr>
-      <td style="padding:8px 10px;font-size:12px;font-family:var(--font-mono);color:var(--text3);border-bottom:1px solid var(--border)">${label}</td>
-      <td style="padding:8px 12px;font-size:13px;border-bottom:1px solid var(--border);font-weight:500">${va}</td>
-      <td style="padding:8px 12px;font-size:13px;border-bottom:1px solid var(--border);font-weight:500">${vb}</td>
-    </tr>`).join('');
-  document.getElementById('compare-body').innerHTML = `
+  const tableRows=rows.map(([label,va,vb])=>`<tr>
+    <td style="padding:8px 10px;font-size:12px;font-family:var(--font-mono);color:var(--text3);border-bottom:1px solid var(--border)">${label}</td>
+    <td style="padding:8px 12px;font-size:13px;border-bottom:1px solid var(--border);font-weight:500">${va}</td>
+    <td style="padding:8px 12px;font-size:13px;border-bottom:1px solid var(--border);font-weight:500">${vb}</td>
+  </tr>`).join('');
+  document.getElementById('compare-body').innerHTML=`
     <div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:0">
       <div style="padding:12px 10px;background:var(--bg3);font-size:11px;font-family:var(--font-mono);color:var(--text3);border-bottom:1px solid var(--border)">指標</div>
       <div style="padding:12px;background:var(--accentLight);font-family:var(--font-serif);font-size:1rem;border-bottom:1px solid var(--border)">${a.major}<div style="font-size:11px;color:var(--text3);font-family:var(--font);margin-top:2px">${a.school}</div></div>
@@ -1451,7 +1407,7 @@ function openCompare(){
 function closeCompare(){ document.getElementById('compareModal').classList.remove('show'); }
 
 // ── LOADING ANIMATION ──
-const LOADING_STEPS_DATA = [
+const LOADING_STEPS_DATA=[
   {text:'比對 '+SCHOOLS_DB.length+' 所目標校系落點...', sub:'分析各校採計科目與加權公式'},
   {text:'計算個人化加權總分...', sub:'根據你的各科成績與校系要求'},
   {text:'計算 2025 產業趨勢權重...', sub:'整合人力銀行薪資資料與就業數據'},
@@ -1460,375 +1416,240 @@ const LOADING_STEPS_DATA = [
   {text:'生成 AI 個人化建議報告...', sub:'整合所有資料，撰寫專屬升學建議'},
 ];
 
-let loadingInterval = null;
-let progressInterval = null;
+let loadingInterval=null; let progressInterval=null;
 
 function startLoadingUI(){
-  const stepsEl = document.getElementById('loading-steps-list');
-  stepsEl.innerHTML = LOADING_STEPS_DATA.map((s,i)=>`
+  const stepsEl=document.getElementById('loading-steps-list');
+  stepsEl.innerHTML=LOADING_STEPS_DATA.map((s,i)=>`
     <div class="ls-item ${i===0?'active-step':''}" id="ls-${i}">
       <div class="ls-dot ${i===0?'active':'wait'}" id="lsdot-${i}">${i===0?'⟳':i+1}</div>
       <div><div>${s.text}</div><div class="ls-sub">${s.sub}</div></div>
     </div>`).join('');
-
-  let step = 0;
-  const totalSteps = LOADING_STEPS_DATA.length;
-  const stepInterval = 1800;
-
-  loadingInterval = setInterval(()=>{
-    if(step>0){
-      document.getElementById('lsdot-'+(step-1)).className='ls-dot done';
-      document.getElementById('lsdot-'+(step-1)).textContent='✓';
-      document.getElementById('ls-'+(step-1)).classList.remove('active-step');
-    }
-    if(step<totalSteps){
-      document.getElementById('lsdot-'+step).className='ls-dot active';
-      document.getElementById('lsdot-'+step).textContent='⟳';
-      document.getElementById('ls-'+step).classList.add('active-step');
-    }
-    step++;
-    if(step>totalSteps) clearInterval(loadingInterval);
-  }, stepInterval);
-
-  // Progress bar
-  let pct = 0;
-  progressInterval = setInterval(()=>{
-    pct = Math.min(92, pct+1.2);
-    document.getElementById('progress-bar').style.width = pct+'%';
-    document.getElementById('progress-pct').textContent = Math.round(pct)+'%';
+  let step=0; const totalSteps=LOADING_STEPS_DATA.length;
+  loadingInterval=setInterval(()=>{
+    if(step>0){ document.getElementById('lsdot-'+(step-1)).className='ls-dot done'; document.getElementById('lsdot-'+(step-1)).textContent='✓'; document.getElementById('ls-'+(step-1)).classList.remove('active-step'); }
+    if(step<totalSteps){ document.getElementById('lsdot-'+step).className='ls-dot active'; document.getElementById('lsdot-'+step).textContent='⟳'; document.getElementById('ls-'+step).classList.add('active-step'); }
+    step++; if(step>totalSteps) clearInterval(loadingInterval);
+  }, 1800);
+  let pct=0;
+  progressInterval=setInterval(()=>{
+    pct=Math.min(92,pct+1.2);
+    document.getElementById('progress-bar').style.width=pct+'%';
+    document.getElementById('progress-pct').textContent=Math.round(pct)+'%';
   }, 100);
 }
 
 function stopLoadingUI(){
-  clearInterval(loadingInterval);
-  clearInterval(progressInterval);
-  document.getElementById('progress-bar').style.width = '100%';
-  document.getElementById('progress-pct').textContent = '100%';
+  clearInterval(loadingInterval); clearInterval(progressInterval);
+  document.getElementById('progress-bar').style.width='100%';
+  document.getElementById('progress-pct').textContent='100%';
 }
 
-// ── TYPEWRITER EFFECT ──
+// ── TYPEWRITER ──
 function typewriterHTML(el, html, speed=12){
   return new Promise(resolve=>{
-    el.innerHTML = '';
-    const cursor = document.createElement('span');
-    cursor.className = 'type-cursor';
-    el.appendChild(cursor);
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-    const text = tempDiv.innerHTML;
-    let i = 0;
-    let skipUntil = -1;
-    const timer = setInterval(()=>{
-      if(i>=text.length){
-        clearInterval(timer);
-        cursor.remove();
-        resolve();
-        return;
-      }
-      // Handle HTML tags — skip through them instantly
-      if(text[i]==='<'){
-        let end = text.indexOf('>',i);
-        if(end!==-1){
-          const tag = text.slice(i,end+1);
-          el.insertBefore(document.createRange().createContextualFragment(tag), cursor);
-          i = end+1;
-          return;
-        }
-      }
-      el.insertBefore(document.createTextNode(text[i]), cursor);
-      i++;
+    el.innerHTML='';
+    const cursor=document.createElement('span'); cursor.className='type-cursor'; el.appendChild(cursor);
+    const text=html;
+    let i=0;
+    const timer=setInterval(()=>{
+      if(i>=text.length){ clearInterval(timer); cursor.remove(); resolve(); return; }
+      if(text[i]==='<'){ let end=text.indexOf('>',i); if(end!==-1){ el.insertBefore(document.createRange().createContextualFragment(text.slice(i,end+1)),cursor); i=end+1; return; } }
+      el.insertBefore(document.createTextNode(text[i]),cursor); i++;
     }, speed);
   });
 }
 
 // ── MAIN ANALYSIS ──
 async function runAnalysis(){
-    // 顯示全螢幕 loading
-  const loader = document.getElementById('fullscreen-loader');
-  const loaderText = document.getElementById('loader-text');
-  const loaderBar = document.getElementById('loader-bar');
-  loader.style.display = 'flex';
-  
-  const loaderSteps = [
-    [0,  10, '正在通過檢定門檻過濾...'],
+  // 1. 顯示全螢幕 loading
+  const loader=document.getElementById('fullscreen-loader');
+  const loaderText=document.getElementById('loader-text');
+  const loaderBar=document.getElementById('loader-bar');
+  loader.style.display='flex';
+  loaderBar.style.width='0%';
+
+  const loaderSteps=[
+    [0,   10, '正在通過檢定門檻過濾...'],
     [800, 45, '計算倍率篩選排序...'],
-    [1800, 80, '對比 113 年最低倍率決勝分...'],
+    [1800,80, '對比 113 年最低倍率決勝分...'],
   ];
-  loaderSteps.forEach(([delay, pct, text]) => {
-    setTimeout(() => {
-      loaderText.textContent = text;
-      loaderBar.style.width = pct + '%';
-    }, delay);
+  loaderSteps.forEach(([delay,pct,text])=>{
+    setTimeout(()=>{ loaderText.textContent=text; loaderBar.style.width=pct+'%'; }, delay);
   });
-  const scores = getScores();
-  lastScores = scores;
 
-  // Collect profile
-  const activeTraits = selTraits.join('、');
-  const activeInts = [...document.querySelectorAll('.tg-btn.active')].map(b=>b.textContent.trim()).join('、');
-  const name = document.getElementById('name').value || '同學';
-  const schoolPref = document.getElementById('school-pref').value;
-
-  lastProfile = {name, traits:activeTraits, interests:activeInts, schoolPref, weights};
+  const scores=getScores();
+  const name=document.getElementById('name').value||'同學';
+  const schoolPref=document.getElementById('school-pref').value;
+  const activeTraits=selTraits.join('、');
+  const activeInts=[...document.querySelectorAll('.tg-btn.active')].map(b=>b.textContent.trim()).join('、');
+  lastProfile={name, traits:activeTraits, interests:activeInts, schoolPref, weights};
 
   // Disable btn
-  document.getElementById('analyzeBtn').disabled = true;
-  document.getElementById('btn-text').style.display = 'none';
-  document.getElementById('btn-spinner').style.display = 'block';
+  document.getElementById('analyzeBtn').disabled=true;
+  document.getElementById('btn-text').style.display='none';
+  document.getElementById('btn-spinner').style.display='block';
 
-  // Show loading
-  document.getElementById('results-empty').style.display = 'none';
-  document.getElementById('results-content').style.display = 'none';
-  document.getElementById('loading-state').style.display = 'block';
+  // Show results panel with loading state
+  const resPanel=document.getElementById('results-panel');
+  resPanel.style.display='block';
+  document.getElementById('results-content').style.display='none';
+  document.getElementById('loading-state').style.display='block';
 
-  // Draw radar preview during loading
-  setTimeout(()=>drawRadar('radarCanvas', scores, true), 400);
-
+  setTimeout(()=>drawRadar('radarCanvas',scores,true), 400);
   startLoadingUI();
 
   // --- Calculate matches locally ---
-  const enriched = SCHOOLS_DB.map(entry=>{
-    const userScore = calcWeightedScore(entry, scores);
-    const gap = userScore - entry.minScore;
-    return {...entry, userScore, gap};
+  const enriched=SCHOOLS_DB.map(entry=>{
+    const userScore=calcWeightedScore(entry,scores);
+    const gap=userScore-entry.minScore;
+    return {...entry,userScore,gap};
   });
 
-  // Filter: only show schools where user has the required subjects
-  const valid = enriched.filter(entry=>{
-    const s = entry.subjects;
+  const valid=enriched.filter(entry=>{
+    const s=entry.subjects;
     if(s.matA && scores.matA===0) return false;
     if(s.matB && scores.matB===0) return false;
     if(s.soc && scores.soc===0) return false;
     return true;
   });
 
-  // Sort by gap (descending), then by weights
-  valid.sort((a,b)=>{
-    let scoreA = a.gap;
-    let scoreB = b.gap;
-    // Adjust by user priorities
-    if(weights.salary>50) scoreA += (a.salary-40000)/5000; scoreB += (b.salary-40000)/5000;
-    return scoreB - scoreA;
-  });
+  valid.sort((a,b)=>b.gap-a.gap);
+  const topMatches=valid.slice(0,12);
+  allMatches=topMatches;   // ← 儲存全部落點
+  lastMatches=topMatches;
 
-  const topMatches = valid.slice(0,10);
-  lastMatches = topMatches;
+  const safe=topMatches.filter(m=>m.gap>=2).length;
+  const edge=topMatches.filter(m=>m.gap>=-2&&m.gap<2).length;
+  const reach=topMatches.filter(m=>m.gap<-2).length;
 
-  const safe = topMatches.filter(m=>m.gap>=2).length;
-  const edge = topMatches.filter(m=>m.gap>=-2&&m.gap<2).length;
-  const reach = topMatches.filter(m=>m.gap<-2).length;
+  const scoresSummary=`國文${scores.chi} 英文${scores.eng} 數A${scores.matA} 自然${scores.sci}${scores.matB?' 數B'+scores.matB:''}${scores.soc?' 社會'+scores.soc:''}`;
+  const matchSummary=topMatches.slice(0,5).map(m=>`${m.school}${m.major}（差${m.gap}分，起薪${Math.round(m.salary/1000)}K）`).join('、');
+  currentFollowupContext=`學生成績：${scoresSummary}，已推薦志願：${matchSummary}`;
 
-  // Build AI prompt
-  const scoresSummary = `國文${scores.chi} 英文${scores.eng} 數A${scores.matA} 自然${scores.sci}${scores.matB?' 數B'+scores.matB:''}${scores.soc?' 社會'+scores.soc:''}`;
-  const matchSummary = topMatches.slice(0,5).map(m=>`${m.school}${m.major}（差${m.gap}分，起薪${Math.round(m.salary/1000)}K）`).join('、');
-  const traitsSummary = [activeTraits, activeInts].filter(Boolean).join('；');
-  currentFollowupContext = `學生成績：${scoresSummary}，已推薦志願：${matchSummary}`;
-
-  const aiPrompt = `你是台灣頂尖升學顧問，請用繁體中文回覆。
-
+  const aiPrompt=`你是台灣頂尖升學顧問，請用繁體中文回覆。
 學生資料：
 - 姓名：${name}
 - 學測成績：${scoresSummary}（15級分制）
-- 個人特質：${traitsSummary||'未填寫'}
-- 優先考量：薪資${weights.salary}%、穩定${weights.stable}%、興趣${weights.interest}%、出國${weights.abroad}%
+- 個人特質：${[activeTraits,activeInts].filter(Boolean).join('；')||'未填寫'}
+- 優先考量：薪資${weights.salary}%、穩定${weights.stable}%、興趣${weights.interest}%
 
 落點分析結果：
 - 穩上：${safe}個、邊緣：${edge}個、衝刺：${reach}個
 - 代表性志願：${matchSummary}
 
-請提供一份500字以內的精簡分析報告，包含：
+請提供500字以內精簡分析報告：
 1. 整體落點評估（2句話）
 2. 最推薦的3個志願及理由（考慮AI衝擊、薪資、學生特質）
-3. 一個特別提醒（例如某科系AI風險、或某學校的特殊優勢）
+3. 一個特別提醒
 4. 一句鼓勵的話
 
-格式：直接用中文段落，不要用英文，不要太長，要簡潔有力。`;
+格式：直接用中文段落，簡潔有力。`;
 
-  // Call backend proxy (compatible with your existing server)
   try {
-    // Try /analyze endpoint first (your existing backend)
-    const proxyPayload = {
-      scores: {
-        '國文': scores.chi, '英文': scores.eng, '數學': scores.matA,
-        '自然': scores.sci, '社會': scores.soc,
-        ...(scores.matB>0?{'數乙':scores.matB}:{})
-      },
-      profile: {
-        name, strengths: activeTraits, interests: activeInts,
-        出國意願: abroad, 偏好: Object.entries(weights).filter(([k,v])=>v>60).map(([k])=>k).join('、'),
-        custom_prompt: aiPrompt
-      }
-    };
-
-    const res = await fetch(`${API_BASE}/analyze`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(proxyPayload)
+    const res=await fetch(`${API_BASE}/analyze`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        scores:{國文:scores.chi,英文:scores.eng,數學:scores.matA,自然:scores.sci,社會:scores.soc,...(scores.matB>0?{數乙:scores.matB}:{})},
+        profile:{name,strengths:activeTraits,interests:activeInts,custom_prompt:aiPrompt}
+      })
     });
-    const data = await res.json();
-    if(data.status !== 'success') throw new Error(data.message||'分析失敗');
-
-    // Use AI result from backend, fallback to local match data
-    const aiText = data.result || generateLocalAIText(topMatches, name, scoresSummary);
-    lastAIText = aiText;
-    await showResults(scores, topMatches, safe, edge, reach, aiText);
-  } catch(err) {
-    // Graceful fallback with local analysis
-    const fallbackText = generateLocalAIText(topMatches, name, scoresSummary);
-    lastAIText = fallbackText;
-    await showResults(scores, topMatches, safe, edge, reach, fallbackText);
-    notify('⚠️ AI 後端連線失敗，已使用本地分析', false);
+    const data=await res.json();
+    if(data.status!=='success') throw new Error(data.message||'分析失敗');
+    const aiText=data.result||generateLocalAIText(topMatches,name,scoresSummary);
+    lastAIText=aiText;
+    await showResults(scores,topMatches,safe,edge,reach,aiText);
+  } catch(err){
+    const fallbackText=generateLocalAIText(topMatches,name,scoresSummary);
+    lastAIText=fallbackText;
+    await showResults(scores,topMatches,safe,edge,reach,fallbackText);
+    notify('⚠️ AI 後端連線失敗，已使用本地分析',false);
   } finally {
-    loader.style.display = 'none';
-    // 結果出現後平滑捲動
-    document.getElementById('results-panel').style.display = 'block';
-    document.getElementById('results-panel').scrollIntoView({behavior:'smooth', block:'start'});
-    document.getElementById('analyzeBtn').disabled = false;
-    document.getElementById('btn-text').style.display = '';
-    document.getElementById('btn-spinner').style.display = 'none';
+    loader.style.display='none';
+    document.getElementById('analyzeBtn').disabled=false;
+    document.getElementById('btn-text').style.display='';
+    document.getElementById('btn-spinner').style.display='none';
+    resPanel.scrollIntoView({behavior:'smooth',block:'start'});
   }
 }
 
-// Local fallback analysis (no API needed)
-function generateLocalAIText(matches, name, scoresSummary){
-  const top = matches[0];
-  const safe = matches.filter(m=>m.gap>=2);
-  const best = safe[0]||matches[0];
-  const highSalary = [...matches].sort((a,b)=>b.salary-a.salary)[0];
-  const lowRisk = [...matches].sort((a,b)=>a.aiRisk-b.aiRisk)[0];
-
-  return `**${name}同學，以下是你的落點分析摘要。**
-
-你的學測成績（${scoresSummary}）共有 ${safe.length} 個穩上志願、${matches.filter(m=>m.gap>=-2&&m.gap<2).length} 個邊緣志願。整體競爭力良好，建議以穩上志願為主軸，搭配 1–2 個衝刺目標。
-
-**最推薦志願**：**${best.school} ${best.major}**，分差 ${best.gap>=0?'+':''}${best.gap} 分，起薪 ${Math.round(best.salary/1000)}K，就業率 ${best.employment}%，AI 衝擊程度低（${best.aiRisk}%），是目前分數最具性價比的選擇。
-
-**薪資潛力最高**：${highSalary.school} ${highSalary.major}（10年後預期 ${highSalary.salaryGrowth[3]}K/月），適合以薪資為首要考量的同學。
-
-**特別提醒**：${lowRisk.aiRisk<20?`**${lowRisk.major}** 受 AI 影響極小（風險 ${lowRisk.aiRisk}%），長期職涯穩定性高，是抗 AI 浪潮的優質選擇。`:`部分科系（如外文、法律）正面臨 AI 自動化衝擊，建議搭配程式設計或數據分析的輔系技能。`}
-
-加油！你的分數已具備進入優質科系的實力，接下來的重點是做好備審資料和面試準備。🎓`;
+function generateLocalAIText(matches,name,scoresSummary){
+  const safe=matches.filter(m=>m.gap>=2);
+  const best=safe[0]||matches[0];
+  const highSalary=[...matches].sort((a,b)=>b.salary-a.salary)[0];
+  const lowRisk=[...matches].sort((a,b)=>a.aiRisk-b.aiRisk)[0];
+  return `**${name}同學，以下是你的落點分析摘要。**\n\n你的學測成績（${scoresSummary}）共有 ${safe.length} 個穩上志願、${matches.filter(m=>m.gap>=-2&&m.gap<2).length} 個邊緣志願。整體競爭力良好，建議以穩上志願為主軸，搭配 1–2 個衝刺目標。\n\n**最推薦志願**：**${best.school} ${best.major}**，分差 ${best.gap>=0?'+':''}${best.gap} 分，起薪 ${Math.round(best.salary/1000)}K，就業率 ${best.employment}%，AI 衝擊程度低（${best.aiRisk}%），是目前分數最具性價比的選擇。\n\n**薪資潛力最高**：${highSalary.school} ${highSalary.major}（10年後預期 ${highSalary.salaryGrowth[3]}K/月），適合以薪資為首要考量的同學。\n\n**特別提醒**：${lowRisk.aiRisk<20?`**${lowRisk.major}** 受 AI 影響極小（風險 ${lowRisk.aiRisk}%），長期職涯穩定性高，是抗 AI 浪潮的優質選擇。`:`部分科系（如外文、法律）正面臨 AI 自動化衝擊，建議搭配程式設計或數據分析的輔系技能。`}\n\n加油！你的分數已具備進入優質科系的實力，接下來的重點是做好備審資料和面試準備。🎓`;
 }
 
 async function showResults(scores, matches, safe, edge, reach, aiText){
   stopLoadingUI();
   await new Promise(r=>setTimeout(r,500));
-  document.getElementById('loading-state').style.display = 'none';
-  document.getElementById('results-content').style.display = 'block';
+  document.getElementById('loading-state').style.display='none';
+  document.getElementById('results-content').style.display='block';
 
-  // Summary numbers
-  document.getElementById('r-safe').textContent = safe;
-  document.getElementById('r-edge').textContent = edge;
-  document.getElementById('r-reach').textContent = reach;
-  document.getElementById('result-time').textContent = new Date().toLocaleTimeString('zh-TW');
+  document.getElementById('r-safe').textContent=safe;
+  document.getElementById('r-edge').textContent=edge;
+  document.getElementById('r-reach').textContent=reach;
+  document.getElementById('result-time').textContent=new Date().toLocaleTimeString('zh-TW');
 
-  // Radar
-  setTimeout(()=>drawRadar('radarResult', scores, true), 200);
+  setTimeout(()=>drawRadar('radarResult',scores,true), 200);
 
-  // Match list
-  const ml = document.getElementById('match-list');
-  ml.innerHTML = matches.map((entry,i)=>{
-    const userScore = entry.userScore;
-    return buildMatchCard(entry, userScore, i);
-  }).join('');
+  // 預設顯示「穩上」頁籤
+  filterMatches('穩上', document.querySelector('.result-tab.safe-tab'));
 
-  // AI content with typewriter
-  const aiEl = document.getElementById('ai-content');
-  const formatted = aiText.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
-  aiEl.innerHTML = '';
+  const aiEl=document.getElementById('ai-content');
+  const formatted=aiText.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
   await typewriterHTML(aiEl, formatted, 10);
 
-  // Show followup buttons
-  document.getElementById('followup-btns').style.display = 'flex';
-
+  document.getElementById('followup-btns').style.display='flex';
   notify('✓ 分析完成！');
 }
 
-// ── FOLLOWUP QUESTIONS ──
+// ── FOLLOWUP & CHAT ──
 async function sendFollowup(question){
-  const chat = document.getElementById('chatWin');
-  chat.classList.add('open');
-  const msgs = document.getElementById('chatMsgs');
-  msgs.innerHTML += `<div class="msg user">${question}</div>`;
-  const loadEl = document.createElement('div');
-  loadEl.className = 'msg bot';
-  loadEl.innerHTML = '<span style="opacity:.5">思考中...</span>';
-  msgs.appendChild(loadEl);
-  msgs.scrollTop = msgs.scrollHeight;
-
-  const fullPrompt = `${currentFollowupContext}\n\n使用者問：${question}\n\n請用繁體中文，100字以內簡潔回答，給具體實用的建議。`;
+  const chat=document.getElementById('chatWin'); chat.classList.add('open');
+  const msgs=document.getElementById('chatMsgs');
+  msgs.innerHTML+=`<div class="msg user">${question}</div>`;
+  const loadEl=document.createElement('div'); loadEl.className='msg bot'; loadEl.innerHTML='<span style="opacity:.5">思考中...</span>';
+  msgs.appendChild(loadEl); msgs.scrollTop=msgs.scrollHeight;
+  const fullPrompt=`${currentFollowupContext}\n\n使用者問：${question}\n\n請用繁體中文，100字以內簡潔回答，給具體實用的建議。`;
   try {
-    const res = await fetch(`${API_BASE}/chat`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({message: fullPrompt})
-    });
-    const data = await res.json();
-    loadEl.textContent = data.reply || '（無回應）';
-  } catch(e){
-    loadEl.textContent = '連線失敗，請稍後再試。';
-  }
-  msgs.scrollTop = msgs.scrollHeight;
+    const res=await fetch(`${API_BASE}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:fullPrompt})});
+    const data=await res.json(); loadEl.textContent=data.reply||'（無回應）';
+  } catch(e){ loadEl.textContent='連線失敗，請稍後再試。'; }
+  msgs.scrollTop=msgs.scrollHeight;
 }
 
-// ── CHAT ──
 function toggleChat(){ document.getElementById('chatWin').classList.toggle('open'); }
 
 async function sendChat(){
-  const inp = document.getElementById('chatInp');
-  const msg = inp.value.trim();
-  if(!msg) return;
-  const msgsEl = document.getElementById('chatMsgs');
-  msgsEl.innerHTML += `<div class="msg user">${msg}</div>`;
-  inp.value = '';
-  msgsEl.scrollTop = msgsEl.scrollHeight;
-  const loadEl = document.createElement('div');
-  loadEl.className = 'msg bot';
-  loadEl.innerHTML = '<span style="opacity:.5">思考中...</span>';
-  msgsEl.appendChild(loadEl);
-  msgsEl.scrollTop = msgsEl.scrollHeight;
-
-  const context = currentFollowupContext ? `背景資料：${currentFollowupContext}\n\n` : '';
+  const inp=document.getElementById('chatInp'); const msg=inp.value.trim(); if(!msg) return;
+  const msgsEl=document.getElementById('chatMsgs');
+  msgsEl.innerHTML+=`<div class="msg user">${msg}</div>`; inp.value=''; msgsEl.scrollTop=msgsEl.scrollHeight;
+  const loadEl=document.createElement('div'); loadEl.className='msg bot'; loadEl.innerHTML='<span style="opacity:.5">思考中...</span>';
+  msgsEl.appendChild(loadEl); msgsEl.scrollTop=msgsEl.scrollHeight;
+  const context=currentFollowupContext?`背景資料：${currentFollowupContext}\n\n`:'';
   try {
-    const res = await fetch(`${API_BASE}/chat`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({message: `${context}使用者問：${msg}\n\n你是台灣升學顧問，請用繁體中文，簡潔有用地回答（150字以內）。`})
-    });
-    const data = await res.json();
-    loadEl.textContent = data.reply || '（無回應）';
-  } catch(e){
-    loadEl.textContent = '連線失敗，請稍後再試。';
-  }
-  msgsEl.scrollTop = msgsEl.scrollHeight;
+    const res=await fetch(`${API_BASE}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:`${context}使用者問：${msg}\n\n你是台灣升學顧問，請用繁體中文，簡潔有用地回答（150字以內）。`})});
+    const data=await res.json(); loadEl.textContent=data.reply||'（無回應）';
+  } catch(e){ loadEl.textContent='連線失敗，請稍後再試。'; }
+  msgsEl.scrollTop=msgsEl.scrollHeight;
 }
 
 // ── PDF EXPORT ──
 function exportPDF(){
-  const name = document.getElementById('name').value || '同學';
-  const scores = getScores();
-  const scoreText = `國文${scores.chi} 英文${scores.eng} 數A${scores.matA} 自然${scores.sci}`;
-  const matchText = lastMatches.slice(0,5).map((m,i)=>`${i+1}. ${m.school} ${m.major}（差${m.gap}分）`).join('\n');
-
-  const win = window.open('','_blank');
+  const name=document.getElementById('name').value||'同學';
+  const scores=getScores();
+  const scoreText=`國文${scores.chi} 英文${scores.eng} 數A${scores.matA} 自然${scores.sci}`;
+  const win=window.open('','_blank');
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>升志 ScoreWise 分析報告</title>
-  <style>
-    body{font-family:'Noto Sans TC',sans-serif;max-width:700px;margin:40px auto;padding:0 20px;color:#1a1714;line-height:1.8}
-    h1{font-family:serif;font-size:2rem;color:#c8502a;margin-bottom:4px}
-    .sub{color:#888;font-size:13px;margin-bottom:30px}
-    .section{margin:24px 0}
-    h2{font-family:serif;font-size:1.3rem;border-bottom:2px solid #c8502a;padding-bottom:6px;color:#1a1714}
-    table{width:100%;border-collapse:collapse;font-size:13px}
-    th{background:#f0ede6;padding:8px;text-align:left}
-    td{padding:8px;border-bottom:1px solid #eee}
-    .ai-box{background:#fff8f5;border:1.5px solid #c8502a33;border-radius:10px;padding:16px;margin-top:16px}
-    .badge{padding:2px 8px;border-radius:100px;font-size:11px}
-    .safe{background:#d1fae5;color:#065f46}.edge{background:#fef3c7;color:#92400e}.reach{background:#fee2e2;color:#991b1b}
-    .footer{margin-top:40px;font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:16px}
-  </style></head><body>
+  <style>body{font-family:'Noto Sans TC',sans-serif;max-width:700px;margin:40px auto;padding:0 20px;color:#1a1714;line-height:1.8}h1{font-family:serif;font-size:2rem;color:#c8502a;margin-bottom:4px}.sub{color:#888;font-size:13px;margin-bottom:30px}.section{margin:24px 0}h2{font-family:serif;font-size:1.3rem;border-bottom:2px solid #c8502a;padding-bottom:6px;color:#1a1714}table{width:100%;border-collapse:collapse;font-size:13px}th{background:#f0ede6;padding:8px;text-align:left}td{padding:8px;border-bottom:1px solid #eee}.ai-box{background:#fff8f5;border:1.5px solid #c8502a33;border-radius:10px;padding:16px;margin-top:16px}.footer{margin-top:40px;font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:16px}</style></head><body>
   <h1>🎓 升志 ScoreWise 分析報告</h1>
   <div class="sub">報告日期：${new Date().toLocaleDateString('zh-TW')}　·　115 學年度學測落點分析</div>
   <div class="section"><h2>👤 學生資料</h2><p>姓名：${name}　|　學測成績：${scoreText}</p></div>
   <div class="section"><h2>📊 落點校系建議</h2>
   <table><thead><tr><th>校系</th><th>採計科目</th><th>預測分數</th><th>分差</th><th>起薪</th></tr></thead><tbody>
-  ${lastMatches.slice(0,8).map(m=>`<tr><td>${m.school} ${m.major}</td><td>${getSubjectLabel(m.subjects)}</td><td>${m.minScore}</td><td>${m.gap>=0?'+':''}${m.gap}</td><td>${Math.round(m.salary/1000)}K</td></tr>`).join('')}
+  ${allMatches.slice(0,8).map(m=>`<tr><td>${m.school} ${m.major}</td><td>${getSubjectLabel(m.subjects)}</td><td>${m.minScore}</td><td>${m.gap>=0?'+':''}${m.gap}</td><td>${Math.round(m.salary/1000)}K</td></tr>`).join('')}
   </tbody></table></div>
   <div class="section"><h2>🤖 AI 升學顧問建議</h2><div class="ai-box">${lastAIText||'（請先完成分析後再下載）'}</div></div>
   <div class="footer">本報告由升志 ScoreWise AI 生成，實際落點以大學甄選委員會公告為準。建議搭配升學輔導老師諮詢。</div>
@@ -1840,11 +1661,8 @@ function exportPDF(){
 updateTotal();
 renderScoreViz();
 
-// Scroll reveal
-const obs = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'}
-  });
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'} });
 },{threshold:0.08});
 document.querySelectorAll('.section,.tl-group,.feat-card').forEach(el=>{
   el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='opacity 0.5s ease, transform 0.5s ease';
