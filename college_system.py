@@ -301,7 +301,7 @@ def get_embedding(text: str) -> np.ndarray:
         rng = np.random.default_rng(seed)
         return rng.random(768)
     res = genai.embed_content(
-        model="models/text-embedding-004",
+        model="embedding-001",
         content=text,
         task_type="retrieval_document"
     )
