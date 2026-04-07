@@ -1678,6 +1678,10 @@ async function runAnalysis(){
     await showResults(scores, topMatches, safe, edge, reach, fallbackText);
     notify('⚠️ AI 後端連線失敗，已使用本地分析', false);
   } finally {
+    loader.style.display = 'none';
+    // 結果出現後平滑捲動
+    document.getElementById('results-panel').style.display = 'block';
+    document.getElementById('results-panel').scrollIntoView({behavior:'smooth', block:'start'});
     document.getElementById('analyzeBtn').disabled = false;
     document.getElementById('btn-text').style.display = '';
     document.getElementById('btn-spinner').style.display = 'none';
