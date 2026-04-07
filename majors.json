@@ -42,7 +42,7 @@
 {"school": "國立成功大學", "major": "醫學檢驗生物技術學系", "group": "醫藥", "salary_median": "80萬", "thresholds": {"自然": 14, "英文": 13}, "multipliers": {"自然": 2, "英文": 1, "化學": 1}, "last_year_cutoff_by_subject": {"自然": 15}},
 {"school": "國立成功大學", "major": "藥學系", "group": "醫藥", "salary_median": "100萬", "thresholds": {"自然": 15, "英文": 14, "數學A": 14}, "multipliers": {"自然": 2, "英文": 1.5, "數學A": 1}, "last_year_cutoff_by_subject": {"自然": 15}},
 {"school": "國立成功大學", "major": "生物科學與科技學院學士學位學程", "group": "農學", "salary_median": "75萬", "thresholds": {"自然": 13, "英文": 13}, "multipliers": {"自然": 2, "英文": 1.5}, "last_year_cutoff_by_subject": {"自然": 14}},
-{"school": "國立成功大學", "major": "生物科技與產業科學學系", "group": "農學", "salary_median": "80萬", "thresholds": {"自然": 14, "英文": 13}, "multipliers": {"自然": 2, "英文": 1.5}, "last_year_cutoff_by_subject": {"自然": 15}}
+{"school": "國立成功大學", "major": "生物科技與產業科學學系", "group": "農學", "salary_median": "80萬", "thresholds": {"自然": 14, "英文": 13}, "multipliers": {"自然": 2, "英文": 1.5}, "last_year_cutoff_by_subject": {"自然": 15}},
    
 {"school": "國立臺灣大學", "major": "數學系", "group": "理學", "salary_median": "90萬", "thresholds": {"數學A": 14, "英文": 12}, "multipliers": {"數學A": 3, "自然": 3, "英文": 3}, "last_year_cutoff_by_subject": {"數學A": 15}},
     {"school": "國立臺灣大學", "major": "物理學系", "group": "理學", "salary_median": "100萬", "thresholds": {"數學A": 14, "自然": 14}, "multipliers": {"數學A": 3, "自然": 3, "英文": 3}, "last_year_cutoff_by_subject": {"自然": 15}},
