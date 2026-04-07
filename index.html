@@ -258,13 +258,33 @@ input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(200,80,4
 .sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center}
 .sum-num{font-family:var(--font-serif);font-size:2.2rem;line-height:1}
 .sum-label{font-size:11px;color:var(--text3);margin-top:4px;font-family:var(--font-mono)}
-.sum-num.green{color:var(--green)}
-.sum-num.amber{color:var(--amber)}
-.sum-num.red{color:var(--red)}
-
-.match-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.4rem}
-.match-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.2rem;transition:all .2s;cursor:default}
-.match-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.sum-num.green {
+  color: var(--green);
+}
+.sum-num.amber {
+  color: var(--amber);
+}
+.sum-num.red {
+  color: var(--red);
+}
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 1.4rem;
+}
+.match-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem 1.2rem;
+  transition: all .2s;
+  cursor: default;
+}
+.match-card:hover {
+  border-color: var(--border2);
+  box-shadow: var(--shadow);
+}
 .mc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
 .mc-name{font-family:var(--font-serif);font-size:1rem;margin-bottom:1px}
 .mc-school{font-size:12px;color:var(--text2)}
@@ -751,9 +771,9 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
         </div>
         <div id="results-content" style="display:none">
           <div class="summary-row">
-            <div class="sum-card"><div class="sum-num green" id="r-safe">0</div><div class="sum-label">穩上志願</div></div>
-            <div class="sum-card"><div class="sum-num amber" id="r-edge">0</div><div class="sum-label">邊緣志願</div></div>
-            <div class="sum-card"><div class="sum-num red" id="r-reach">0</div><div class="sum-label">衝刺志願</div></div>
+            <div class="sum-card"><div class="sum-num green" id="r-safe">0</div><div class="sum-label">穩上（決勝 ≥+2）</div>
+            <div class="sum-card"><div class="sum-num amber" id="r-edge">0</div><div class="sum-label">目標（決勝 ±1）</div>
+            <div class="sum-card"><div class="sum-num red" id="r-reach">0</div><div class="sum-label">衝刺（決勝 -2~-3）</div>
           </div>
           <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:var(--font-mono)">// 符合落點科系</div>
           <div class="match-list" id="match-list"></div>
@@ -1476,89 +1496,101 @@ async function runAnalysis(){
       const sc=m.safety==='穩上'?'safe':m.safety==='邊緣'?'edge':'reach';
       const oc=m.industry_outlook==='正面'?'var(--green)':m.industry_outlook==='負面'?'var(--red)':'var(--amber)';
       const careers=(m.career||[]).map(c=>`<span class="ctag">${c}</span>`).join('');
-      const gapStr=m.gap>=0?`+${m.gap}`:`${m.gap}`;
+            // 建立篩選關卡視覺化
+      function buildFilterStages(m) {
+        if (!m.multipliers) return '';
+        
+        // 依倍率從大到小排序（高倍率先篩）
+        const sorted = Object.entries(m.multipliers)
+          .sort((a, b) => b[1] - a[1]);  // 倍率大的排前面
+        
+        return sorted.map(([subj, mult], idx) => {
+          const studentScore = m.student_scores?.[subj] ?? '—';
+          const cutoff = m.cutoff_by_subject?.[subj] ?? '—';
+          const isTiebreak = (subj === m.tiebreak_subject);
+          const passed = typeof studentScore === 'number' && typeof cutoff === 'number'
+            ? studentScore >= cutoff : null;
+          
+          const stageLabel = isTiebreak ? '決勝關' : `第${idx+1}關`;
+          const passIcon = passed === true ? '✓' : passed === false ? '✗' : '—';
+          const passColor = passed === true ? 'var(--green)' : passed === false ? 'var(--red)' : 'var(--text3)';
+          
+          return `
+            <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+              <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3);width:36px">${stageLabel}</span>
+              <span style="font-size:11px;color:var(--text2);flex:1">${subj} ×${mult}</span>
+              <span style="font-family:var(--font-mono);font-size:11px">你：<strong>${studentScore}</strong></span>
+              <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">線：${cutoff}</span>
+              <span style="color:${passColor};font-weight:600;font-size:13px">${passIcon}</span>
+              ${isTiebreak ? '<span style="font-size:9px;background:var(--accentLight);color:var(--accent);padding:1px 5px;border-radius:3px;font-family:var(--font-mono)">決勝</span>' : ''}
+            </div>
+          `;
+        }).join('');
+      }
       const sal=m.salary_avg?`NT$${Math.round(m.salary_avg/1000)}K`:'—';
-      ml.innerHTML+=`<div class="match-card">
+      ml.innerHTML = '';
+(data.matches || []).slice(0, 8).forEach(m => {
+    const sc = m.safety === '穩上' ? 'safe' : m.safety === '邊緣' ? 'edge' : 'reach';
+    const oc = m.industry_outlook === '正面' ? 'var(--green)' : m.industry_outlook === '負面' ? 'var(--red)' : 'var(--amber)';
+    const careers = (m.career || []).map(c => `<span class="ctag">${c}</span>`).join('');
+    
+    // 計算分數差距（如果你前面沒定義 gapStr，這裡補上）
+    const gapStr = m.diff >= 0 ? `+${m.diff}` : m.diff;
+
+    // 建立篩選關卡視覺化
+    function buildFilterStages(m) {
+        if (!m.multipliers) return '';
+        const sorted = Object.entries(m.multipliers).sort((a, b) => b[1] - a[1]);
+        
+        return sorted.map(([subj, mult], idx) => {
+            const studentScore = m.student_scores?.[subj] ?? '—';
+            const cutoff = m.cutoff_by_subject?.[subj] ?? '—';
+            const isTiebreak = (subj === m.tiebreak_subject);
+            const passed = typeof studentScore === 'number' && typeof cutoff === 'number'
+                ? studentScore >= cutoff : null;
+            
+            const stageLabel = isTiebreak ? '決勝關' : `第${idx + 1}關`;
+            const passIcon = passed === true ? '✓' : passed === false ? '✗' : '—';
+            const passColor = passed === true ? 'var(--green)' : passed === false ? 'var(--red)' : 'var(--text3)';
+            
+            return `
+                <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+                    <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3);width:36px">${stageLabel}</span>
+                    <span style="font-size:11px;color:var(--text2);flex:1">${subj} ×${mult}</span>
+                    <span style="font-family:var(--font-mono);font-size:11px">你：<strong>${studentScore}</strong></span>
+                    <span style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">線：${cutoff}</span>
+                    <span style="color:${passColor};font-weight:600;font-size:13px">${passIcon}</span>
+                    ${isTiebreak ? '<span style="font-size:9px;background:var(--accentLight);color:var(--accent);padding:1px 5px;border-radius:3px;font-family:var(--font-mono)">決勝</span>' : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    const sal = m.salary_avg ? `NT$${Math.round(m.salary_avg / 1000)}K` : '—';
+    
+    // 渲染卡片內容
+    ml.innerHTML += `<div class="match-card">
         <div class="mc-top">
-          <div><div class="mc-name">${m.major}</div><div class="mc-school">${m.school}</div></div>
-          <div class="mc-right"><span class="badge ${sc}">${m.safety}</span><span class="gap-num">${gapStr} 分差</span></div>
+            <div>
+                <div class="mc-name">${m.major}</div>
+                <div class="mc-school">${m.school}</div>
+            </div>
+            <div class="mc-right">
+                <span class="badge ${sc}">${m.safety}</span>
+                <span class="gap-num" title="決勝科目級分差">${gapStr}</span>
+            </div>
         </div>
         <div class="mc-stats">
-          <div class="mc-stat"><span style="color:${oc}">●</span> 產業 ${m.industry_outlook}</div>
-          <div class="mc-stat">💰 ${sal} 起薪</div>
-          <div class="mc-stat">📊 就業率 ${m.employment_rate||'—'}%</div>
-          ${m.overseas_ratio?`<div class="mc-stat">✈️ 出國 ${m.overseas_ratio}%</div>`:''}
+            <div class="mc-stat"><span style="color:${oc}">●</span> 產業 ${m.industry_outlook}</div>
+            <div class="mc-stat">💰 ${sal} 起薪</div>
+            <div class="mc-stat">📊 就業率 ${m.employment_rate || '—'}%</div>
+            ${m.overseas_ratio ? `<div class="mc-stat">✈️ 出國 ${m.overseas_ratio}%</div>` : ''}
+        </div>
+        <div style="margin:8px 0;border:1px solid var(--border);border-radius:6px;overflow:hidden;padding:0 8px">
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--text3);padding:5px 0 3px">// 倍率篩選關卡（高→低）</div>
+            ${buildFilterStages(m)}
         </div>
         <div class="career-tags">${careers}</div>
-        ${m.notes?`<div style="font-size:11px;color:var(--text3);margin-top:6px">💡 ${m.notes}</div>`:''}
-      </div>`;
-    });
-
-    // Smooth reveal of AI content
-    const aiContent=document.getElementById('ai-content');
-    aiContent.style.opacity='0';
-    aiContent.innerHTML=data.result||'（無 AI 分析結果）';
-    requestAnimationFrame(()=>{
-      aiContent.style.transition='opacity 0.6s ease';
-      aiContent.style.opacity='1';
-    });
-
-    document.getElementById('result-time').textContent=new Date().toLocaleTimeString('zh-TW');
-    notify('✓ 分析完成！');
-  }catch(err){
-    clearInterval(loadInterval);clearTimeout(advanceTimer);
-    document.getElementById('ai-content').innerHTML=`<div style="color:var(--red);font-size:13px;padding:1rem 0">⚠️ ${err.message}<br><span style="color:var(--text3);font-size:12px;margin-top:4px;display:block">請確認後端 API 狀態，或稍後再試。</span></div>`;
-    notify('⚠️ '+err.message,false);
-  }finally{
-    document.getElementById('analyzeBtn').disabled=false;
-    document.getElementById('btn-text').style.display='';
-    document.getElementById('btn-spinner').style.display='none';
-  }
-}
-
-function toggleChat(){document.getElementById('chatWin').classList.toggle('open')}
-
-async function sendChat(){
-  const inp=document.getElementById('chatInp');
-  const msg=inp.value.trim();
-  if(!msg)return;
-  const msgsEl=document.getElementById('chatMsgs');
-  msgsEl.innerHTML+=`<div class="msg user">${msg}</div>`;
-  inp.value='';msgsEl.scrollTop=msgsEl.scrollHeight;
-  const loadEl=document.createElement('div');
-  loadEl.className='msg bot';loadEl.innerHTML='<span style="opacity:.5">思考中...</span>';
-  msgsEl.appendChild(loadEl);msgsEl.scrollTop=msgsEl.scrollHeight;
-  try{
-    const res=await fetch(`${API_BASE}/chat`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({message:msg})
-    });
-    const data=await res.json();
-    loadEl.textContent=data.reply||'（無回應）';
-  }catch(e){
-    loadEl.textContent='連線失敗，請確認後端狀態。';
-  }
-  msgsEl.scrollTop=msgsEl.scrollHeight;
-}
-
-// Init
-updateTotal();
-renderScoreViz();
-
-// Fade-in on scroll
-const obs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'}
-  });
-},{threshold:0.08});
-document.querySelectorAll('.section,.tl-group,.feat-card').forEach(el=>{
-  el.style.opacity='0';el.style.transform='translateY(20px)';
-  el.style.transition='opacity 0.5s ease, transform 0.5s ease';
-  obs.observe(el);
-});
-// Don't hide analyzer wrap
-document.querySelector('#analyzer-wrap').style.opacity='1';
-document.querySelector('#analyzer-wrap').style.transform='none';
-</script>
-</body>
-</html>
+        ${m.notes ? `<div style="font-size:11px;color:var(--text3);margin-top:6px">💡 ${m.notes}</div>` : ''}
+    </div>`;
+}); 
