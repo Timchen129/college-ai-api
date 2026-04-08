@@ -207,7 +207,13 @@ def calculate_combined_pr(scores: dict) -> int:
 def match_majors(scores: dict, min_gap: int = -3) -> list:
     """
     scores 的 key 格式與 majors.json 一致：數學A、數學B、國文…等。
-    每個科系比對決勝科目 gap，並附上詳細的各科對比資訊。
+
+    修改說明（v2）：
+    - 移除所有 continue 跳過邏輯（類組、學校、分數門檻皆不直接排除）。
+    - 改以 is_preferred 標記「完全符合」者（所有門檻皆達標）。
+    - status 四分法：安全(>=2)、目標(0~2)、挑戰(-2~0)、困難(<-2)。
+    - 回傳結果優先依 is_preferred 置頂，次依 diff 降冪排序。
+    - 回傳 JSON 包含 is_preferred、diff 與更新後的 status 欄位。
     """
     results = []
 
@@ -219,13 +225,19 @@ def match_majors(scores: dict, min_gap: int = -3) -> list:
         # 過濾出學生有分數且倍率 > 0 的科目
         active = {s: w for s, w in multipliers.items() if w > 0 and s in scores}
         if not active:
+            # 學生完全沒有該科系所需科目的成績 → 仍納入，標記為非偏好
+            # 無法計算決勝差值，gap 設為 None，略過此筆
             continue
 
-        # STEP 1：門檻過濾（學生沒填的科目視為 0 → 直接淘汰有該門檻的科系）
-        if any(scores.get(subj, 0) < req for subj, req in thresholds.items()):
-            continue
+        # ── is_preferred 判斷：門檻全部達標才為 True ──
+        # 學生未填寫的科目視為 0，門檻不達標則 is_preferred = False（但不 continue）
+        passes_threshold = all(
+            scores.get(subj, 0) >= req
+            for subj, req in thresholds.items()
+        )
+        is_preferred = passes_threshold
 
-        # STEP 2：決勝科目 gap（最低倍率 → 最後篩選）
+        # ── 決勝科目計算（最低倍率科目中，取差值最小者）──
         min_mult = min(active.values())
         tiebreak_subjects = [s for s, w in active.items() if w == min_mult]
 
@@ -233,7 +245,7 @@ def match_majors(scores: dict, min_gap: int = -3) -> list:
         tiebreak_subject = None
         for subj in tiebreak_subjects:
             student_val = scores.get(subj, 0)
-            cutoff_val = cutoff_map.get(subj)
+            cutoff_val  = cutoff_map.get(subj)
             if cutoff_val is None:
                 continue
             g = student_val - cutoff_val
@@ -241,13 +253,31 @@ def match_majors(scores: dict, min_gap: int = -3) -> list:
                 gap = g
                 tiebreak_subject = subj
 
-        if gap is None or gap < min_gap:
+        # 無法取得決勝差值 → 略過
+        if gap is None:
             continue
 
-        # STEP 3：安全分類
-        if gap >= 2:
+        # 差距過大（超出顯示意義）的衝刺志願才略過
+        if gap < min_gap:
+            continue
+
+        # ── diff：決勝科目差值（與 gap 相同，語義更明確）──
+        diff = gap
+
+        # ── status 四分法 ──
+        if diff >= 2:
+            status = "安全"
+        elif diff >= 0:
+            status = "目標"
+        elif diff >= -2:
+            status = "挑戰"
+        else:
+            status = "困難"
+
+        # ── safety（前端沿用的三分法標籤，維持相容）──
+        if diff >= 2:
             safety = "穩上"
-        elif gap >= -1:
+        elif diff >= -1:
             safety = "目標"
         else:
             safety = "衝刺"
@@ -257,75 +287,88 @@ def match_majors(scores: dict, min_gap: int = -3) -> list:
         for subj in multipliers:
             if multipliers[subj] > 0:
                 student_val = scores.get(subj, 0)
-                cutoff_val = cutoff_map.get(subj)
+                cutoff_val  = cutoff_map.get(subj)
                 subject_detail[subj] = {
-                    "student": student_val,
-                    "cutoff": cutoff_val,
-                    "gap": (student_val - cutoff_val) if cutoff_val is not None else None,
-                    "multiplier": multipliers[subj],
+                    "student":     student_val,
+                    "cutoff":      cutoff_val,
+                    "gap":         (student_val - cutoff_val) if cutoff_val is not None else None,
+                    "multiplier":  multipliers[subj],
                     "is_tiebreak": (subj == tiebreak_subject),
                 }
 
-        # 薪資解析（年薪萬元 → 月薪估算）
-        salary_year = parse_salary_median(m.get("salary_median", 0))
+        # 薪資解析（保留原始 raw 字串，月薪估算備用）
+        salary_year    = parse_salary_median(m.get("salary_median", 0))
         salary_monthly = round(salary_year * 10000 / 12) if salary_year else 0
 
         combined_pr = calculate_combined_pr({s: scores.get(s, 0) for s in active})
 
         results.append({
-            "school":              m["school"],
-            "major":               m["major"],
-            "group":               m.get("group", ""),
-            "tiebreak_subject":    tiebreak_subject,
-            "tiebreak_multiplier": min_mult,
-            "student_tiebreak_score": scores.get(tiebreak_subject, 0) if tiebreak_subject else 0,
-            "cutoff_tiebreak_score":  cutoff_map.get(tiebreak_subject) if tiebreak_subject else None,
-            "gap":                 gap,
-            "safety":              safety,
-            "subject_detail":      subject_detail,    # 關鍵：各科比對詳情
-            "multipliers":         multipliers,
-            "salary_year_wan":     salary_year,        # 年薪萬元
-            "salary_monthly":      salary_monthly,     # 月薪（用於顯示）
-            "salary_median_raw":   m.get("salary_median", "—"),
-            "career":              m.get("career", []),
-            "industry_outlook":    m.get("industry_outlook", "穩定"),
-            "ai_impact":           m.get("ai_impact", "未知"),
-            "notes":               m.get("notes", ""),
-            "overseas_ratio":      m.get("overseas_ratio", 0),
-            "license_required":    m.get("license_required", False),
-            "double_major_friendly": m.get("double_major_friendly", True),
-            "employment_rate":     m.get("employment_rate", 0),
-            "combined_pr":         combined_pr,
-            "school_is_national":  "國立" in m["school"],
-            "school_region":       school_region(m["school"]),
+            # ── 核心欄位 ──
+            "school":                  m["school"],
+            "major":                   m["major"],
+            "group":                   m.get("group", ""),
+            "is_preferred":            is_preferred,          # ★ 完全符合門檻旗標
+            "diff":                    diff,                   # ★ 決勝科目差值
+            "status":                  status,                 # ★ 四分法狀態
+            "safety":                  safety,                 # 前端三分法相容欄位
+            # ── 決勝科目詳情 ──
+            "tiebreak_subject":        tiebreak_subject,
+            "tiebreak_multiplier":     min_mult,
+            "student_tiebreak_score":  scores.get(tiebreak_subject, 0) if tiebreak_subject else 0,
+            "cutoff_tiebreak_score":   cutoff_map.get(tiebreak_subject) if tiebreak_subject else None,
+            "gap":                     gap,                    # 與 diff 相同，保留相容
+            "subject_detail":          subject_detail,
+            "multipliers":             multipliers,
+            # ── 薪資 ──
+            "salary_year_wan":         salary_year,
+            "salary_monthly":          salary_monthly,
+            "salary_median_raw":       m.get("salary_median", "—"),
+            # ── 其他資訊 ──
+            "career":                  m.get("career", []),
+            "industry_outlook":        m.get("industry_outlook", "穩定"),
+            "ai_impact":               m.get("ai_impact", "未知"),
+            "notes":                   m.get("notes", ""),
+            "overseas_ratio":          m.get("overseas_ratio", 0),
+            "license_required":        m.get("license_required", False),
+            "double_major_friendly":   m.get("double_major_friendly", True),
+            "employment_rate":         m.get("employment_rate", 0),
+            "combined_pr":             combined_pr,
+            "school_is_national":      "國立" in m["school"],
+            "school_region":           school_region(m["school"]),
         })
 
-    results.sort(key=lambda x: x["gap"], reverse=True)
+    # ── 排序：is_preferred 置頂（True=0, False=1），次依 diff 降冪 ──
+    results.sort(key=lambda x: (0 if x["is_preferred"] else 1, -x["diff"]))
     return results
 
 
 def sort_by_school_pref(matches: list, pref: str) -> list:
     """
-    學校偏好：不過濾，只調整排序分數。
-    符合偏好的排在前面，其他仍然顯示。
+    學校偏好二次排序（不過濾，不改變 is_preferred 置頂邏輯）。
+    排序優先級：① is_preferred 置頂 → ② 符合學校偏好 → ③ diff 降冪
     """
     if pref == "any":
+        # 僅依 is_preferred 置頂 + diff 降冪（match_majors 已做，直接回傳）
         return matches
 
-    def pref_score(m: dict) -> int:
+    def sort_key(m: dict) -> tuple:
         school = m["school"]
+        # is_preferred 置頂（True → 0, False → 1）
+        pref_tier = 0 if m.get("is_preferred", False) else 1
+        # 學校偏好符合（符合 → 0，不符合 → 1）
         if pref == "top3":
-            return 0 if school in TOP_SCHOOLS else 1
+            school_tier = 0 if school in TOP_SCHOOLS else 1
         elif pref == "north":
-            return 0 if m["school_region"] == "north" else 1
+            school_tier = 0 if m["school_region"] == "north" else 1
         elif pref == "south":
-            return 0 if m["school_region"] == "south" else 1
+            school_tier = 0 if m["school_region"] == "south" else 1
         elif pref == "national":
-            return 0 if m["school_is_national"] else 1
-        return 0
+            school_tier = 0 if m["school_is_national"] else 1
+        else:
+            school_tier = 0
+        return (pref_tier, school_tier, -m["diff"])
 
-    # 穩定排序：先按偏好，再維持原本的 gap 排序
-    return sorted(matches, key=lambda m: (pref_score(m), -m["gap"]))
+    return sorted(matches, key=sort_key)
 
 # ============================================================
 # Markdown → HTML
@@ -533,7 +576,7 @@ def analyze():
 
         matches = match_majors(scores, min_gap=-3)
 
-        # 套用學校偏好排序（非過濾）
+        # 套用學校偏好二次排序（在 is_preferred 置頂基礎上再細排）
         school_pref = profile.get("school_pref", "any")
         matches = sort_by_school_pref(matches, school_pref)
 
@@ -546,14 +589,20 @@ def analyze():
                     "或嘗試放寬到更多科系。</p>"
                 ),
                 "matches": [],
-                "summary": {"total": 0, "safe": 0, "target": 0, "reach": 0}
+                "summary": {"total": 0, "safe": 0, "target": 0, "challenge": 0, "hard": 0}
             })
 
+        # summary 使用 status 四分法計數
         summary = {
-            "total":  len(matches),
-            "safe":   sum(1 for m in matches if m["safety"] == "穩上"),
-            "target": sum(1 for m in matches if m["safety"] == "目標"),
-            "reach":  sum(1 for m in matches if m["safety"] == "衝刺"),
+            "total":     len(matches),
+            "safe":      sum(1 for m in matches if m["status"] == "安全"),
+            "target":    sum(1 for m in matches if m["status"] == "目標"),
+            "challenge": sum(1 for m in matches if m["status"] == "挑戰"),
+            "hard":      sum(1 for m in matches if m["status"] == "困難"),
+            # 前端三分法相容欄位
+            "穩上":      sum(1 for m in matches if m["safety"] == "穩上"),
+            "目標":      sum(1 for m in matches if m["safety"] == "目標"),
+            "衝刺":      sum(1 for m in matches if m["safety"] == "衝刺"),
         }
 
         ai_result = generate_advice(profile, matches)
