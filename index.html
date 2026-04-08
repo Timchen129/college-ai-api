@@ -197,25 +197,26 @@ input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(200,80,4
 .badge.target{background:var(--amberL);color:var(--amber)}
 .badge.reach{background:var(--redL);color:var(--red)}
 
-/* ── 安全區間視覺化（新設計）── */
+/* ── 安全區間視覺化 ── */
 .safety-band{margin:10px 0 6px;background:var(--bg3);border-radius:var(--r);padding:10px 12px}
 .sb-title{font-size:10px;font-family:var(--font-mono);color:var(--text3);margin-bottom:8px;letter-spacing:0.04em}
-.sb-subject-row{margin-bottom:8px}
+.sb-subject-row{margin-bottom:9px}
 .sb-subject-row:last-child{margin-bottom:0}
-.sb-tiebreak-row{background:rgba(200,80,42,0.04);border-left:2px solid var(--accent);padding-left:6px;border-radius:3px;margin-left:-6px}
-.sb-subj-wrap{display:flex;align-items:center;gap:5px;margin-bottom:4px}
-.sb-subj{font-size:11px;color:var(--text2);font-weight:500}
-.sb-mult{font-size:9px;font-family:var(--font-mono);color:var(--text3);margin-left:auto}
-.sb-bars{display:flex;flex-direction:column;gap:3px}
-.sb-bar-track{position:relative;height:10px;background:var(--surface);border-radius:4px;overflow:visible}
-.sb-bar-yours{height:100%;border-radius:4px 0 0 4px;transition:width 0.5s cubic-bezier(.16,1,.3,1);position:relative}
-.sb-cutoff-line{position:absolute;top:-3px;width:2px;height:16px;background:var(--text3);border-radius:1px}
-.sb-bar-labels{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10px}
-.sb-gap-badge{font-family:var(--font-mono);font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;margin-left:auto}
+.sb-tiebreak-row{background:rgba(200,80,42,0.05);border-left:2px solid var(--accent);padding-left:6px;border-radius:0 4px 4px 0;margin-left:-8px;padding-right:2px}
+.sb-row-top{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.sb-subj{font-size:11px;color:var(--text);font-weight:500}
+.sb-mult{font-size:9px;font-family:var(--font-mono);color:var(--text3);background:var(--surface);padding:1px 4px;border-radius:3px}
+.sb-bar-track{position:relative;height:10px;background:var(--surface);border-radius:5px;overflow:hidden;margin-bottom:3px}
+.sb-bar-fill{height:100%;border-radius:5px;transition:width 0.55s cubic-bezier(.16,1,.3,1)}
+.sb-cutoff-marker{position:absolute;top:0;bottom:0;width:2px;background:var(--text3);opacity:0.6}
+.sb-row-bottom{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10px}
+.sb-you{color:var(--text2)}
+.sb-cut{color:var(--text3)}
+.sb-gap-badge{font-family:var(--font-mono);font-size:10px;font-weight:700;padding:1px 7px;border-radius:3px;margin-left:auto}
 .sb-gap-pos{background:var(--greenL);color:var(--green)}
 .sb-gap-neg{background:var(--redL);color:var(--red)}
 .sb-gap-zero{background:var(--amberL);color:var(--amber)}
-.sb-tiebreak-label{font-size:9px;background:var(--accentLight);color:var(--accent);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-weight:600}
+.sb-tiebreak-label{font-size:9px;background:var(--accentLight);color:var(--accent);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-weight:600;letter-spacing:0.03em}
 
 .mc-stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
 .mc-stat{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3)}
@@ -437,17 +438,17 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
       <rect x="280" y="134" width="180" height="34" rx="6" fill="rgba(200,80,42,0.2)" stroke="rgba(200,80,42,0.45)" stroke-width="1"/>
       <text x="292" y="148" fill="#e8724a" font-size="9" font-family="monospace">衝刺 -2</text>
       <text x="292" y="160" fill="white" font-size="11" font-family="sans-serif">國立成功大學 醫學系</text>
-      <text x="520" y="30" fill="rgba(255,255,255,0.4)" font-size="10" font-family="monospace">// 年薪中位數（直接取 salary_median）</text>
-      <rect x="520" y="50" width="160" height="30" rx="5" fill="rgba(200,80,42,0.2)" stroke="rgba(200,80,42,0.4)" stroke-width="1"/>
-      <text x="534" y="61" fill="rgba(255,255,255,0.5)" font-size="8" font-family="monospace">資訊工程 台大</text>
-      <text x="534" y="74" fill="#e8724a" font-size="11" font-family="monospace" font-weight="bold">160 萬/年</text>
-      <rect x="520" y="90" width="160" height="30" rx="5" fill="rgba(45,122,79,0.2)" stroke="rgba(45,122,79,0.4)" stroke-width="1"/>
-      <text x="534" y="101" fill="rgba(255,255,255,0.5)" font-size="8" font-family="monospace">電機工程 成大</text>
-      <text x="534" y="114" fill="#4a9a6a" font-size="11" font-family="monospace" font-weight="bold">150 萬/年</text>
-      <rect x="520" y="130" width="160" height="30" rx="5" fill="rgba(37,99,235,0.2)" stroke="rgba(37,99,235,0.4)" stroke-width="1"/>
-      <text x="534" y="141" fill="rgba(255,255,255,0.5)" font-size="8" font-family="monospace">醫學系 成大</text>
-      <text x="534" y="154" fill="#6a9fff" font-size="11" font-family="monospace" font-weight="bold">250 萬+/年</text>
-      <text x="520" y="185" fill="rgba(255,255,255,0.2)" font-size="9" font-family="monospace">直接顯示 majors.json salary_median</text>
+      <text x="520" y="30" fill="rgba(255,255,255,0.4)" font-size="10" font-family="monospace">// 年薪中位數（salary_median）</text>
+      <rect x="522" y="45" width="155" height="34" rx="5" fill="rgba(200,80,42,0.18)" stroke="rgba(200,80,42,0.4)" stroke-width="1"/>
+      <text x="534" y="58" fill="rgba(255,255,255,0.45)" font-size="8" font-family="monospace">資訊工程 台大</text>
+      <text x="534" y="72" fill="#e8724a" font-size="12" font-family="monospace" font-weight="bold">160 萬/年</text>
+      <rect x="522" y="88" width="155" height="34" rx="5" fill="rgba(45,122,79,0.18)" stroke="rgba(45,122,79,0.4)" stroke-width="1"/>
+      <text x="534" y="101" fill="rgba(255,255,255,0.45)" font-size="8" font-family="monospace">電機工程 成大</text>
+      <text x="534" y="115" fill="#4a9a6a" font-size="12" font-family="monospace" font-weight="bold">150 萬/年</text>
+      <rect x="522" y="131" width="155" height="34" rx="5" fill="rgba(37,99,235,0.18)" stroke="rgba(37,99,235,0.4)" stroke-width="1"/>
+      <text x="534" y="144" fill="rgba(255,255,255,0.45)" font-size="8" font-family="monospace">醫學系 成大</text>
+      <text x="534" y="158" fill="#6a9fff" font-size="12" font-family="monospace" font-weight="bold">250 萬+/年</text>
+      <text x="522" y="190" fill="rgba(255,255,255,0.2)" font-size="9" font-family="monospace">直接顯示 majors.json salary_median</text>
     </svg>
   </div>
   <div class="scroll-hint">
@@ -1037,62 +1038,59 @@ function setAbroad(v){
   document.getElementById('abroad-y').classList.toggle('active',v==='y');
 }
 
-// ── 安全區間視覺化（決勝科目差分設計）──
+// ── 安全區間視覺化 ──
 function buildSafetyBand(m) {
   const detail = m.subject_detail || {};
   if(Object.keys(detail).length === 0) return '';
 
-  // 依決勝科目優先，其次倍率由大到小
-  const sorted = Object.entries(detail)
-    .sort((a, b) => {
-      if(b[1].is_tiebreak && !a[1].is_tiebreak) return 1;
-      if(a[1].is_tiebreak && !b[1].is_tiebreak) return -1;
-      return b[1].multiplier - a[1].multiplier;
-    });
+  // 決勝科目優先，其次依倍率由大到小
+  const sorted = Object.entries(detail).sort((a, b) => {
+    if(b[1].is_tiebreak && !a[1].is_tiebreak) return 1;
+    if(a[1].is_tiebreak && !b[1].is_tiebreak) return -1;
+    return b[1].multiplier - a[1].multiplier;
+  });
 
   const rows = sorted.map(([subj, d]) => {
     const student = d.student;
     const cutoff  = d.cutoff;
     const gap     = d.gap;
     const isTb    = d.is_tiebreak;
-
     if(cutoff === null || cutoff === undefined) return '';
 
-    // 橫條圖：以 15 級為滿分，顯示你的分數 vs 錄取線
-    const pctStudent = Math.round((student / 15) * 100);
-    const pctCutoff  = Math.round((cutoff  / 15) * 100);
+    // 橫條圖：你的分數 vs 錄取線（1~15 → 0~100%）
+    const pctStudent = Math.round(((student - 1) / 14) * 100);
+    const pctCutoff  = Math.round(((cutoff  - 1) / 14) * 100);
     const barColor   = gap >= 0 ? 'var(--green)' : 'var(--red)';
+    const barOpacity = gap >= 0 ? '0.3' : '0.25';
 
-    // gap badge
+    // 差距徽章（綠色=超過 / 紅色=不足）
     let gapBadge;
     if(gap > 0)      gapBadge = `<span class="sb-gap-badge sb-gap-pos">+${gap} 超過</span>`;
     else if(gap < 0) gapBadge = `<span class="sb-gap-badge sb-gap-neg">${gap} 不足</span>`;
-    else             gapBadge = `<span class="sb-gap-badge sb-gap-zero">±0 剛好</span>`;
+    else             gapBadge = `<span class="sb-gap-badge sb-gap-zero">±0 持平</span>`;
 
-    const tbLabel = isTb ? `<span class="sb-tiebreak-label">⚔ 決勝</span>` : '';
+    const tbLabel = isTb ? `<span class="sb-tiebreak-label">⚔ 決勝科目</span>` : '';
 
     return `<div class="sb-subject-row${isTb ? ' sb-tiebreak-row' : ''}">
-      <div class="sb-subj-wrap">
+      <div class="sb-row-top">
         <span class="sb-subj">${subj}</span>
         ${tbLabel}
         <span class="sb-mult">×${d.multiplier}</span>
       </div>
-      <div class="sb-bars">
-        <div class="sb-bar-track">
-          <div class="sb-bar-yours" style="width:${pctStudent}%;background:${barColor}20;border-right:2px solid ${barColor}" title="你的分數：${student}"></div>
-          <div class="sb-cutoff-line" style="left:${pctCutoff}%" title="去年最低錄取：${cutoff}"></div>
-        </div>
-        <div class="sb-bar-labels">
-          <span style="color:${barColor};font-weight:600">你 ${student}</span>
-          <span style="color:var(--text3)">線 ${cutoff}</span>
-          ${gapBadge}
-        </div>
+      <div class="sb-bar-track">
+        <div class="sb-bar-fill" style="width:${pctStudent}%;background:${barColor};opacity:${barOpacity}"></div>
+        <div class="sb-cutoff-marker" style="left:${pctCutoff}%" title="去年最低錄取：${cutoff}"></div>
+      </div>
+      <div class="sb-row-bottom">
+        <span class="sb-you">你 <b style="color:${barColor}">${student}</b></span>
+        <span class="sb-cut">錄取線 ${cutoff}</span>
+        ${gapBadge}
       </div>
     </div>`;
   }).join('');
 
   return `<div class="safety-band">
-    <div class="sb-title">// 各科目分差分析（決勝科目優先顯示）</div>
+    <div class="sb-title">// 各科分差（決勝科目排最前）</div>
     ${rows}
   </div>`;
 }
@@ -1186,32 +1184,36 @@ async function runAnalysis(){
     ml.innerHTML = '';
     const schoolPrefVal = schoolPref !== 'any' ? schoolPref : null;
 
-    // 依偏好排序：符合偏好的排前面，其餘依原序
-    const matches = (data.matches || []).slice(0, 12);
-    const preferred = [];
-    const others    = [];
-    matches.forEach(m => {
-      const isPref = schoolPrefVal && (
-        (schoolPrefVal === 'top3'     && ['國立臺灣大學','國立清華大學','國立交通大學','國立陽明交通大學','國立成功大學'].includes(m.school)) ||
+    // 偏好排序：符合偏好的排前面，其他仍全部顯示
+    const TOP_SCHOOLS = ['國立臺灣大學','國立清華大學','國立交通大學','國立陽明交通大學','國立成功大學'];
+    const allMatches = (data.matches || []).slice(0, 12).map(m => {
+      const isPref = schoolPrefVal !== null && (
+        (schoolPrefVal === 'top3'     && TOP_SCHOOLS.includes(m.school)) ||
         (schoolPrefVal === 'north'    && m.school_region === 'north') ||
         (schoolPrefVal === 'south'    && m.school_region === 'south') ||
         (schoolPrefVal === 'national' && m.school_is_national)
       );
-      if(isPref) preferred.push({...m, _pref: true});
-      else       others.push({...m, _pref: false});
+      return {...m, _pref: isPref};
     });
-    const sortedMatches = [...preferred, ...others];
+    const prefMatches  = allMatches.filter(m => m._pref);
+    const otherMatches = allMatches.filter(m => !m._pref);
+    const sortedMatches = [...prefMatches, ...otherMatches];
 
-    // 若有偏好，在最前面加標題
-    if(preferred.length > 0) {
-      ml.innerHTML = `<div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);padding:0 0 4px;letter-spacing:0.06em">// ★ 符合偏好優先顯示（${preferred.length} 筆）</div>`;
+    // 若有偏好區，加入分段標頭
+    if(schoolPrefVal && prefMatches.length > 0) {
+      ml.innerHTML += `<div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);padding:2px 0 6px;letter-spacing:0.06em">★ 符合偏好（${prefMatches.length} 筆）</div>`;
     }
 
-    sortedMatches.forEach(m => {
+    sortedMatches.forEach((m, idx) => {
       const sc = m.safety === '穩上' ? 'safe' : m.safety === '目標' ? 'target' : 'reach';
       const isPreferred = m._pref;
 
-      // 薪資顯示：直接取 salary_median 年薪中位數
+      // 在偏好區和其他區之間插入分隔標題
+      if(idx === prefMatches.length && prefMatches.length > 0) {
+        ml.innerHTML += `<div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);padding:6px 0 4px;letter-spacing:0.06em;border-top:1px dashed var(--border);margin-top:4px">其他符合落點科系（${otherMatches.length} 筆）</div>`;
+      }
+
+      // 薪資顯示：直接取 majors.json salary_median（年薪中位數）
       let salStr = '—';
       if(m.salary_median && m.salary_median !== '—' && m.salary_median !== '') {
         salStr = m.salary_median + '/年';
@@ -1222,15 +1224,11 @@ async function runAnalysis(){
       const careers = (m.career || []).map(c => `<span class="ctag">${c}</span>`).join('');
       const safetyBand = buildSafetyBand(m);
 
-      // 在偏好區和非偏好區之間插入分隔
-      const isFirstOther = !m._pref && sortedMatches.indexOf(m) === preferred.length && preferred.length > 0;
-      const sepHtml = isFirstOther ? `<div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);padding:4px 0 2px;letter-spacing:0.06em">// 其他符合落點科系</div>` : '';
-
-      ml.innerHTML += `${sepHtml}<div class="match-card${isPreferred ? ' pref-highlight' : ''}">
+      ml.innerHTML += `<div class="match-card${isPreferred ? ' pref-highlight' : ''}">
         <div class="mc-top">
           <div>
             <div class="mc-name">${m.major}</div>
-            <div class="mc-school">${m.school}${isPreferred ? ' <span style="font-size:10px;font-family:var(--font-mono);color:var(--accent);background:var(--accentLight);padding:1px 6px;border-radius:3px;margin-left:4px">★ 偏好</span>' : ''}</div>
+            <div class="mc-school">${m.school}${isPreferred ? ' <span style="font-size:10px;font-family:var(--font-mono);color:var(--accent);background:var(--accentLight);padding:1px 6px;border-radius:3px;margin-left:3px">★ 偏好</span>' : ''}</div>
           </div>
           <div class="mc-right">
             <span class="badge ${sc}">${m.safety}</span>
