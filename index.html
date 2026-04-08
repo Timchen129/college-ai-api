@@ -175,7 +175,7 @@ input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(200,80,4
 
 /* Summary row */
 .summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.4rem}
-.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center}
+/* .sum-card 已升級為毛玻璃版本，定義見 Loading CSS 區塊 */
 .sum-num{font-family:var(--font-serif);font-size:2.2rem;line-height:1}
 .sum-label{font-size:11px;color:var(--text3);margin-top:4px;font-family:var(--font-mono)}
 .sum-num.green{color:var(--green)}
@@ -183,13 +183,28 @@ input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(200,80,4
 .sum-num.red{color:var(--red)}
 
 /* Match cards */
-.match-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.4rem}
-.match-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.2rem;transition:all .2s;cursor:default}
-.match-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.match-list{display:flex;flex-direction:column;gap:10px;margin-bottom:1.4rem}
+.match-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:1rem 1.2rem;
+  transition:transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s cubic-bezier(.16,1,.3,1), opacity .25s ease, border-color .2s ease;
+  cursor:default;
+  box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,0.8) inset;
+  will-change:transform;
+  animation:cardFadeIn 0.45s ease both;
+}
+.match-card:hover{
+  border-color:var(--border2);
+  box-shadow:0 2px 4px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.09), 0 1px 0 rgba(255,255,255,0.9) inset;
+  transform:translateY(-2px) scale(1.002);
+}
 .match-card.pref-highlight{border-left:3px solid var(--accent)}
-.match-card.not-pref{opacity:0.8;border-left:3px solid #9a948c}
+.match-card.not-pref{opacity:0.78;border-left:3px solid #9a948c}
 .match-card.not-pref:hover{opacity:1}
 .related-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-family:var(--font-mono);color:var(--text3);background:var(--surface);border:1px solid var(--border2);padding:1px 6px;border-radius:3px;margin-left:4px;letter-spacing:0.03em;vertical-align:middle}
+@keyframes cardFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 .mc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
 .mc-name{font-family:var(--font-serif);font-size:1rem;margin-bottom:1px}
@@ -200,26 +215,35 @@ input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(200,80,4
 .badge.target{background:var(--amberL);color:var(--amber)}
 .badge.reach{background:var(--redL);color:var(--red)}
 
-/* ── 安全區間視覺化 ── */
-.safety-band{margin:10px 0 6px;background:var(--bg3);border-radius:var(--r);padding:10px 12px}
+/* ── 安全區間視覺化（莫蘭迪色系）── */
+.safety-band{
+  margin:10px 0 6px;
+  background:rgba(240,237,230,0.55);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(0,0,0,0.05);
+  border-radius:var(--r);
+  padding:10px 12px;
+}
 .sb-title{font-size:10px;font-family:var(--font-mono);color:var(--text3);margin-bottom:8px;letter-spacing:0.04em}
 .sb-subject-row{margin-bottom:9px}
 .sb-subject-row:last-child{margin-bottom:0}
-.sb-tiebreak-row{background:rgba(200,80,42,0.05);border-left:2px solid var(--accent);padding-left:6px;border-radius:0 4px 4px 0;margin-left:-8px;padding-right:2px}
+.sb-tiebreak-row{background:rgba(200,80,42,0.04);border-left:2px solid rgba(200,80,42,0.5);padding-left:6px;border-radius:0 4px 4px 0;margin-left:-8px;padding-right:2px}
 .sb-row-top{display:flex;align-items:center;gap:6px;margin-bottom:4px}
 .sb-subj{font-size:11px;color:var(--text);font-weight:500}
-.sb-mult{font-size:9px;font-family:var(--font-mono);color:var(--text3);background:var(--surface);padding:1px 4px;border-radius:3px}
-.sb-bar-track{position:relative;height:10px;background:var(--surface);border-radius:5px;overflow:visible;margin-bottom:3px}
-.sb-bar-fill{height:100%;border-radius:5px;transition:width 0.55s cubic-bezier(.16,1,.3,1);position:absolute;top:0;left:0}
-.sb-cutoff-marker{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--text2);opacity:0.75;border-radius:1px;z-index:2}
+.sb-mult{font-size:9px;font-family:var(--font-mono);color:var(--text3);background:rgba(235,231,223,0.8);padding:1px 4px;border-radius:3px}
+.sb-bar-track{position:relative;height:9px;background:rgba(215,210,200,0.5);border-radius:5px;overflow:hidden;margin-bottom:3px}
+.sb-bar-fill{height:100%;border-radius:5px;transition:width 0.6s cubic-bezier(.16,1,.3,1)}
+.sb-cutoff-marker{position:absolute;top:0;bottom:0;width:2px;background:rgba(90,86,80,0.45)}
 .sb-row-bottom{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10px}
 .sb-you{color:var(--text2)}
 .sb-cut{color:var(--text3)}
-.sb-gap-badge{font-family:var(--font-mono);font-size:10px;font-weight:700;padding:1px 7px;border-radius:3px;margin-left:auto}
-.sb-gap-pos{background:var(--greenL);color:var(--green)}
-.sb-gap-neg{background:var(--redL);color:var(--red)}
-.sb-gap-zero{background:var(--amberL);color:var(--amber)}
-.sb-tiebreak-label{font-size:9px;background:var(--accentLight);color:var(--accent);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-weight:600;letter-spacing:0.03em}
+/* 莫蘭迪 gap badge：低飽和高級色系 */
+.sb-gap-badge{font-family:var(--font-mono);font-size:10px;font-weight:600;padding:1px 8px;border-radius:3px;margin-left:auto;letter-spacing:0.02em}
+.sb-gap-pos{background:rgba(157,190,168,0.28);color:#4a7a62;border:1px solid rgba(157,190,168,0.5)}
+.sb-gap-neg{background:rgba(190,130,120,0.22);color:#8a4a42;border:1px solid rgba(190,130,120,0.45)}
+.sb-gap-zero{background:rgba(195,175,135,0.25);color:#7a6a3a;border:1px solid rgba(195,175,135,0.5)}
+.sb-tiebreak-label{font-size:9px;background:rgba(200,80,42,0.08);color:var(--accent);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-weight:600;letter-spacing:0.03em;border:1px solid rgba(200,80,42,0.2)}
 
 .mc-stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
 .mc-stat{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3)}
@@ -246,6 +270,58 @@ input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(200,80,4
 .ls-dot.active{background:var(--amberL);border:1.5px solid var(--amber);animation:pulse2 1.5s ease-in-out infinite}
 .ls-dot.wait{background:var(--bg3);color:var(--text3)}
 @keyframes pulse2{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+/* ── 骨架屏 Skeleton Screen ── */
+.skeleton-wrap{padding:.5rem 0}
+.skeleton-line{height:13px;border-radius:6px;background:linear-gradient(90deg,var(--surface) 25%,var(--bg3) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.6s ease-in-out infinite;margin-bottom:10px}
+.skeleton-line.w-full{width:100%}
+.skeleton-line.w-80{width:80%}
+.skeleton-line.w-60{width:60%}
+.skeleton-line.w-90{width:90%}
+.skeleton-line.w-70{width:70%}
+.skeleton-line.h-sm{height:10px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── 淡入過渡 ── */
+.fade-in{opacity:0;animation:fadeInContent 0.5s ease 0.05s forwards}
+@keyframes fadeInContent{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── 結果摘要卡毛玻璃 ── */
+.sum-card{
+  background:rgba(255,255,255,0.7);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(0,0,0,0.07);
+  border-radius:var(--r);
+  padding:1rem;
+  text-align:center;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04);
+}
+
+/* ── Hero 插圖容器 ── */
+.hero-illus-wrap{
+  position:relative;z-index:1;
+  margin-top:3rem;
+  width:100%;
+  max-width:960px;
+  animation:fadeUp 0.7s ease 0.45s both;
+}
+.hero-illus-wrap svg{
+  width:100%;
+  height:auto;
+  border-radius:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08),0 16px 48px rgba(0,0,0,0.1);
+  border:1px solid rgba(0,0,0,0.07);
+  display:block;
+}
+
+/* ── 空狀態插圖容器 ── */
+.empty-illus{
+  width:100%;
+  max-width:220px;
+  margin:0 auto 0.5rem;
+}
+.empty-illus svg{width:100%;height:auto;display:block}
 
 .divider{border:none;border-top:1px solid var(--border);margin:1.4rem 0}
 
@@ -406,7 +482,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
       <div class="stat-pill"><span class="stat-num">免費</span><span class="stat-label">開放使用</span></div>
     </div>
   </div>
-  <div class="hero-img-strip">
+  <div class="hero-illus-wrap">
     <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="220" viewBox="0 0 960 220" style="border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,0.08),0 8px 32px rgba(0,0,0,0.08);border:1px solid rgba(0,0,0,0.08)">
       <defs>
         <linearGradient id="heroBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="60%" stop-color="#2d4a7a"/><stop offset="100%" stop-color="#1a2d4a"/></linearGradient>
@@ -631,7 +707,31 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
       </div>
       <div class="panel-body">
         <div class="results-empty" id="results-empty">
-          <div class="empty-icon">🎓</div>
+          <!-- SVG 插圖容器：優雅縮放，適應各螢幕尺寸 -->
+          <div class="empty-illus" aria-hidden="true">
+            <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <rect width="200" height="160" rx="12" fill="rgba(240,237,230,0.6)"/>
+              <!-- 抽象書本 / 學術圖示 -->
+              <rect x="30" y="40" width="70" height="90" rx="6" fill="rgba(200,80,42,0.08)" stroke="rgba(200,80,42,0.2)" stroke-width="1.2"/>
+              <rect x="35" y="48" width="50" height="3" rx="1.5" fill="rgba(200,80,42,0.25)"/>
+              <rect x="35" y="56" width="42" height="2" rx="1" fill="rgba(0,0,0,0.1)"/>
+              <rect x="35" y="62" width="46" height="2" rx="1" fill="rgba(0,0,0,0.08)"/>
+              <rect x="35" y="68" width="38" height="2" rx="1" fill="rgba(0,0,0,0.08)"/>
+              <rect x="35" y="74" width="44" height="2" rx="1" fill="rgba(0,0,0,0.08)"/>
+              <rect x="35" y="80" width="36" height="2" rx="1" fill="rgba(0,0,0,0.06)"/>
+              <!-- 折線圖 -->
+              <rect x="112" y="40" width="60" height="55" rx="6" fill="rgba(37,99,235,0.06)" stroke="rgba(37,99,235,0.18)" stroke-width="1.2"/>
+              <polyline points="120,82 130,72 140,76 150,64 160,60 165,58" stroke="rgba(37,99,235,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="165" cy="58" r="2.5" fill="rgba(37,99,235,0.7)"/>
+              <!-- 小標籤卡 -->
+              <rect x="112" y="104" width="60" height="26" rx="5" fill="rgba(45,122,79,0.08)" stroke="rgba(45,122,79,0.2)" stroke-width="1"/>
+              <rect x="118" y="110" width="30" height="2.5" rx="1.2" fill="rgba(45,122,79,0.3)"/>
+              <rect x="118" y="116" width="22" height="2" rx="1" fill="rgba(0,0,0,0.1)"/>
+              <!-- 閃光裝飾 -->
+              <circle cx="168" cy="35" r="3" fill="rgba(200,80,42,0.15)"/>
+              <circle cx="28" cy="135" r="4" fill="rgba(37,99,235,0.08)"/>
+            </svg>
+          </div>
           <div style="font-family:var(--font-serif);font-size:1.15rem">準備好了嗎？</div>
           <div style="font-size:13px;color:var(--text3);max-width:220px;line-height:1.7">填入學測分數後按下分析，AI 在幾秒內完成完整報告</div>
           <div class="empty-steps">
@@ -642,9 +742,9 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
         </div>
         <div id="results-content" style="display:none">
           <div class="summary-row">
-            <div class="sum-card"><div class="sum-num green" id="r-safe">0</div><div class="sum-label">穩上（差距 ≥+2）</div></div>
-            <div class="sum-card"><div class="sum-num amber" id="r-target">0</div><div class="sum-label">目標（差距 -1~+1）</div></div>
-            <div class="sum-card"><div class="sum-num red" id="r-reach">0</div><div class="sum-label">衝刺（差距 -2~-3）</div></div>
+            <div class="sum-card fade-in" style="animation-delay:0s"><div class="sum-num green" id="r-safe">0</div><div class="sum-label">穩上（差距 ≥+2）</div></div>
+            <div class="sum-card fade-in" style="animation-delay:0.08s"><div class="sum-num amber" id="r-target">0</div><div class="sum-label">目標（差距 -1~+1）</div></div>
+            <div class="sum-card fade-in" style="animation-delay:0.16s"><div class="sum-num red" id="r-reach">0</div><div class="sum-label">衝刺（差距 -2~-3）</div></div>
           </div>
           <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:var(--font-mono)">// 符合落點科系（依學校偏好與差距排序）</div>
           <div class="match-list" id="match-list"></div>
@@ -1060,23 +1160,20 @@ function buildSafetyBand(m) {
     const isTb    = d.is_tiebreak;
     if(cutoff === null || cutoff === undefined) return '';
 
-    // 橫條圖：分數比例以 1~15 線性對應 0~100%
-    const pctStudent = Math.min(100, Math.max(0, Math.round(((student - 1) / 14) * 100)));
-    const pctCutoff  = Math.min(100, Math.max(0, Math.round(((cutoff  - 1) / 14) * 100)));
+    // 橫條圖：你的分數 vs 錄取線（1~15 → 0~100%）
+    const pctStudent = Math.round(((student - 1) / 14) * 100);
+    const pctCutoff  = Math.round(((cutoff  - 1) / 14) * 100);
+    // 莫蘭迪低飽和色：薄荷鼠尾草綠 / 玫瑰褪粉紅
+    const barColor   = gap >= 0 ? '#7aab8e' : '#b87c78';
+    const barOpacity = gap >= 0 ? '0.55' : '0.5';
 
-    // 進度條顏色：超過錄取線用綠色，不足用紅色，持平用琥珀
-    const barColor = gap > 0 ? 'var(--green)' : gap < 0 ? 'var(--red)' : 'var(--amber)';
-
-    // ±N 差距徽章
+    // 差距徽章（綠色=超過 / 紅色=不足）
     let gapBadge;
-    if(gap > 0)      gapBadge = `<span class="sb-gap-badge sb-gap-pos">+${gap}</span>`;
-    else if(gap < 0) gapBadge = `<span class="sb-gap-badge sb-gap-neg">${gap}</span>`;
-    else             gapBadge = `<span class="sb-gap-badge sb-gap-zero">±0</span>`;
+    if(gap > 0)      gapBadge = `<span class="sb-gap-badge sb-gap-pos">+${gap} 超過</span>`;
+    else if(gap < 0) gapBadge = `<span class="sb-gap-badge sb-gap-neg">${gap} 不足</span>`;
+    else             gapBadge = `<span class="sb-gap-badge sb-gap-zero">±0 持平</span>`;
 
-    // ⭐ 決勝標籤：僅決勝科目顯示，橘底橘字
-    const tbLabel = isTb
-      ? `<span style="font-size:9px;background:#c8502a;color:#fff;padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-weight:600;letter-spacing:0.03em;margin-left:2px">⭐ 決勝</span>`
-      : '';
+    const tbLabel = isTb ? `<span class="sb-tiebreak-label">⚔ 決勝科目</span>` : '';
 
     return `<div class="sb-subject-row${isTb ? ' sb-tiebreak-row' : ''}">
       <div class="sb-row-top">
@@ -1085,13 +1182,11 @@ function buildSafetyBand(m) {
         <span class="sb-mult">×${d.multiplier}</span>
       </div>
       <div class="sb-bar-track">
-        <!-- 彩色進度條，依學生分數比例延伸 -->
-        <div class="sb-bar-fill" style="width:${pctStudent}%;background:${barColor};opacity:0.55"></div>
-        <!-- 截距線：固定在錄取線位置 -->
-        <div class="sb-cutoff-marker" style="left:calc(${pctCutoff}% - 1px)" title="去年最低錄取：${cutoff}"></div>
+        <div class="sb-bar-fill" style="width:${pctStudent}%;background:${barColor};opacity:${barOpacity}"></div>
+        <div class="sb-cutoff-marker" style="left:${pctCutoff}%" title="去年最低錄取：${cutoff}"></div>
       </div>
       <div class="sb-row-bottom">
-        <span class="sb-you">你 <b style="color:${barColor}">${student}</b></span>
+        <span class="sb-you">你 <b style="color:${gap>=0?'#4a7a62':'#8a4a42'}">${student}</b></span>
         <span class="sb-cut">錄取線 ${cutoff}</span>
         ${gapBadge}
       </div>
@@ -1124,6 +1219,26 @@ function showLoadingSteps(){
   </div>`;
 }
 
+// ── AI 骨架屏（卡片渲染後獨立顯示）──
+function showAISkeleton(){
+  const el = document.getElementById('ai-content');
+  el.style.opacity = '1';
+  el.innerHTML = `<div class="skeleton-wrap">
+    <div class="skeleton-line w-80"></div>
+    <div class="skeleton-line w-full"></div>
+    <div class="skeleton-line w-90"></div>
+    <div class="skeleton-line w-70 h-sm"></div>
+    <div style="height:8px"></div>
+    <div class="skeleton-line w-full"></div>
+    <div class="skeleton-line w-80"></div>
+    <div class="skeleton-line w-60 h-sm"></div>
+    <div style="height:8px"></div>
+    <div class="skeleton-line w-90"></div>
+    <div class="skeleton-line w-full"></div>
+    <div class="skeleton-line w-75 h-sm"></div>
+  </div>`;
+}
+
 function advanceLoadingSteps(){
   const dots=document.querySelectorAll('.ls-dot');
   const texts=document.querySelectorAll('.ls-item span');
@@ -1141,7 +1256,7 @@ function advanceLoadingSteps(){
 
 // ── 主分析函式 ──
 async function runAnalysis(){
-  // 收集分數（key 格式與 majors.json / backend 一致，全部使用中文名稱）
+  // 收集分數（key 格式與 majors.json / backend 一致）
   const scores = {
     '國文':  +document.getElementById('s-chi').value,
     '英文':  +document.getElementById('s-eng').value,
@@ -1171,9 +1286,8 @@ async function runAnalysis(){
   document.getElementById('match-list').innerHTML = '';
   document.getElementById('result-time').textContent = '分析中...';
 
-  showLoadingSteps();
-  const loadInterval = startLoadingAnimation();
-  const advanceTimer = setTimeout(advanceLoadingSteps, 3000);
+  // 立即顯示骨架屏（AI 區塊）
+  showAISkeleton();
 
   try {
     const res  = await fetch(`${API_BASE}/analyze`, {
@@ -1181,9 +1295,9 @@ async function runAnalysis(){
       body: JSON.stringify({scores, profile})
     });
     const data = await res.json();
-    clearInterval(loadInterval); clearTimeout(advanceTimer);
     if(data.status !== 'success') throw new Error(data.message || '分析失敗');
 
+    // 卡片清單立即渲染（隱藏全域 loading）
     const s = data.summary || {};
     document.getElementById('r-safe').textContent   = s.safe   || 0;
     document.getElementById('r-target').textContent = s.target || 0;
@@ -1230,11 +1344,8 @@ async function runAnalysis(){
       // pref-highlight（橘色邊線）= 學校偏好符合
       // not-pref（灰色邊線 + 略淡）= 後端標記 is_preferred: false
       let cardClass = 'match-card';
-      if(isSchoolPref)   cardClass += ' pref-highlight';
-      if(!isBackendPref) cardClass += ' not-pref';
-
-      // not-pref 卡片額外補上 inline opacity，確保 0.8 生效
-      const cardStyle = !isBackendPref ? ' style="opacity:0.8"' : '';
+      if(isSchoolPref)        cardClass += ' pref-highlight';
+      if(!isBackendPref)      cardClass += ' not-pref';
 
       // 「相關推薦」徽章（後端 is_preferred: false 時顯示）
       const relatedBadge = !isBackendPref
@@ -1246,17 +1357,19 @@ async function runAnalysis(){
         ? `<span style="font-size:10px;font-family:var(--font-mono);color:var(--accent);background:var(--accentLight);padding:1px 6px;border-radius:3px;margin-left:3px">★ 偏好</span>`
         : '';
 
-      // 薪資顯示：直接顯示 salary_median_raw 原始文字，不做任何換算
+      // 薪資顯示：直接取 majors.json salary_median（年薪中位數）
       let salStr = '—';
-      if(m.salary_median_raw && m.salary_median_raw !== '—' && m.salary_median_raw !== '') {
-        salStr = m.salary_median_raw;
+      if(m.salary_median && m.salary_median !== '—' && m.salary_median !== '') {
+        salStr = m.salary_median + '/年';
+      } else if(m.salary_median_raw && m.salary_median_raw !== '—') {
+        salStr = m.salary_median_raw + '/年';
       }
 
       const careers = (m.career || []).map(c => `<span class="ctag">${c}</span>`).join('');
       // 安全區間橫條圖：不論 is_preferred 為何，一律正常渲染
       const safetyBand = buildSafetyBand(m);
 
-      ml.innerHTML += `<div class="${cardClass}"${cardStyle}>
+      ml.innerHTML += `<div class="${cardClass}" style="animation-delay:${idx * 0.06}s">
         <div class="mc-top">
           <div>
             <div class="mc-name">${m.major}${relatedBadge}</div>
@@ -1283,13 +1396,20 @@ async function runAnalysis(){
       ml.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--text3);font-size:13px">目前分數條件下無符合科系，請確認選考科目是否正確（數學A/B、自然、社會）</div>';
     }
 
-    document.getElementById('ai-content').innerHTML = data.result || '<p>AI 分析無回應</p>';
+    // AI 文字淡入（替換骨架屏）
+    const aiEl = document.getElementById('ai-content');
+    const aiHtml = data.result || '<p>AI 分析無回應</p>';
+    aiEl.style.opacity = '0';
+    aiEl.innerHTML = `<div class="fade-in">${aiHtml}</div>`;
+    requestAnimationFrame(() => { aiEl.style.transition='opacity 0.5s ease'; aiEl.style.opacity='1'; });
     document.getElementById('result-time').textContent = new Date().toLocaleTimeString('zh-TW');
     notify('✓ 分析完成');
 
   } catch(e) {
-    clearInterval(loadInterval); clearTimeout(advanceTimer);
-    document.getElementById('ai-content').innerHTML = `<p style="color:var(--red)">⚠️ ${e.message}</p>`;
+    const aiEl = document.getElementById('ai-content');
+    aiEl.style.opacity='0';
+    aiEl.innerHTML = `<p style="color:var(--red)">⚠️ ${e.message}</p>`;
+    requestAnimationFrame(() => { aiEl.style.transition='opacity 0.5s ease'; aiEl.style.opacity='1'; });
     document.getElementById('result-time').textContent = '分析失敗';
     notify('分析失敗：' + e.message, false);
   } finally {
