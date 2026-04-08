@@ -1258,11 +1258,13 @@ function advanceLoadingSteps(){
 async function runAnalysis(){
   // 收集分數（key 格式與 majors.json / backend 一致）
   const scores = {
-    '國文':  +document.getElementById('s-chi').value,
-    '英文':  +document.getElementById('s-eng').value,
-    '數學A': +document.getElementById('s-matA').value,
-    '自然':  +document.getElementById('s-sci').value,
-  };
+    '國文':  +document.getElementById('s-chi').value || 0,
+    '英文':  +document.getElementById('s-eng').value || 0,
+    '數學A': +document.getElementById('s-matA').value || 0,
+    '數學B': +document.getElementById('s-matB').value || 0,
+    '自然':  +document.getElementById('s-sci').value || 0,
+    '社會':  +document.getElementById('s-soc').value || 0
+}; 
   const matB = +document.getElementById('s-matB').value;
   const soc  = +document.getElementById('s-soc').value;
   if(matB > 0) scores['數學B'] = matB;
