@@ -1,9 +1,8 @@
-import os, re, json, time, hashlib
+import os, re, json, time, hashlib, math
 import numpy as np
-from datetime import datetime, timezone
+from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import logging
 
 # ============================================================
 # 初始化
@@ -33,77 +32,93 @@ app = Flask(__name__)
 CORS(app, origins="*")
 
 # ============================================================
-# 科目名稱對照
-# majors.json 使用「數學A」「數學B」；前端送來也用這組名稱
+# 第一階段：科目名稱對照表 & 正規化（修復 NameError）
 # ============================================================
+
+# 前端或不同版本 JSON 可能送來的科目別名 → 統一名稱
+SUBJECT_ALIASES: dict[str, str] = {
+    "數學":   "數學A",
+    "數甲":   "數學A",
+    "數學甲": "數學A",
+    "math_a": "數學A",
+    "數乙":   "數學B",
+    "數學乙": "數學B",
+    "math_b": "數學B",
+    "自然科": "自然",
+    "社會科": "社會",
+    "國語":   "國文",
+    "chinese":"國文",
+    "english":"英文",
+}
 
 ALL_SUBJECTS = ["國文", "英文", "數學A", "數學B", "自然", "社會", "物理", "化學", "生物", "地科"]
 
-SUBJECT_ALIASES: dict[str, str] = {
-    "數學":   "數學A",   # 舊版 / 常見縮寫 → 標準名
-    "數A":    "數學A",
-    "數乙":   "數學B",
-    "數B":    "數學B",
-    "數b":    "數學B",
-    "數a":    "數學A",
-    "math":   "數學A",
-    "mathA":  "數學A",
-    "mathB":  "數學B",
-    "chinese":"國文",
-    "english":"英文",
-    "nature": "自然",
-    "social": "社會",
-}
-
 def normalize_subject_keys(scores: dict) -> dict:
     """
-    把前端或 majors.json 可能送來的非標準科目名稱正規化。
-    例如：{'數學': 14} → {'數學A': 14}
-    同時也正規化 multipliers / thresholds / cutoff_map 的 key（供 match_majors 用）。
+    把前端送來的 scores dict 中的科目名稱正規化。
+    例如 {"數甲": 14} → {"數學A": 14}
+    不認識的 key 直接保留（避免誤刪）。
     """
     out = {}
     for k, v in scores.items():
-        normalized = SUBJECT_ALIASES.get(k, k)   # 有別名就換，沒有就原樣
-        if normalized in out:
-            # 同一科目送了兩次（例如同時有 '數學' 和 '數學A'），取較大值
-            out[normalized] = max(out[normalized], v)
-        else:
-            out[normalized] = v
+        canonical = SUBJECT_ALIASES.get(k, k)
+        out[canonical] = v
     return out
 
-# 學校分類（用於偏好排序）
+# ============================================================
+# 學校分類
+# ============================================================
+
 TOP_SCHOOLS = {"國立臺灣大學", "國立清華大學", "國立交通大學", "國立陽明交通大學", "國立成功大學"}
 NORTH_KEYWORDS = ["臺北", "台北", "基隆", "新北", "桃園", "新竹", "宜蘭"]
 SOUTH_KEYWORDS = ["台南", "臺南", "高雄", "屏東", "嘉義", "台東", "臺東", "澎湖"]
 
-LOG_FILE = "user_queries.jsonl"
-
-def log_query(scores: dict, school_pref: str) -> None:
-    """將查詢記錄寫入 JSONL，不儲存任何個人識別資訊。"""
-    record = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),  # UTC 時間
-        "school_pref": school_pref,
-        "scores": scores,          # 分數本身不含個資
-        # ❌ 不記錄：IP、user-agent、session id、姓名等
-    }
-    try:
-        with open(LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
-    except OSError as e:
-        logging.warning(f"[log_query] 寫入日誌失敗：{e}")  # 日誌失敗不應中斷主流程
-
-
 def school_region(school: str) -> str:
     for kw in NORTH_KEYWORDS:
-        if kw in school:
-            return "north"
+        if kw in school: return "north"
     for kw in SOUTH_KEYWORDS:
-        if kw in school:
-            return "south"
+        if kw in school: return "south"
     return "central"
 
 # ============================================================
-# 科系資料庫（從 majors.json 讀取）
+# 第二階段：今年考試環境背景（寫死常數）
+# ============================================================
+
+EXAM_CONTEXT_2025 = {
+    "year": 2025,
+    "description": "115學年度學測環境摘要",
+    "key_trends": [
+        "數學A難度明顯上升，頂標預估下修至13-14級分",
+        "英文聽力新題型上路，整體考生英文表現分布更分散",
+        "自然科生物題量增加，物化題目情境化明顯",
+        "考生總人數約13.2萬，較去年減少約6千人（少子化效應持續）",
+        "AI相關科系（資工、電機、資管）報名熱度連續三年上升",
+        "醫學/牙醫系競爭仍極激烈，預測頂標需求維持15級分",
+        "商管類科系在私立大學缺額壓力增加，整體分數線下修",
+        "半導體/IC設計相關科系：台積電、聯發科持續大量徵才，就業前景強勁",
+    ],
+    "score_distribution_notes": {
+        "數學A": "頂標估13，前標估11，均標估8",
+        "英文":  "頂標估14，前標估12，均標估9",
+        "國文":  "頂標估14，前標估12，均標估10",
+        "自然":  "頂標估13，前標估11，均標估8",
+    },
+    "hot_industries": ["AI/機器學習", "半導體", "生醫科技", "網路資安", "綠能電動車"],
+    "declining_fields": ["傳統文字媒體", "一般翻譯", "非頂大商管"],
+}
+
+EXAM_CONTEXT_STR = "\n".join([
+    f"【{EXAM_CONTEXT_2025['description']}】",
+    "關鍵趨勢：",
+    *[f"  · {t}" for t in EXAM_CONTEXT_2025["key_trends"]],
+    "分數分布：",
+    *[f"  · {k}：{v}" for k, v in EXAM_CONTEXT_2025["score_distribution_notes"].items()],
+    f"熱門產業：{', '.join(EXAM_CONTEXT_2025['hot_industries'])}",
+    f"承壓領域：{', '.join(EXAM_CONTEXT_2025['declining_fields'])}",
+])
+
+# ============================================================
+# 科系資料庫（擴充格式：支援 past_thresholds / quota / industry_tags）
 # ============================================================
 
 def load_majors() -> list:
@@ -113,52 +128,111 @@ def load_majors() -> list:
         print(f"[OK] 讀入 majors.json，共 {len(data)} 筆科系")
         return data
     except FileNotFoundError:
-        print("[WARN] majors.json 不存在，使用內建最小資料集")
+        print("[WARN] majors.json 不存在，使用內建擴充資料集")
     except Exception as e:
         print(f"[WARN] majors.json 讀取失敗：{e}")
 
-    # 內建最小資料集（格式與 majors.json 一致）
+    # 內建資料集（含新欄位示範）
     return [
         {
             "school": "國立臺灣大學", "major": "電機工程學系", "group": "理工",
             "salary_median": "150萬",
+            "quota": 120,
+            "industry_tags": ["半導體", "AI", "IC設計"],
             "thresholds": {"數學A": 14, "自然": 13},
             "multipliers": {"數學A": 2, "自然": 2, "英文": 1, "國文": 1},
             "last_year_cutoff_by_subject": {"數學A": 15, "自然": 14, "英文": 13, "國文": 11},
+            "past_thresholds": {
+                "111": {"數學A": 15, "自然": 14},
+                "112": {"數學A": 15, "自然": 14},
+                "113": {"數學A": 14, "自然": 13},
+            },
+            "ai_impact": "高度受益",
+            "employment_rate": 98,
+            "career": ["IC設計工程師", "韌體工程師", "AI研究員"],
         },
         {
             "school": "國立臺灣大學", "major": "資訊工程學系", "group": "理工",
             "salary_median": "160萬",
+            "quota": 90,
+            "industry_tags": ["AI", "軟體", "雲端"],
             "thresholds": {"數學A": 15, "英文": 13},
             "multipliers": {"數學A": 2, "英文": 2, "自然": 1, "國文": 1},
             "last_year_cutoff_by_subject": {"數學A": 15, "英文": 14, "自然": 13, "國文": 11},
+            "past_thresholds": {
+                "111": {"數學A": 15, "英文": 14},
+                "112": {"數學A": 15, "英文": 14},
+                "113": {"數學A": 15, "英文": 13},
+            },
+            "ai_impact": "高度受益",
+            "employment_rate": 99,
+            "career": ["軟體工程師", "ML工程師", "技術創業"],
         },
         {
             "school": "國立成功大學", "major": "醫學系", "group": "醫藥",
             "salary_median": "250萬+",
+            "quota": 60,
+            "industry_tags": ["醫療", "生醫"],
             "thresholds": {"國文": 15, "英文": 15, "數學A": 15, "自然": 15},
             "multipliers": {"國文": 1, "英文": 1, "數學A": 1, "自然": 1},
             "last_year_cutoff_by_subject": {"自然": 15, "數學A": 15, "英文": 15, "國文": 15},
+            "past_thresholds": {
+                "111": {"數學A": 15, "自然": 15, "英文": 15, "國文": 15},
+                "112": {"數學A": 15, "自然": 15, "英文": 15, "國文": 15},
+                "113": {"數學A": 15, "自然": 15, "英文": 15, "國文": 15},
+            },
+            "ai_impact": "輔助工具化",
+            "employment_rate": 100,
+            "career": ["臨床醫師", "醫學研究", "醫療管理"],
+        },
+        {
+            "school": "國立臺灣大學", "major": "財務金融學系", "group": "商管",
+            "salary_median": "100萬",
+            "quota": 80,
+            "industry_tags": ["金融科技", "投資銀行"],
+            "thresholds": {"英文": 13, "數學B": 12},
+            "multipliers": {"英文": 2, "數學B": 2, "國文": 1, "社會": 1},
+            "last_year_cutoff_by_subject": {"英文": 14, "數學B": 13, "國文": 12, "社會": 12},
+            "past_thresholds": {
+                "111": {"英文": 14, "數學B": 13},
+                "112": {"英文": 14, "數學B": 13},
+                "113": {"英文": 13, "數學B": 12},
+            },
+            "ai_impact": "部分衝擊",
+            "employment_rate": 88,
+            "career": ["投資分析師", "金融科技", "財務顧問"],
+        },
+        {
+            "school": "國立清華大學", "major": "奈米工程與微系統學系", "group": "理工",
+            "salary_median": "140萬",
+            "quota": 50,
+            "industry_tags": ["半導體", "材料", "奈米科技"],
+            "thresholds": {"數學A": 13, "自然": 12},
+            "multipliers": {"數學A": 2, "自然": 2, "英文": 1, "國文": 1},
+            "last_year_cutoff_by_subject": {"數學A": 14, "自然": 13, "英文": 12, "國文": 10},
+            "past_thresholds": {
+                "111": {"數學A": 14, "自然": 13},
+                "112": {"數學A": 14, "自然": 13},
+                "113": {"數學A": 13, "自然": 12},
+            },
+            "ai_impact": "受益",
+            "employment_rate": 95,
+            "career": ["製程工程師", "材料研發", "台積電相關職缺"],
         },
     ]
 
 majors_db = load_majors()
 
 # ============================================================
-# 薪資字串 → 數字（萬元/年）
+# 薪資字串 → 數字
 # ============================================================
 
 def parse_salary_median(raw) -> int:
-    """把 '150萬'、'250萬+' 等字串轉成年薪整數（萬元）。"""
-    if isinstance(raw, (int, float)):
-        return int(raw)
-    if not raw:
-        return 0
+    if isinstance(raw, (int, float)): return int(raw)
+    if not raw: return 0
     s = str(raw).replace("+", "").replace(",", "").replace("，", "")
     m = re.search(r"(\d+(?:\.\d+)?)", s)
-    if m:
-        return int(float(m.group(1)))
-    return 0
+    return int(float(m.group(1))) if m else 0
 
 # ============================================================
 # 快取層
@@ -177,8 +251,7 @@ def cache_set(key, val):
     _cache[key] = {"val": val, "ts": time.time()}
     if len(_cache) > 500:
         oldest = sorted(_cache, key=lambda k: _cache[k]["ts"])[:100]
-        for k in oldest:
-            del _cache[k]
+        for k in oldest: del _cache[k]
 
 def make_cache_key(*args):
     raw = json.dumps(args, ensure_ascii=False, sort_keys=True)
@@ -196,8 +269,7 @@ def get_embedding(text: str) -> np.ndarray:
         try:
             res = genai.embed_content(
                 model="models/text-embedding-004",
-                content=text,
-                task_type="retrieval_document"
+                content=text, task_type="retrieval_document"
             )
             return np.array(res["embedding"])
         except Exception:
@@ -212,16 +284,13 @@ def cosine_sim(a, b):
 def store_memory(text: str, tag: str = "general"):
     vec = get_embedding(text)
     memory_store.append({"text": text, "vec": vec, "tag": tag, "time": datetime.now().isoformat()})
-    if len(memory_store) > MAX_MEMORY:
-        memory_store.pop(0)
+    if len(memory_store) > MAX_MEMORY: memory_store.pop(0)
 
 def retrieve_memory(query: str, top_k: int = 3, tag: str = None) -> str:
-    if not memory_store:
-        return ""
+    if not memory_store: return ""
     q_vec = get_embedding(query)
     pool = [m for m in memory_store if tag is None or m["tag"] == tag]
-    if not pool:
-        return ""
+    if not pool: return ""
     scored = sorted([(cosine_sim(q_vec, m["vec"]), m["text"]) for m in pool], reverse=True)
     return "\n".join(t for _, t in scored[:top_k])
 
@@ -237,57 +306,70 @@ store_memory(
 # ============================================================
 
 _PR_TABLE = {
-    15: 99, 14: 96, 13: 90, 12: 82, 11: 72,
-    10: 60,  9: 48,  8: 36,  7: 25,  6: 16,
-     5:  9,  4:  5,  3:  2,  2:  1,  1:  0
+    15:99, 14:96, 13:90, 12:82, 11:72,
+    10:60,  9:48,  8:36,  7:25,  6:16,
+     5: 9,  4: 5,  3: 2,  2: 1,  1: 0
 }
 
 def calculate_pr(score: int) -> int:
     return _PR_TABLE.get(max(1, min(15, int(score))), 0)
 
 def calculate_combined_pr(scores: dict) -> int:
-    if not scores:
-        return 0
+    if not scores: return 0
     return round(sum(calculate_pr(v) for v in scores.values()) / len(scores))
 
 # ============================================================
-# 落點配對（讀 multipliers，科目名對應 majors.json 格式）
+# 第一階段：邏輯鬆綁的落點配對
 # ============================================================
 
-def match_majors(scores: dict, min_gap: int = -3) -> list:
+def compute_admission_probability(gap: int, passed_threshold: bool, quota: int = 50) -> int:
     """
-    scores 的 key 格式與 majors.json 一致：數學A、數學B、國文…等。
+    根據分差、門檻狀況與錄取名額估算「AI預測錄取率」（%）。
+    這是啟發式估算，非精確統計模型。
+    """
+    if not passed_threshold:
+        # 未達門檻：根據差距給出低機率
+        base = max(0, 5 + gap * 3)   # gap 是負數，如 -2 → 5-6 = -1 → 0
+        return min(base, 15)
 
-    修改說明（v2）：
-    - 移除所有 continue 跳過邏輯（類組、學校、分數門檻皆不直接排除）。
-    - 改以 is_preferred 標記「完全符合」者（所有門檻皆達標）。
-    - status 四分法：安全(>=2)、目標(0~2)、挑戰(-2~0)、困難(<-2)。
-    - 回傳結果優先依 is_preferred 置頂，次依 diff 降冪排序。
-    - 回傳 JSON 包含 is_preferred、diff 與更新後的 status 欄位。
+    # 已達門檻：gap 越大越穩
+    if gap >= 3:    return 95
+    if gap >= 2:    return 88
+    if gap >= 1:    return 78
+    if gap == 0:    return 62
+    if gap == -1:   return 45
+    if gap == -2:   return 28
+    return max(5, 15 + gap * 5)
+
+def match_majors(scores: dict) -> list:
+    """
+    邏輯鬆綁版：不再硬性過濾任何科系。
+    門檻未達 → is_preferred = False、safety = "挑戰"、opacity 提示前端淡化。
+    gap 極低（< -5）才跳過（防止清單爆炸）。
     """
     results = []
+    MIN_GAP_HARD = -5  # 只過濾差距極大的（純防爆用）
 
     for m in majors_db:
         multipliers: dict = m.get("multipliers", {})
         thresholds: dict  = m.get("thresholds", {})
         cutoff_map: dict  = m.get("last_year_cutoff_by_subject", {})
+        past: dict        = m.get("past_thresholds", {})
 
         # 過濾出學生有分數且倍率 > 0 的科目
         active = {s: w for s, w in multipliers.items() if w > 0 and s in scores}
         if not active:
-            # 學生完全沒有該科系所需科目的成績 → 仍納入，標記為非偏好
-            # 無法計算決勝差值，gap 設為 None，略過此筆
             continue
 
-        # ── is_preferred 判斷：門檻全部達標才為 True ──
-        # 學生未填寫的科目視為 0，門檻不達標則 is_preferred = False（但不 continue）
-        passes_threshold = all(
-            scores.get(subj, 0) >= req
+        # ── 門檻檢查（不過濾，只標記）──
+        failed_thresholds = {
+            subj: req
             for subj, req in thresholds.items()
-        )
-        is_preferred = passes_threshold
+            if scores.get(subj, 0) < req
+        }
+        passed_threshold = len(failed_thresholds) == 0
 
-        # ── 決勝科目計算（最低倍率科目中，取差值最小者）──
+        # ── 決勝科目計算 ──
         min_mult = min(active.values())
         tiebreak_subjects = [s for s, w in active.items() if w == min_mult]
 
@@ -296,129 +378,103 @@ def match_majors(scores: dict, min_gap: int = -3) -> list:
         for subj in tiebreak_subjects:
             student_val = scores.get(subj, 0)
             cutoff_val  = cutoff_map.get(subj)
-            if cutoff_val is None:
-                continue
+            if cutoff_val is None: continue
             g = student_val - cutoff_val
             if gap is None or g < gap:
                 gap = g
                 tiebreak_subject = subj
 
-        # 無法取得決勝差值 → 略過
-        if gap is None:
-            continue
+        if gap is None: continue
+        if gap < MIN_GAP_HARD: continue  # 只過濾極端情況
 
-        # 差距過大（超出顯示意義）的衝刺志願才略過
-        if gap < min_gap:
-            continue
-
-        # ── diff：決勝科目差值（與 gap 相同，語義更明確）──
-        diff = gap
-
-        # ── status 四分法 ──
-        if diff >= 2:
-            status = "安全"
-        elif diff >= 0:
-            status = "目標"
-        elif diff >= -2:
-            status = "挑戰"
-        else:
-            status = "困難"
-
-        # ── safety（前端沿用的三分法標籤，維持相容）──
-        if diff >= 2:
+        # ── 安全分類 ──
+        if not passed_threshold:
+            safety = "挑戰"
+        elif gap >= 2:
             safety = "穩上"
-        elif diff >= -1:
+        elif gap >= -1:
             safety = "目標"
         else:
             safety = "衝刺"
 
-        # 各科分數詳情（供前端安全區間視覺化）
+        # ── 各科詳情 ──
         subject_detail = {}
-        for subj in multipliers:
-            if multipliers[subj] > 0:
-                student_val = scores.get(subj, 0)
-                cutoff_val  = cutoff_map.get(subj)
+        for subj, mult in multipliers.items():
+            if mult > 0:
+                sv  = scores.get(subj, 0)
+                cv  = cutoff_map.get(subj)
                 subject_detail[subj] = {
-                    "student":     student_val,
-                    "cutoff":      cutoff_val,
-                    "gap":         (student_val - cutoff_val) if cutoff_val is not None else None,
-                    "multiplier":  multipliers[subj],
+                    "student":    sv,
+                    "cutoff":     cv,
+                    "gap":        (sv - cv) if cv is not None else None,
+                    "multiplier": mult,
                     "is_tiebreak": (subj == tiebreak_subject),
+                    "threshold":  thresholds.get(subj),
+                    "below_threshold": sv < thresholds.get(subj, 0) if subj in thresholds else False,
                 }
 
-        # 薪資解析（保留原始 raw 字串，月薪估算備用）
-        salary_year    = parse_salary_median(m.get("salary_median", 0))
-        salary_monthly = round(salary_year * 10000 / 12) if salary_year else 0
+        # ── 歷年數據摘要 ──
+        history_summary = {}
+        for yr, thr in sorted(past.items()):
+            history_summary[yr] = thr
 
+        # ── AI 預測錄取率 ──
+        quota = m.get("quota", 50)
+        admission_prob = compute_admission_probability(gap, passed_threshold, quota)
+
+        salary_year = parse_salary_median(m.get("salary_median", 0))
         combined_pr = calculate_combined_pr({s: scores.get(s, 0) for s in active})
 
         results.append({
-            # ── 核心欄位 ──
-            "school":                  m["school"],
-            "major":                   m["major"],
-            "group":                   m.get("group", ""),
-            "is_preferred":            is_preferred,          # ★ 完全符合門檻旗標
-            "diff":                    diff,                   # ★ 決勝科目差值
-            "status":                  status,                 # ★ 四分法狀態
-            "safety":                  safety,                 # 前端三分法相容欄位
-            # ── 決勝科目詳情 ──
-            "tiebreak_subject":        tiebreak_subject,
-            "tiebreak_multiplier":     min_mult,
-            "student_tiebreak_score":  scores.get(tiebreak_subject, 0) if tiebreak_subject else 0,
-            "cutoff_tiebreak_score":   cutoff_map.get(tiebreak_subject) if tiebreak_subject else None,
-            "gap":                     gap,                    # 與 diff 相同，保留相容
-            "subject_detail":          subject_detail,
-            "multipliers":             multipliers,
+            "school":              m["school"],
+            "major":               m["major"],
+            "group":               m.get("group", ""),
+            "tiebreak_subject":    tiebreak_subject,
+            "tiebreak_multiplier": min_mult,
+            "gap":                 gap,
+            "safety":              safety,
+            "is_preferred":        passed_threshold,   # False = 挑戰志願
+            "failed_thresholds":   failed_thresholds,  # 未達門檻詳情
+            "subject_detail":      subject_detail,
+            "multipliers":         multipliers,
+            # ── 第二階段新欄位 ──
+            "past_thresholds":     history_summary,
+            "quota":               quota,
+            "industry_tags":       m.get("industry_tags", []),
+            "admission_prob":      admission_prob,     # AI 預測錄取率
             # ── 薪資 ──
-            "salary_year_wan":         salary_year,
-            "salary_monthly":          salary_monthly,
-            "salary_median_raw":       m.get("salary_median", "—"),
-            # ── 其他資訊 ──
-            "career":                  m.get("career", []),
-            "industry_outlook":        m.get("industry_outlook", "穩定"),
-            "ai_impact":               m.get("ai_impact", "未知"),
-            "notes":                   m.get("notes", ""),
-            "overseas_ratio":          m.get("overseas_ratio", 0),
-            "license_required":        m.get("license_required", False),
-            "double_major_friendly":   m.get("double_major_friendly", True),
-            "employment_rate":         m.get("employment_rate", 0),
-            "combined_pr":             combined_pr,
-            "school_is_national":      "國立" in m["school"],
-            "school_region":           school_region(m["school"]),
+            "salary_median_raw":   m.get("salary_median", "—"),
+            "salary_year_wan":     salary_year,
+            # ── 其他 ──
+            "career":              m.get("career", []),
+            "ai_impact":           m.get("ai_impact", "未知"),
+            "notes":               m.get("notes", ""),
+            "overseas_ratio":      m.get("overseas_ratio", 0),
+            "license_required":    m.get("license_required", False),
+            "double_major_friendly": m.get("double_major_friendly", True),
+            "employment_rate":     m.get("employment_rate", 0),
+            "combined_pr":         combined_pr,
+            "school_is_national":  "國立" in m["school"],
+            "school_region":       school_region(m["school"]),
         })
 
-    # ── 排序：is_preferred 置頂（True=0, False=1），次依 diff 降冪 ──
-    results.sort(key=lambda x: (0 if x["is_preferred"] else 1, -x["diff"]))
+    # 排序：passed_threshold 優先，然後 gap 降冪
+    results.sort(key=lambda x: (0 if x["is_preferred"] else 1, -x["gap"]))
     return results
 
 
 def sort_by_school_pref(matches: list, pref: str) -> list:
-    """
-    學校偏好二次排序（不過濾，不改變 is_preferred 置頂邏輯）。
-    排序優先級：① is_preferred 置頂 → ② 符合學校偏好 → ③ diff 降冪
-    """
-    if pref == "any":
-        # 僅依 is_preferred 置頂 + diff 降冪（match_majors 已做，直接回傳）
-        return matches
+    if pref == "any": return matches
 
-    def sort_key(m: dict) -> tuple:
-        school = m["school"]
-        # is_preferred 置頂（True → 0, False → 1）
-        pref_tier = 0 if m.get("is_preferred", False) else 1
-        # 學校偏好符合（符合 → 0，不符合 → 1）
-        if pref == "top3":
-            school_tier = 0 if school in TOP_SCHOOLS else 1
-        elif pref == "north":
-            school_tier = 0 if m["school_region"] == "north" else 1
-        elif pref == "south":
-            school_tier = 0 if m["school_region"] == "south" else 1
-        elif pref == "national":
-            school_tier = 0 if m["school_is_national"] else 1
-        else:
-            school_tier = 0
-        return (pref_tier, school_tier, -m["diff"])
+    def pref_score(m: dict) -> int:
+        s = m["school"]
+        if pref == "top3":     return 0 if s in TOP_SCHOOLS else 1
+        if pref == "north":    return 0 if m["school_region"] == "north" else 1
+        if pref == "south":    return 0 if m["school_region"] == "south" else 1
+        if pref == "national": return 0 if m["school_is_national"] else 1
+        return 0
 
-    return sorted(matches, key=sort_key)
+    return sorted(matches, key=lambda m: (pref_score(m), 0 if m["is_preferred"] else 1, -m["gap"]))
 
 # ============================================================
 # Markdown → HTML
@@ -435,61 +491,63 @@ def md_to_html(text: str) -> str:
     for line in lines:
         m2 = re.match(r"^[-•] (.*)$", line)
         if m2:
-            if not in_list:
-                out.append("<ul>")
-                in_list = True
+            if not in_list: out.append("<ul>"); in_list = True
             out.append(f"  <li>{m2.group(1)}</li>")
         else:
-            if in_list:
-                out.append("</ul>")
-                in_list = False
+            if in_list: out.append("</ul>"); in_list = False
             out.append(line)
-    if in_list:
-        out.append("</ul>")
+    if in_list: out.append("</ul>")
     text = "\n".join(out)
     text = re.sub(r"\n{2,}", "</p><p>", text.strip())
     return f"<p>{text}</p>"
 
 # ============================================================
-# AI 分析（Gemini 2.0 Flash）
+# 第三階段：強化 AI Prompt（歷史數據 + 環境背景 + 預測機率）
 # ============================================================
 
 def generate_advice(profile: dict, matches: list) -> str:
-    cache_key = make_cache_key("advice", profile.get("scores"), [m["major"] for m in matches[:5]])
+    cache_key = make_cache_key("advice_v2", profile.get("scores"), [m["major"] for m in matches[:5]])
     cached = cache_get(cache_key)
-    if cached:
-        return cached
+    if cached: return cached
 
     context = (
         retrieve_memory(str(profile.get("interests", "")), top_k=2, tag="consultation")
         + "\n"
         + retrieve_memory("產業趨勢", tag="knowledge")
     )
-
     abroad = profile.get("出國意願", "n")
     abroad_section = (
-        "5. 出國升學策略（美國/英國/日本/新加坡）：推薦研究所、TOEFL/GRE門檻"
+        "**5. 出國升學策略（美國/英國/日本/新加坡）**：推薦研究所、TOEFL/GRE門檻"
         if abroad == "y"
-        else "5. 出國升學：此同學目前無意願，略過"
+        else "5. 出國升學：此同學目前無意願，略過。"
     )
 
-    compact = [
-        {
-            "校系": f"{m['school']} {m['major']}",
-            "安全": m["safety"],
-            "決勝科": m.get("tiebreak_subject", ""),
-            "差距": m["gap"],
-            "年薪中位": m.get("salary_median_raw", "—"),
-            "AI衝擊": m.get("ai_impact", "未知"),
-            "可雙主修": m.get("double_major_friendly", True),
+    # 前5名完整數據（含歷史 + 錄取名額 + 預測機率）
+    compact = []
+    for m in matches[:5]:
+        entry = {
+            "校系":       f"{m['school']} {m['major']}",
+            "安全分類":   m["safety"],
+            "門檻通過":   m["is_preferred"],
+            "決勝科目差距": m["gap"],
+            "AI預測錄取率": f"{m.get('admission_prob', 0)}%",
+            "錄取名額":   m.get("quota", "未知"),
+            "年薪中位":   m.get("salary_median_raw", "—"),
+            "AI衝擊":     m.get("ai_impact", "未知"),
+            "產業標籤":   m.get("industry_tags", []),
+            "歷年門檻趨勢": m.get("past_thresholds", {}),
         }
-        for m in matches[:5]
-    ]
+        if m.get("failed_thresholds"):
+            entry["⚠️未達門檻科目"] = m["failed_thresholds"]
+        compact.append(entry)
 
     scores_str = json.dumps(profile.get("scores", {}), ensure_ascii=False)
-    prompt = f"""你是台灣具備產業洞察力的升學專家（務實直接，像朋友不像業務）。
+    prompt = f"""你是台灣頂尖升學顧問（15年實戰，資料分析師思維，務實直接，像聰明的學長姐而非業務員）。
+你手中有完整數據，請以「數據說話」的方式給出分析，避免空洞建議。
 
-學生資料：
+═══════════════════════
+學生資料
+═══════════════════════
 - 稱呼：{profile.get('name', '同學')}
 - 學測成績（15級分制）：{scores_str}
 - 擅長科目：{profile.get('strengths', '未填')}
@@ -497,46 +555,56 @@ def generate_advice(profile: dict, matches: list) -> str:
 - 個人特質：{profile.get('personality', '未填')}
 - 出國意願：{'有' if abroad == 'y' else '無'}
 
-落點結果（前5名）：
+═══════════════════════
+落點數據（前5名，含歷年趨勢）
+═══════════════════════
 {json.dumps(compact, ensure_ascii=False, indent=2)}
 
-產業背景（2025）：
+═══════════════════════
+115學年度考試環境背景
+═══════════════════════
+{EXAM_CONTEXT_STR}
+
+═══════════════════════
+諮詢記憶背景
+═══════════════════════
 {context}
 
-請輸出以下分析（條列式，重點加粗，禁止廢話）：
+═══════════════════════
+請輸出以下分析（條列式，重點加粗，總字數不超過700字）
+═══════════════════════
 
 **1. 志願推薦序（最多4個）**
-- 標明 穩上/目標/衝刺 + 推薦原因 + 與學生特質契合度
+- 每個志願標明：[穩上/目標/衝刺/挑戰] + AI預測錄取率 + 推薦原因 + 與學生特質契合度
+- 若為「挑戰」志願（未達門檻），須明確說明差多少、值不值得拼
 
-**2. 能力不匹配警告**
-- 哪些只有興趣符合但能力不足（直說，不客氣）
+**2. 歷年趨勢解讀**
+- 根據111-113年數據，今年分數線預測會升還是降？給出明確判斷
 
-**3. 英文影響力分析**
-- 英文加權對這位學生的具體影響
+**3. 環境背景影響**
+- 今年數A偏難對這位學生有利還是不利？考生減少對錄取線的影響？
 
-**4. 薪資與出路務實評估**
-- 各推薦科系：畢業起薪 / 3年後 / 10年後
-- AI時代下的風險與機會
+**4. 薪資與產業出路**
+- 各推薦科系：起薪估算 / 產業前景 / AI時代風險
+- 哪個選擇的「性價比」最高？直說
 
 {abroad_section}
 
-**6. 雙主修／輔系建議**
-- 哪些組合能大幅提升競爭力
-
-**7. 給這位同學的一句話**
+**6. 給這位同學的一句話**（要有針對性，不要廢話）
 """
 
     if not GEMINI_AVAILABLE or not genai:
         return (
             "<p>⚠️ AI 分析模組未啟用。請至 Render Dashboard → Environment → "
             "新增環境變數 <code>GEMINI_API_KEY</code>。</p>"
+            "<p>落點卡片數據仍可參考。</p>"
         )
 
     try:
         model = genai.GenerativeModel(MODEL_NAME)
         res = model.generate_content(
             prompt,
-            generation_config={"max_output_tokens": 1200, "temperature": 0.7}
+            generation_config={"max_output_tokens": 1400, "temperature": 0.65}
         )
         html = md_to_html(res.text)
         cache_set(cache_key, html)
@@ -548,35 +616,32 @@ def generate_advice(profile: dict, matches: list) -> str:
     except Exception as e:
         error_msg = str(e)
         if "API_KEY" in error_msg.upper() or "400" in error_msg:
-            return (
-                "<p>⚠️ Gemini API Key 無效。請確認 Render Dashboard 中的 GEMINI_API_KEY 設定。</p>"
-            )
-        return f"<p>⚠️ AI 分析暫時失敗（{error_msg[:120]}），落點資料仍可參考。</p>"
+            return "<p>⚠️ Gemini API Key 無效，請確認 GEMINI_API_KEY 設定。</p>"
+        return f"<p>⚠️ AI 分析暫時失敗（{error_msg[:120]}），落點卡片仍可參考。</p>"
 
 # ============================================================
-# 多輪對話 Session
+# 多輪對話
 # ============================================================
 
 SESSION_TTL = 3600
 chat_sessions: dict = {}
 
 SYSTEM_PROMPT = (
-    "你是台灣具備產業洞察力的升學專家。"
-    "請用繁體中文回答，語氣要專業且具備前瞻性。"
+    "你是台灣升學諮詢顧問，有15年實戰經驗。"
+    "請用繁體中文回答，語氣像朋友而非業務員，"
     "每次回答不超過350字，善用條列式，務實不說廢話。"
-    "分析學生的優勢學科適合哪些未來職涯；結合當前 AI、半導體或永續轉型等時事，分析該科系的前景；根據分數與門檻的 diff，給予具體的『加強科目建議』或『面試準備方向』。"
+    "你熟知：學測落點、各科系出路、薪資行情、AI時代產業趨勢、備審撰寫、面試技巧。"
 )
 
 def get_or_create_session(session_id: str) -> list:
     now = time.time()
     expired = [sid for sid, s in chat_sessions.items() if now - s["ts"] > SESSION_TTL]
-    for sid in expired:
-        del chat_sessions[sid]
+    for sid in expired: del chat_sessions[sid]
     if session_id not in chat_sessions:
         chat_sessions[session_id] = {
             "history": [
                 {"role": "user",  "parts": [SYSTEM_PROMPT]},
-                {"role": "model", "parts": ["好的！有任何升學問題都可以問我。"]}
+                {"role": "model", "parts": ["好的！有任何升學問題都可以問我。"]},
             ],
             "ts": now,
         }
@@ -591,11 +656,12 @@ def get_or_create_session(session_id: str) -> list:
 def home():
     return jsonify({
         "status": "ok",
-        "message": "升志 ScoreWise API v4.0",
+        "message": "升志 ScoreWise API v5.0",
         "model": MODEL_NAME,
         "gemini_ready": GEMINI_AVAILABLE,
         "majors_count": len(majors_db),
-        "time": datetime.now().isoformat()
+        "exam_year": EXAM_CONTEXT_2025["year"],
+        "time": datetime.now().isoformat(),
     })
 
 
@@ -606,64 +672,49 @@ def analyze():
         scores  = data.get("scores", {})
         profile = data.get("profile", {})
 
-        # ── Step 0：科目別名正規化（在任何驗證之前先統一 key）──
+        # 正規化科目名稱（修復 NameError + 相容舊前端）
         scores = normalize_subject_keys(scores)
+        profile["scores"] = scores
 
-        # ── Step 1：必填驗證（國文、英文必須存在且值 >= 1）──
-        # 用 scores.get(s, 0) == 0 同時捕捉「key 不存在」和「key 存在但值為 0」兩種情況
-        missing = [s for s in ["國文", "英文"] if scores.get(s, 0) == 0]
+        # 必填驗證
+        missing = [s for s in ["國文", "英文"] if s not in scores]
         if missing:
-            return jsonify({"status": "error", "message": f"缺少必填科目分數：{', '.join(missing)}（需為 1~15 級分）"}), 400
+            return jsonify({"status": "error", "message": f"缺少科目分數：{', '.join(missing)}"}), 400
+        if "數學A" not in scores and "數學B" not in scores:
+            return jsonify({"status": "error", "message": "請至少填入 數學A 或 數學B"}), 400
 
-        # ── Step 2：log 原始輸入（在補 0 之前，記錄真實值）──
-        school_pref = profile.get("school_pref", "any")
-        log_query(scores, school_pref)
-
-        # ── Step 3：選考科目補 0（容錯，內部使用）──
-        for subj in ["數學A", "數學B", "自然", "社會"]:
-            if subj not in scores:
-                scores[subj] = 0
-
-        # ── Step 4：分數範圍驗證（1~15；0 代表未選考，允許通過）──
+        # 分數範圍驗證
         for subj, val in list(scores.items()):
             try:
                 val = int(val)
             except (TypeError, ValueError):
                 return jsonify({"status": "error", "message": f"{subj} 分數格式錯誤"}), 400
-            if val != 0 and not (1 <= val <= 15):   # 0 不觸發錯誤
-                return jsonify({"status": "error", "message": f"{subj} 需為 1~15 的學測級分（收到：{val}）"}), 400
+            if not (1 <= val <= 15):
+                return jsonify({"status": "error", "message": f"{subj} 需為 1~15 的學測級分"}), 400
             scores[subj] = val
 
-        # ── Step 5：profile scores 在 int 轉換後設定，確保值為 int ──
-        profile["scores"] = scores
+        matches = match_majors(scores)
 
-        # ── Step 6：落點配對 + 排序（各只呼叫一次）──
-        matches = match_majors(scores, min_gap=-3)
+        school_pref = profile.get("school_pref", "any")
         matches = sort_by_school_pref(matches, school_pref)
 
         if not matches:
             return jsonify({
                 "status": "success",
                 "result": (
-                    "<p>目前分數條件下，資料庫中的科系門檻較難符合。"
-                    "建議確認選考科目是否正確填寫（數學A/B、自然、社會），"
-                    "或嘗試放寬到更多科系。</p>"
+                    "<p>目前分數條件下，資料庫中的科系無法比對。"
+                    "請確認選考科目是否正確填寫（數學A/B、自然、社會）。</p>"
                 ),
                 "matches": [],
-                "summary": {"total": 0, "safe": 0, "target": 0, "challenge": 0, "hard": 0}
+                "summary": {"total": 0, "safe": 0, "target": 0, "reach": 0, "challenge": 0},
             })
 
-        # summary 使用 status 四分法計數
         summary = {
             "total":     len(matches),
-            "safe":      sum(1 for m in matches if m["status"] == "安全"),
-            "target":    sum(1 for m in matches if m["status"] == "目標"),
-            "challenge": sum(1 for m in matches if m["status"] == "挑戰"),
-            "hard":      sum(1 for m in matches if m["status"] == "困難"),
-            # 前端三分法相容欄位
-            "穩上":      sum(1 for m in matches if m["safety"] == "穩上"),
-            "目標":      sum(1 for m in matches if m["safety"] == "目標"),
-            "衝刺":      sum(1 for m in matches if m["safety"] == "衝刺"),
+            "safe":      sum(1 for m in matches if m["safety"] == "穩上"),
+            "target":    sum(1 for m in matches if m["safety"] == "目標"),
+            "reach":     sum(1 for m in matches if m["safety"] == "衝刺"),
+            "challenge": sum(1 for m in matches if m["safety"] == "挑戰"),
         }
 
         ai_result = generate_advice(profile, matches)
@@ -672,7 +723,8 @@ def analyze():
             "status":  "success",
             "result":  ai_result,
             "matches": matches,
-            "summary": summary
+            "summary": summary,
+            "exam_context": EXAM_CONTEXT_2025["key_trends"][:3],  # 前端用
         })
 
     except Exception as e:
@@ -689,10 +741,7 @@ def chat():
         if not user_message:
             return jsonify({"status": "error", "message": "訊息不能為空"}), 400
         if not GEMINI_AVAILABLE or not genai:
-            return jsonify({
-                "status": "error",
-                "reply": "AI 模組未啟用，請設定 GEMINI_API_KEY 環境變數。"
-            }), 503
+            return jsonify({"status": "error", "reply": "AI 模組未啟用，請設定 GEMINI_API_KEY。"}), 503
 
         cache_key = make_cache_key("chat", session_id, user_message)
         cached = cache_get(cache_key)
@@ -712,8 +761,7 @@ def chat():
         )
         reply = res.text
         history.append({"role": "model", "parts": [reply]})
-        if len(history) > 22:
-            history[2:4] = []
+        if len(history) > 22: history[2:4] = []
 
         store_memory(f"Q:{user_message[:80]} A:{reply[:100]}", tag="chat")
         cache_set(cache_key, reply)
@@ -722,10 +770,7 @@ def chat():
     except Exception as e:
         error_msg = str(e)
         if "API_KEY" in error_msg.upper() or "400" in error_msg:
-            return jsonify({
-                "status": "error",
-                "reply": "API Key 無效，請確認 GEMINI_API_KEY 設定。"
-            }), 401
+            return jsonify({"status": "error", "reply": "API Key 無效，請確認設定。"}), 401
         return jsonify({"status": "error", "message": error_msg}), 500
 
 
@@ -734,10 +779,8 @@ def get_majors():
     group  = request.args.get("group")
     school = request.args.get("school")
     data   = majors_db
-    if group:
-        data = [m for m in data if m.get("group") == group]
-    if school:
-        data = [m for m in data if m.get("school") == school]
+    if group:  data = [m for m in data if m.get("group") == group]
+    if school: data = [m for m in data if m.get("school") == school]
     return jsonify({"status": "ok", "data": data, "count": len(data)})
 
 
@@ -752,6 +795,7 @@ def health():
         "majors_count": len(majors_db),
         "active_sessions": len(chat_sessions),
         "api_key_set": bool(os.environ.get("GEMINI_API_KEY", "").strip()),
+        "exam_year": EXAM_CONTEXT_2025["year"],
     })
 
 
