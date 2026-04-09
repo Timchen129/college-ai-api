@@ -442,7 +442,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
   <a class="logo" href="#">
     <div class="logo-icon">🎓</div>
     升志 ScoreWise
-    <span class="logo-beta">v1.1.1</span>
+    <span class="logo-beta">v1.1.2</span>
   </a>
   <ul class="nav-links">
     <li><a href="#analyzer-wrap">落點分析</a></li>
@@ -1265,15 +1265,15 @@ async function runAnalysis(){
   const socVal  = +document.getElementById('s-soc').value || 0;
   
   // ── Client-side 驗證：防止 0 值或無效分數送出 ──
-  const missingSubjs = [];
-  if(!chiVal  || chiVal  < 1 || chiVal  > 15) missingSubjs.push('國文');
-  if(!engVal  || engVal  < 1 || engVal  > 15) missingSubjs.push('英文');
-  if(!matAVal || matAVal < 1 || matAVal > 15) missingSubjs.push('數學A');
-  if(!sciVal  || sciVal  < 1 || sciVal  > 15) missingSubjs.push('自然');
-  if(missingSubjs.length > 0){
-    notify('請確認必考科目分數：' + missingSubjs.join('、') + '（需為 1~15 級分）', false);
-    return;
-  }
+  //const missingSubjs = [];
+  //if(!chiVal  || chiVal  < 1 || chiVal  > 15) missingSubjs.push('國文');
+  //if(!engVal  || engVal  < 1 || engVal  > 15) missingSubjs.push('英文');
+  //if(!matAVal || matAVal < 1 || matAVal > 15) missingSubjs.push('數學A');
+  //if(!sciVal  || sciVal  < 1 || sciVal  > 15) missingSubjs.push('自然');
+  //if(missingSubjs.length > 0){
+   //notify('請確認必考科目分數：' + missingSubjs.join('、') + '（需為 1~15 級分）', false);
+    //return;
+  //}
   
   const scores = {
     '國文':  chiVal,
