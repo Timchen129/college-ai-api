@@ -39,6 +39,40 @@ CORS(app, origins="*")
 
 ALL_SUBJECTS = ["國文", "英文", "數學A", "數學B", "自然", "社會", "物理", "化學", "生物", "地科"]
 
+# 科目別名正規化：將各種常見的非標準名稱統一對應到 majors.json 的標準 key
+# 前端送 '數學A'（正確），但萬一 majors.json 舊版用 '數學' 也能相容
+SUBJECT_ALIASES: dict[str, str] = {
+    "數學":   "數學A",   # 舊版 / 常見縮寫 → 標準名
+    "數A":    "數學A",
+    "數乙":   "數學B",
+    "數B":    "數學B",
+    "數b":    "數學B",
+    "數a":    "數學A",
+    "math":   "數學A",
+    "mathA":  "數學A",
+    "mathB":  "數學B",
+    "chinese":"國文",
+    "english":"英文",
+    "nature": "自然",
+    "social": "社會",
+}
+
+def normalize_subject_keys(scores: dict) -> dict:
+    """
+    把前端或 majors.json 可能送來的非標準科目名稱正規化。
+    例如：{'數學': 14} → {'數學A': 14}
+    同時也正規化 multipliers / thresholds / cutoff_map 的 key（供 match_majors 用）。
+    """
+    out = {}
+    for k, v in scores.items():
+        normalized = SUBJECT_ALIASES.get(k, k)   # 有別名就換，沒有就原樣
+        if normalized in out:
+            # 同一科目送了兩次（例如同時有 '數學' 和 '數學A'），取較大值
+            out[normalized] = max(out[normalized], v)
+        else:
+            out[normalized] = v
+    return out
+
 # 學校分類（用於偏好排序）
 TOP_SCHOOLS = {"國立臺灣大學", "國立清華大學", "國立交通大學", "國立陽明交通大學", "國立成功大學"}
 NORTH_KEYWORDS = ["臺北", "台北", "基隆", "新北", "桃園", "新竹", "宜蘭"]
@@ -238,9 +272,11 @@ def match_majors(scores: dict, min_gap: int = -3) -> list:
     results = []
 
     for m in majors_db:
-        multipliers: dict = m.get("multipliers", {})
-        thresholds: dict  = m.get("thresholds", {})
-        cutoff_map: dict  = m.get("last_year_cutoff_by_subject", {})
+        # majors.json 的 key 也可能使用非標準名稱（如 '數學' 而非 '數學A'）
+        # 統一正規化，確保與前端送來的 scores key 一致
+        multipliers: dict = normalize_subject_keys(m.get("multipliers", {}))
+        thresholds: dict  = normalize_subject_keys(m.get("thresholds", {}))
+        cutoff_map: dict  = normalize_subject_keys(m.get("last_year_cutoff_by_subject", {}))
 
         # 過濾出學生有分數（>0）且倍率 > 0 的科目
         # Fix Bug 4: score=0 代表未選考，不應計入 active；僅 score > 0 才算有效科目
@@ -580,16 +616,21 @@ def analyze():
         scores  = data.get("scores", {})
         profile = data.get("profile", {})
 
-        # 必填驗證（只驗證國文、英文）
-        missing = [s for s in ["國文", "英文"] if s not in scores]
+        # ── Step 0：科目別名正規化（在任何驗證之前先統一 key）──
+        # 處理 majors.json 舊版或使用者送來的非標準名稱（如 '數學' → '數學A'）
+        scores = normalize_subject_keys(scores)
+
+        # 必填驗證：國文、英文、至少一科主要科目（數學A 或 自然）
+        missing = [s for s in ["國文", "英文"] if s not in scores or scores[s] == 0]
         if missing:
-            return jsonify({"status": "error", "message": f"缺少科目分數：{', '.join(missing)}"}), 400
+            return jsonify({"status": "error", "message": f"缺少必填科目分數：{', '.join(missing)}（需為 1~15 級分）"}), 400
 
         # Fix Bug 12: log_query 在補 0 之前呼叫，記錄使用者實際送來的原始值
         school_pref = profile.get("school_pref", "any")
         log_query(scores, school_pref)
 
         # Fix Bug 1/2/3: 移除重複呼叫；容錯補 0 放在 log 後
+        # 補全所有可能的科目（含別名正規化後的標準名）
         OPTIONAL_SUBJECTS = ["數學A", "數學B", "自然", "社會"]
         for subj in OPTIONAL_SUBJECTS:
             if subj not in scores:
@@ -616,12 +657,15 @@ def analyze():
             return jsonify({
                 "status": "success",
                 "result": (
-                    "<p>目前分數條件下，資料庫中的科系門檻較難符合。"
-                    "建議確認選考科目是否正確填寫（數學A/B、自然、社會），"
-                    "或嘗試放寬到更多科系。</p>"
+                    "<p>目前分數條件下，資料庫中沒有符合的科系。"
+                    "可能原因：① 各科分數偏低 ② 未填寫數學A 或 自然的分數。"
+                    "建議確認必考科目（國文、英文、數學A、自然）都已正確填入。</p>"
                 ),
                 "matches": [],
-                "summary": {"total": 0, "safe": 0, "target": 0, "challenge": 0, "hard": 0}
+                "summary": {
+                    "total": 0, "safe": 0, "target": 0, "challenge": 0, "hard": 0,
+                    "穩上": 0, "目標": 0, "衝刺": 0
+                }
             })
 
         # summary 使用 status 四分法計數
