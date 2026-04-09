@@ -144,7 +144,9 @@ def cache_get(key):
 def cache_set(key, val):
     _cache[key] = {"val": val, "ts": time.time()}
     if len(_cache) > 500:
-        oldest = sorted(_cache, key=lambda k: _cache[k]["ts"])[:100]
+        # Fix Bug 9: 用 heapq.nsmallest 取最舊 100 筆，O(n) 優於全量 sort O(n log n)
+        import heapq
+        oldest = heapq.nsmallest(100, _cache, key=lambda k: _cache[k]["ts"])
         for k in oldest:
             del _cache[k]
 
@@ -240,8 +242,9 @@ def match_majors(scores: dict, min_gap: int = -3) -> list:
         thresholds: dict  = m.get("thresholds", {})
         cutoff_map: dict  = m.get("last_year_cutoff_by_subject", {})
 
-        # 過濾出學生有分數且倍率 > 0 的科目
-        active = {s: w for s, w in multipliers.items() if w > 0 and s in scores}
+        # 過濾出學生有分數（>0）且倍率 > 0 的科目
+        # Fix Bug 4: score=0 代表未選考，不應計入 active；僅 score > 0 才算有效科目
+        active = {s: w for s, w in multipliers.items() if w > 0 and scores.get(s, 0) > 0}
         if not active:
             # 學生完全沒有該科系所需科目的成績 → 仍納入，標記為非偏好
             # 無法計算決勝差值，gap 設為 None，略過此筆
@@ -301,10 +304,13 @@ def match_majors(scores: dict, min_gap: int = -3) -> list:
             safety = "衝刺"
 
         # 各科分數詳情（供前端安全區間視覺化）
+        # Fix Bug 7: 僅包含學生實際有分數（>0）的科目，避免前端顯示「你: 0」
         subject_detail = {}
         for subj in multipliers:
             if multipliers[subj] > 0:
                 student_val = scores.get(subj, 0)
+                if student_val == 0:          # 未選考科目：不加入 subject_detail
+                    continue
                 cutoff_val  = cutoff_map.get(subj)
                 subject_detail[subj] = {
                     "student":     student_val,
@@ -436,9 +442,9 @@ def generate_advice(profile: dict, matches: list) -> str:
 
     abroad = profile.get("出國意願", "n")
     abroad_section = (
-        "5. 出國升學策略（美國/英國/日本/新加坡）：推薦研究所、TOEFL/GRE門檻"
+        "**5. 出國升學策略（美國/英國/日本/新加坡）**\n- 推薦研究所、TOEFL/GRE 門檻與準備方向"
         if abroad == "y"
-        else "5. 出國升學：此同學目前無意願，略過"
+        else "**5. 出國升學**\n- 此同學目前無意願，略過"
     )
 
     compact = [
@@ -579,13 +585,15 @@ def analyze():
         if missing:
             return jsonify({"status": "error", "message": f"缺少科目分數：{', '.join(missing)}"}), 400
 
-        # ✅ 容錯：選考科目若未傳入，預設補 0（不報錯）
+        # Fix Bug 12: log_query 在補 0 之前呼叫，記錄使用者實際送來的原始值
+        school_pref = profile.get("school_pref", "any")
+        log_query(scores, school_pref)
+
+        # Fix Bug 1/2/3: 移除重複呼叫；容錯補 0 放在 log 後
         OPTIONAL_SUBJECTS = ["數學A", "數學B", "自然", "社會"]
         for subj in OPTIONAL_SUBJECTS:
             if subj not in scores:
                 scores[subj] = 0
-
-        profile["scores"] = scores  # 移到補 0 之後，確保 profile 拿到完整資料
 
         # 分數範圍驗證（1~15，但允許 0 代表「未選考」）
         for subj, val in scores.items():
@@ -597,19 +605,11 @@ def analyze():
                 return jsonify({"status": "error", "message": f"{subj} 需為 1~15 的學測級分"}), 400
             scores[subj] = val
 
-        school_pref = profile.get("school_pref", "any")
-        
-        log_query(scores, school_pref)
+        # Fix Bug 13: profile["scores"] 在 int() 轉換完成後再設定，確保拿到 int 而非原始字串
+        profile["scores"] = scores
 
+        # Fix Bug 1+3: match_majors 和 sort_by_school_pref 各只呼叫一次
         matches = match_majors(scores, min_gap=-3)
-        matches = sort_by_school_pref(matches, school_pref)
-
-        # 原本「數學A/B 至少一個」的驗證可移除，因為現在兩者都會存在（未填則為 0）
-        # match_majors 內部應以 score == 0 判斷「未選考該科」
-
-        matches = match_majors(scores, min_gap=-3)
-        # 套用學校偏好二次排序（在 is_preferred 置頂基礎上再細排）
-        school_pref = profile.get("school_pref", "any")
         matches = sort_by_school_pref(matches, school_pref)
 
         if not matches:
