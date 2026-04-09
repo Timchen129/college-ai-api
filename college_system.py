@@ -39,6 +39,38 @@ CORS(app, origins="*")
 
 ALL_SUBJECTS = ["國文", "英文", "數學A", "數學B", "自然", "社會", "物理", "化學", "生物", "地科"]
 
+SUBJECT_ALIASES: dict[str, str] = {
+    "數學":   "數學A",   # 舊版 / 常見縮寫 → 標準名
+    "數A":    "數學A",
+    "數乙":   "數學B",
+    "數B":    "數學B",
+    "數b":    "數學B",
+    "數a":    "數學A",
+    "math":   "數學A",
+    "mathA":  "數學A",
+    "mathB":  "數學B",
+    "chinese":"國文",
+    "english":"英文",
+    "nature": "自然",
+    "social": "社會",
+}
+
+def normalize_subject_keys(scores: dict) -> dict:
+    """
+    把前端或 majors.json 可能送來的非標準科目名稱正規化。
+    例如：{'數學': 14} → {'數學A': 14}
+    同時也正規化 multipliers / thresholds / cutoff_map 的 key（供 match_majors 用）。
+    """
+    out = {}
+    for k, v in scores.items():
+        normalized = SUBJECT_ALIASES.get(k, k)   # 有別名就換，沒有就原樣
+        if normalized in out:
+            # 同一科目送了兩次（例如同時有 '數學' 和 '數學A'），取較大值
+            out[normalized] = max(out[normalized], v)
+        else:
+            out[normalized] = v
+    return out
+
 # 學校分類（用於偏好排序）
 TOP_SCHOOLS = {"國立臺灣大學", "國立清華大學", "國立交通大學", "國立陽明交通大學", "國立成功大學"}
 NORTH_KEYWORDS = ["臺北", "台北", "基隆", "新北", "桃園", "新竹", "宜蘭"]
