@@ -3,461 +3,512 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>升志 ScoreWise — AI 學測落點分析</title>
-<meta name="description" content="整合歷年數據、產業趨勢、AI預測錄取率，給你最務實的學測落點分析">
+<title>升志 ScoreWise v6 — AI 學測落點分析</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ══════════════════════════════════════════════
-   Design Tokens
-══════════════════════════════════════════════ */
-:root {
-  --bg:    #f5f3ef;
-  --bg2:   #ffffff;
-  --bg3:   #edeae3;
-  --surface: #e8e4dc;
-  --border:  rgba(0,0,0,0.07);
-  --border2: rgba(0,0,0,0.13);
-  --text:  #19160f;
-  --text2: #58524c;
-  --text3: #96908a;
-  --accent:  #bf4a22;
-  --accent2: #9e3a18;
-  --accentL: rgba(191,74,34,0.09);
-
-  /* Morandi palette */
-  --sage:   #7d9e8a;
-  --sageL:  rgba(125,158,138,0.15);
-  --clay:   #b08060;
-  --clayL:  rgba(176,128,96,0.15);
-  --slate:  #7a8fa0;
-  --slateL: rgba(122,143,160,0.15);
-  --mist:   #a09080;
-  --mistL:  rgba(160,144,128,0.12);
-  --plum:   #967090;
-  --plumL:  rgba(150,112,144,0.15);
-
-  --green: #2e7a50; --greenL: rgba(46,122,80,0.1);
-  --amber: #b8720c; --amberL: rgba(184,114,12,0.1);
-  --red:   #c03828; --redL:   rgba(192,56,40,0.1);
-  --blue:  #2460e0; --blueL:  rgba(36,96,224,0.08);
-
-  --font:       'Noto Sans TC', sans-serif;
-  --font-serif: 'DM Serif Display', serif;
-  --font-mono:  'DM Mono', monospace;
-  --r:  8px; --r2: 14px; --r3: 20px;
-
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.05), 0 3px 10px rgba(0,0,0,0.05);
-  --shadow-md:  0 2px 6px rgba(0,0,0,0.06), 0 8px 28px rgba(0,0,0,0.07);
-  --shadow-lg:  0 4px 12px rgba(0,0,0,0.07), 0 16px 48px rgba(0,0,0,0.08);
-  --shadow-card:
-    0 1px 2px rgba(0,0,0,0.04),
-    0 3px 8px rgba(0,0,0,0.04),
-    0 8px 24px rgba(0,0,0,0.05),
-    0 20px 48px rgba(0,0,0,0.04);
-  --shadow-card-hover:
-    0 2px 4px rgba(0,0,0,0.06),
-    0 6px 16px rgba(0,0,0,0.07),
-    0 18px 44px rgba(0,0,0,0.09),
-    0 32px 64px rgba(0,0,0,0.06);
-
-  --sk-base: #e8e4dc; --sk-shine: #f5f3ef;
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS — Warm Cream × Terracotta
+═══════════════════════════════════════════ */
+:root{
+  --cream:#f8f4ee; --cream2:#ffffff; --cream3:#f0ebe1;
+  --surface:#e8e1d6; --surface2:#ddd4c8;
+  --border:rgba(0,0,0,0.07); --border2:rgba(0,0,0,0.13);
+  --ink:#1c1712; --ink2:#5c5248; --ink3:#9a8e84;
+  --terra:#c24e28; --terra2:#a33d1c; --terraL:rgba(194,78,40,0.09);
+  --sage:#6b9e7a; --sageL:rgba(107,158,122,0.14);
+  --slate:#6d8aaa; --slateL:rgba(109,138,170,0.14);
+  --clay:#b87040; --clayL:rgba(184,112,64,0.14);
+  --plum:#8b6a9a; --plumL:rgba(139,106,154,0.14);
+  --gold:#c89830; --goldL:rgba(200,152,48,0.12);
+  --font:'Noto Sans TC',sans-serif;
+  --serif:'Playfair Display',serif;
+  --mono:'DM Mono',monospace;
+  --r:10px; --r2:16px; --r3:24px;
+  --ease-spring:cubic-bezier(.16,1,.3,1);
 }
 
-/* ══════ Reset & Base ══════ */
+/* ═══ Reset ═══ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;font-size:15px}
-body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.65;overflow-x:hidden;min-height:100vh}
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-track{background:var(--bg3)}
-::-webkit-scrollbar-thumb{background:var(--surface);border-radius:3px}
+body{font-family:var(--font);background:var(--cream);color:var(--ink);overflow-x:hidden;line-height:1.65}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--cream3)}
+::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:2px}
 
-/* ══════ Keyframes ══════ */
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+/* ═══ KEYFRAMES ═══ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes floatA{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+@keyframes floatB{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-6px) rotate(-3deg)}}
+@keyframes floatC{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.05)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse2{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
 @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@keyframes extendLine{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0.55)}}
-@keyframes shimmer{
-  0%  {background-position:-700px 0}
-  100%{background-position: 700px 0}
-}
-@keyframes ringFill{from{stroke-dashoffset:100}to{stroke-dashoffset:var(--offset)}}
+@keyframes wiggle{0%,100%{transform:rotate(0deg)}20%{transform:rotate(-6deg)}40%{transform:rotate(6deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(3deg)}}
+@keyframes bounceIn{0%{transform:scale(0.4) translateY(20px);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1) translateY(0);opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.08);opacity:1}}
+@keyframes drawLine{from{stroke-dashoffset:300}to{stroke-dashoffset:0}}
+@keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideRight{from{width:0}to{width:var(--w)}}
+@keyframes cardPop{0%{opacity:0;transform:translateY(12px) scale(.97)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes ribbonSlide{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+@keyframes starSpin{from{transform:rotate(0) scale(0)}to{transform:rotate(360deg) scale(1)}}
+@keyframes ripple{0%{transform:scale(0);opacity:.5}100%{transform:scale(4);opacity:0}}
 
-/* ══════ NAV ══════ */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;background:rgba(245,243,239,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.logo{font-family:var(--font-serif);font-size:1.22rem;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
-.logo-icon{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.logo-beta{font-family:var(--font-mono);font-size:9px;background:var(--accentL);border:1px solid rgba(191,74,34,0.2);color:var(--accent);padding:2px 7px;border-radius:4px}
+/* ═══ NAV ═══ */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;background:rgba(248,244,238,0.94);backdrop-filter:blur(22px);border-bottom:1px solid var(--border)}
+.logo{font-family:var(--serif);font-size:1.18rem;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.logo-icon{width:32px;height:32px;border-radius:10px;background:var(--terra);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 2px 8px rgba(194,78,40,.3);transition:transform .2s}
+.logo-icon:hover{transform:rotate(-10deg) scale(1.1)}
+.logo-badge{font-family:var(--mono);font-size:9px;background:var(--terraL);border:1px solid rgba(194,78,40,.22);color:var(--terra);padding:2px 7px;border-radius:4px}
 .nav-links{display:flex;gap:2rem;list-style:none}
-.nav-links a{color:var(--text2);text-decoration:none;font-size:13.5px;transition:color .2s}
-.nav-links a:hover{color:var(--text)}
-.nav-cta{background:var(--accent);color:#fff;border:none;padding:8px 20px;border-radius:var(--r);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
-.nav-cta:hover{background:var(--accent2);transform:translateY(-1px)}
+.nav-links a{color:var(--ink2);text-decoration:none;font-size:13.5px;transition:color .2s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:1.5px;background:var(--terra);transform:scaleX(0);transform-origin:left;transition:transform .25s var(--ease-spring)}
+.nav-links a:hover{color:var(--terra)}.nav-links a:hover::after{transform:scaleX(1)}
+.nav-cta{background:var(--terra);color:#fff;border:none;padding:9px 22px;border-radius:100px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .22s;position:relative;overflow:hidden}
+.nav-cta::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.15);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.nav-cta:hover{background:var(--terra2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(194,78,40,.3)}
+.nav-cta:hover::after{transform:scaleX(1)}
 
-/* ══════ HERO ══════ */
-.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 2rem 5rem;text-align:center;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;z-index:0;
-  background:
-    radial-gradient(ellipse 70% 50% at 15% 40%, rgba(191,74,34,0.055) 0%,transparent 65%),
-    radial-gradient(ellipse 55% 45% at 85% 60%, rgba(36,96,224,0.045) 0%,transparent 65%)}
-.hero-deco{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.hero-deco svg{position:absolute;opacity:0.055}
-.hero-content{position:relative;z-index:1;max-width:720px}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border2);color:var(--text2);padding:5px 14px 5px 10px;border-radius:100px;font-size:11.5px;font-family:var(--font-mono);margin-bottom:2rem;box-shadow:var(--shadow-sm);animation:fadeUp .7s ease both}
-.pill-dot{width:6px;height:6px;border-radius:50%;background:var(--sage)}
-.hero h1{font-family:var(--font-serif);font-size:clamp(2.6rem,5.5vw,4.8rem);line-height:1.1;letter-spacing:-0.015em;margin-bottom:1.5rem;animation:fadeUp .7s ease .1s both}
-.hero h1 em{font-style:italic;color:var(--accent)}
-.hero-sub{font-size:1.05rem;color:var(--text2);max-width:480px;margin:0 auto 2.5rem;line-height:1.85;animation:fadeUp .7s ease .2s both}
-.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:fadeUp .7s ease .3s both}
-.btn-primary{background:var(--accent);color:#fff;border:none;padding:13px 28px;border-radius:var(--r);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all .22s;display:inline-flex;align-items:center;gap:8px}
-.btn-primary:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 6px 22px rgba(191,74,34,0.28)}
-.btn-outline{background:transparent;color:var(--text);border:1.5px solid var(--border2);padding:13px 28px;border-radius:var(--r);font-family:var(--font);font-size:14px;cursor:pointer;transition:all .22s}
-.btn-outline:hover{border-color:var(--accent);color:var(--accent);background:var(--accentL)}
-.stat-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:2rem;animation:fadeUp .7s ease .48s both;position:relative;z-index:1}
-.stat-pill{background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:8px 18px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-sm)}
-.stat-num{font-family:var(--font-serif);font-size:1.2rem;color:var(--accent)}
-.stat-label{font-size:12px;color:var(--text2)}
-.scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text3);font-size:11px;font-family:var(--font-mono);letter-spacing:0.08em;animation:fadeUp 1s ease 1.1s both}
-.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,transparent,var(--text3));animation:extendLine 2s ease-in-out infinite}
+/* ═══ HERO ═══ */
+.hero{min-height:100vh;display:grid;grid-template-rows:1fr auto;align-items:center;padding:100px 2rem 3rem;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg-grad{position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 10% 30%,rgba(194,78,40,.07) 0%,transparent 65%),
+             radial-gradient(ellipse 60% 50% at 90% 70%,rgba(107,158,122,.06) 0%,transparent 65%),
+             radial-gradient(ellipse 50% 40% at 50% 100%,rgba(109,138,170,.05) 0%,transparent 60%)}
+/* Decorative dots grid */
+.hero-dots{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,0,0,.06) 1px,transparent 1px);background-size:28px 28px;opacity:.5}
 
-/* hero illustration */
-.hero-illus{position:relative;z-index:1;margin-top:3.5rem;width:100%;max-width:940px;animation:fadeUp .7s ease .42s both}
-.hero-illus svg{width:100%;height:auto;display:block;border-radius:14px;box-shadow:var(--shadow-lg);border:1px solid var(--border)}
+.hero-inner{position:relative;z-index:1;max-width:1100px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
+.hero-text{animation:fadeUp .8s ease both}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--cream2);border:1px solid var(--border2);color:var(--ink2);padding:5px 14px 5px 10px;border-radius:100px;font-size:11.5px;font-family:var(--mono);margin-bottom:1.8rem;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);animation:pulse 2s ease-in-out infinite}
+.hero h1{font-family:var(--serif);font-size:clamp(2.6rem,4.5vw,4.2rem);line-height:1.1;letter-spacing:-.02em;margin-bottom:1.4rem;color:var(--ink)}
+.hero h1 em{font-style:italic;color:var(--terra)}
+.hero-sub{font-size:1.02rem;color:var(--ink2);max-width:440px;line-height:1.85;margin-bottom:2.2rem}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:2.4rem}
+.btn-hero{background:var(--terra);color:#fff;border:none;padding:13px 26px;border-radius:100px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all .22s;display:inline-flex;align-items:center;gap:8px;position:relative;overflow:hidden}
+.btn-hero:hover{background:var(--terra2);transform:translateY(-2px);box-shadow:0 6px 22px rgba(194,78,40,.28)}
+.btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--border2);padding:13px 26px;border-radius:100px;font-family:var(--font);font-size:14px;cursor:pointer;transition:all .22s}
+.btn-ghost:hover{border-color:var(--terra);color:var(--terra);background:var(--terraL)}
 
-/* ══════ TICKER ══════ */
-.ticker-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);padding:9px 0}
-.ticker{display:flex;animation:marquee 38s linear infinite;width:max-content}
-.ticker-item{display:flex;align-items:center;gap:8px;padding:0 2rem;white-space:nowrap;font-size:12px;color:var(--text2);font-family:var(--font-mono)}
-.ticker-item .up{color:var(--sage)}
-.ticker-item .dn{color:var(--clay)}
+/* Stat pills */
+.stat-row{display:flex;gap:8px;flex-wrap:wrap}
+.stat-pill{background:var(--cream2);border:1px solid var(--border);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:transform .2s,box-shadow .2s}
+.stat-pill:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.stat-icon{font-size:18px}
+.stat-info{display:flex;flex-direction:column;gap:1px}
+.stat-num{font-family:var(--serif);font-size:1.1rem;color:var(--terra);line-height:1}
+.stat-label{font-size:11px;color:var(--ink3);font-family:var(--mono)}
+
+/* Hero illustration — floating cards */
+.hero-visual{position:relative;height:460px;animation:fadeUp .8s ease .18s both}
+.floating-card{position:absolute;background:var(--cream2);border:1px solid var(--border);border-radius:var(--r2);box-shadow:0 4px 20px rgba(0,0,0,.1),0 16px 48px rgba(0,0,0,.07);padding:1.1rem 1.3rem;width:220px}
+.fc-a{top:20px;left:10px;animation:floatA 5s ease-in-out infinite}
+.fc-b{top:80px;right:0;width:200px;animation:floatB 6s ease-in-out infinite .8s}
+.fc-c{bottom:60px;left:30px;width:240px;animation:floatC 7s ease-in-out infinite .4s}
+.fc-d{bottom:20px;right:10px;width:190px;animation:floatA 5.5s ease-in-out infinite 1.2s}
+.fc-label{font-size:9.5px;font-family:var(--mono);color:var(--ink3);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase}
+.fc-title{font-family:var(--serif);font-size:.95rem;margin-bottom:4px}
+.fc-school{font-size:11px;color:var(--ink2);margin-bottom:8px}
+.fc-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:10.5px;font-family:var(--mono);font-weight:500}
+.fc-badge.safe{background:var(--sageL);color:var(--sage)}
+.fc-badge.target{background:var(--slateL);color:var(--slate)}
+.fc-badge.reach{background:var(--clayL);color:var(--clay)}
+.fc-bar{height:5px;border-radius:3px;background:var(--surface);margin-top:7px;overflow:hidden;position:relative}
+.fc-bar-fill{height:100%;border-radius:3px;animation:slideRight 1.5s var(--ease-spring) .5s both}
+.fc-prob{display:flex;align-items:center;justify-content:space-between;margin-top:5px;font-size:10px;font-family:var(--mono);color:var(--ink3)}
+.fc-pct{color:var(--terra);font-weight:600}
+
+/* Scroll hint */
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--ink3);font-size:10.5px;font-family:var(--mono);letter-spacing:.08em;animation:fadeUp 1s ease 1.2s both;z-index:1}
+.scroll-line{width:1px;height:36px;background:linear-gradient(to bottom,transparent,var(--ink3))}
+
+/* ═══ HORIZONTAL BANNER CARDS (new concept) ═══ */
+.banner-section{padding:1.5rem 2rem 3rem;max-width:1100px;margin:0 auto}
+.banner-row{display:flex;gap:14px;margin-bottom:14px}
+.banner-card{flex:1;border-radius:var(--r2);overflow:hidden;position:relative;cursor:pointer;transition:transform .28s var(--ease-spring),box-shadow .28s;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.banner-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,.13)}
+
+/* Banner 1 — Score trends (wide) */
+.bc-trends{flex:2;background:linear-gradient(135deg,#1a2e48 0%,#0f1e32 100%);color:#fff;min-height:160px;display:flex;align-items:center;gap:0}
+.bc-trends-text{padding:1.5rem 1.8rem;flex:1}
+.bc-trends-label{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.08em;margin-bottom:.5rem;text-transform:uppercase}
+.bc-trends-title{font-family:var(--serif);font-size:1.45rem;margin-bottom:.4rem;line-height:1.2}
+.bc-trends-sub{font-size:12px;color:rgba(255,255,255,.6);font-family:var(--mono)}
+.bc-trends-viz{flex:1;padding:1.2rem 1.5rem 1.2rem 0;display:flex;flex-direction:column;gap:6px;min-width:200px}
+.trend-mini-row{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px}
+.trend-mini-label{color:rgba(255,255,255,.5);width:32px;flex-shrink:0}
+.trend-mini-bar{flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.trend-mini-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#7d9e8a,#6b9e7a)}
+.trend-mini-val{color:rgba(255,255,255,.8);width:24px;text-align:right}
+
+/* Banner 2 — AI Prediction */
+.bc-ai{background:linear-gradient(135deg,#2d1a48 0%,#1a0f32 100%);color:#fff;min-height:160px;display:flex;align-items:center;padding:1.5rem;gap:1.2rem}
+.bc-ai-icon{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;animation:pulse 3s ease-in-out infinite}
+.bc-ai-text .bc-ai-label{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.35rem}
+.bc-ai-text h3{font-family:var(--serif);font-size:1.2rem;margin-bottom:.3rem}
+.bc-ai-text p{font-size:11.5px;color:rgba(255,255,255,.6);line-height:1.55}
+
+/* Banner 3 — Industry pulse */
+.bc-industry{background:var(--cream3);min-height:160px;display:flex;flex-direction:column;justify-content:center;padding:1.4rem 1.6rem;border:1px solid var(--border)}
+.bc-industry-label{font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem}
+.industry-pills{display:flex;flex-wrap:wrap;gap:6px}
+.ind-pill{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:100px;font-size:11px;font-family:var(--mono);border:1px solid;transition:transform .2s}
+.ind-pill:hover{transform:scale(1.05)}
+.ind-up{background:var(--sageL);color:var(--sage);border-color:rgba(107,158,122,.3)}
+.ind-dn{background:var(--clayL);color:var(--clay);border-color:rgba(184,112,64,.3)}
+.ind-neu{background:var(--slateL);color:var(--slate);border-color:rgba(109,138,170,.3)}
+.ind-arrow{font-size:9px}
+
+/* Banner 4 — Top majors ranking */
+.bc-rank{background:var(--cream2);min-height:140px;padding:1.3rem 1.5rem;border:1px solid var(--border)}
+.bc-rank-label{font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem}
+.rank-list{display:flex;flex-direction:column;gap:5px}
+.rank-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.rank-num{font-family:var(--mono);font-size:10px;color:var(--ink3);width:16px;flex-shrink:0}
+.rank-name{flex:1;color:var(--ink);font-weight:500}
+.rank-pct{font-family:var(--mono);font-size:10.5px;color:var(--terra)}
+.rank-bar-wrap{width:60px;height:4px;background:var(--surface);border-radius:2px;overflow:hidden}
+.rank-bar-fill{height:100%;border-radius:2px;background:var(--terra);--w:0%;animation:slideRight 1.2s var(--ease-spring) .3s both}
+
+/* ═══ TICKER ═══ */
+.ticker-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--cream2);padding:8px 0}
+.ticker{display:flex;animation:marquee 40s linear infinite;width:max-content}
+.ticker-item{display:flex;align-items:center;gap:8px;padding:0 2rem;white-space:nowrap;font-size:12px;color:var(--ink2);font-family:var(--mono)}
+.ticker-item .up{color:var(--sage)}.ticker-item .dn{color:var(--clay)}
 .ticker-sep{width:3px;height:3px;border-radius:50%;background:var(--border2)}
 
-/* ══════ SECTIONS ══════ */
-.section{padding:5rem 2rem;max-width:1120px;margin:0 auto}
-.eyebrow{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;color:var(--accent);margin-bottom:.7rem}
-.eyebrow::before{content:'';width:16px;height:1px;background:var(--accent)}
-.sec-title{font-family:var(--font-serif);font-size:clamp(1.7rem,3.2vw,2.65rem);line-height:1.15;margin-bottom:1rem;letter-spacing:-0.01em}
-.sec-sub{color:var(--text2);max-width:500px;margin-bottom:3rem;line-height:1.8;font-size:14.5px}
-.section-divider{height:1px;background:var(--border);margin:0 2rem}
-
-/* ══════ FEATURES GRID ══════ */
-.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;background:var(--border);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
-.feat-card{background:var(--bg2);padding:2rem 1.75rem;transition:background .2s;position:relative}
-.feat-card:hover{background:var(--bg3)}
-.feat-tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:var(--font-mono);letter-spacing:0.06em;color:var(--text3);margin-bottom:1rem;text-transform:uppercase}
-.feat-card h3{font-family:var(--font-serif);font-size:1.18rem;margin-bottom:.45rem;line-height:1.3}
-.feat-card p{color:var(--text2);font-size:13.5px;line-height:1.7}
-.feat-num{font-family:var(--font-serif);font-size:3rem;color:var(--surface);position:absolute;top:1rem;right:1.5rem;line-height:1;user-select:none}
-
-/* ══════ ANALYZER WRAP ══════ */
-#analyzer-wrap{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 2rem}
-.analyzer-inner{max-width:1120px;margin:0 auto}
+/* ═══ ANALYZER ═══ */
+#analyzer-wrap{background:var(--cream2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 2rem}
+.analyzer-inner{max-width:1100px;margin:0 auto}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--terra);margin-bottom:.65rem}
+.eyebrow::before{content:'';width:14px;height:1.5px;background:var(--terra)}
+.sec-title{font-family:var(--serif);font-size:clamp(1.8rem,3vw,2.6rem);line-height:1.15;margin-bottom:.9rem}
+.sec-sub{color:var(--ink2);max-width:520px;margin-bottom:2.5rem;line-height:1.8;font-size:14.5px}
 .analyzer-grid{display:grid;grid-template-columns:420px 1fr;gap:1.5rem;align-items:start}
 
 /* Panel */
-.panel{background:var(--bg);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow-sm)}
-.panel-hd{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg2)}
-.panel-title{font-family:var(--font-serif);font-size:1rem;display:flex;align-items:center;gap:8px}
-.panel-body{padding:1.4rem;background:var(--bg)}
-
-/* Tabs */
+.panel{background:var(--cream);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.panel-hd{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--cream2)}
+.panel-title{font-family:var(--serif);font-size:1rem;display:flex;align-items:center;gap:8px}
+.panel-body{padding:1.4rem}
 .tabs{display:flex;gap:2px;background:var(--surface);border-radius:var(--r);padding:3px;margin-bottom:1.4rem}
-.tab{flex:1;text-align:center;padding:7px 8px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--text3);transition:all .2s;border:none;background:transparent;font-family:var(--font)}
-.tab.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.tab{flex:1;text-align:center;padding:7px 8px;border-radius:7px;font-size:12px;cursor:pointer;color:var(--ink3);transition:all .2s;border:none;background:transparent;font-family:var(--font)}
+.tab.active{background:var(--cream2);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.09)}
 
 /* Score inputs */
-.score-section-label{font-size:11px;font-family:var(--font-mono);letter-spacing:0.08em;color:var(--text3);margin-bottom:10px;text-transform:uppercase}
+.score-section-label{font-size:11px;font-family:var(--mono);letter-spacing:.08em;color:var(--ink3);margin-bottom:10px;text-transform:uppercase}
 .subject-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .sub-item{display:flex;flex-direction:column;gap:6px}
-.sub-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text2)}
-.sub-val{font-family:var(--font-mono);font-size:13px;color:var(--accent);font-weight:500;background:var(--accentL);padding:1px 7px;border-radius:4px}
-.sub-optional{font-size:10px;color:var(--text3);font-family:var(--font-mono);background:var(--surface);padding:1px 5px;border-radius:3px}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;background:var(--surface);outline:none;cursor:pointer}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--bg2);box-shadow:0 0 0 2px rgba(191,74,34,0.15);cursor:pointer;transition:box-shadow .2s}
-input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(191,74,34,0.2)}
+.sub-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink2)}
+.sub-val{font-family:var(--mono);font-size:13px;color:var(--terra);font-weight:500;background:var(--terraL);padding:1px 7px;border-radius:4px;min-width:28px;text-align:center;transition:transform .15s}
+.sub-val.bump{animation:bounceIn .3s var(--ease-spring)}
+.sub-optional{font-size:10px;color:var(--ink3);font-family:var(--mono);background:var(--surface);padding:1px 5px;border-radius:3px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;background:var(--surface);outline:none;cursor:pointer;transition:background .2s}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--terra);border:2.5px solid var(--cream2);box-shadow:0 1px 4px rgba(194,78,40,.3);cursor:pointer;transition:transform .15s,box-shadow .15s}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 2px 8px rgba(194,78,40,.4)}
 
-/* Score viz bars */
-.score-viz{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1.2rem}
+/* Score viz */
+.score-viz{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:12px;background:var(--cream2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1.2rem}
 .sv-col{display:flex;flex-direction:column;align-items:center;gap:4px}
-.sv-bar-wrap{width:100%;height:58px;display:flex;align-items:flex-end;justify-content:center}
-.sv-bar{width:13px;border-radius:2px 2px 0 0;transition:height .55s cubic-bezier(.16,1,.3,1)}
-.sv-label{font-size:9px;color:var(--text3);font-family:var(--font-mono);text-align:center}
-.sv-val{font-size:11px;font-family:var(--font-mono);font-weight:500}
-
-.total-strip{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:4px}
-.total-label{font-size:12px;color:var(--text2)}
-.total-num{font-family:var(--font-mono);color:var(--accent);font-weight:500;font-size:14px}
-.optional-note{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:8px;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:2px solid var(--amber)}
-
-/* Form */
+.sv-bar-wrap{width:100%;height:56px;display:flex;align-items:flex-end;justify-content:center}
+.sv-bar{width:14px;border-radius:3px 3px 0 0;transition:height .5s var(--ease-spring)}
+.sv-label{font-size:9px;color:var(--ink3);font-family:var(--mono);text-align:center}
+.sv-val{font-size:11px;font-family:var(--mono);font-weight:500}
+.total-strip{background:var(--cream2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.total-label{font-size:12px;color:var(--ink2)}.total-num{font-family:var(--mono);color:var(--terra);font-weight:500;font-size:14px}
+.optional-note{font-size:11px;color:var(--ink3);font-family:var(--mono);margin-top:8px;padding:8px 10px;background:var(--cream3);border-radius:7px;border-left:2px solid var(--clay)}
 .fg{margin-bottom:1rem}
-.fl{display:block;font-size:11px;color:var(--text2);margin-bottom:5px;font-family:var(--font-mono);letter-spacing:0.04em}
-.fi,.fs,.fta{width:100%;background:var(--bg2);border:1.5px solid var(--border2);color:var(--text);border-radius:var(--r);padding:8px 12px;font-family:var(--font);font-size:13px;transition:border-color .2s;outline:none}
-.fi:focus,.fs:focus,.fta:focus{border-color:var(--accent)}
-.fs{cursor:pointer}
-.fta{resize:vertical;min-height:65px}
+.fl{display:block;font-size:11px;color:var(--ink2);margin-bottom:5px;font-family:var(--mono);letter-spacing:.04em}
+.fi,.fs,.fta{width:100%;background:var(--cream2);border:1.5px solid var(--border2);color:var(--ink);border-radius:var(--r);padding:8px 12px;font-family:var(--font);font-size:13px;transition:border-color .2s,box-shadow .2s;outline:none}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--terra);box-shadow:0 0 0 3px var(--terraL)}
+.fs{cursor:pointer}.fta{resize:vertical;min-height:65px}
 .tg-group{display:flex;gap:5px;flex-wrap:wrap}
-.tg-btn{padding:4px 11px;border-radius:100px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;transition:all .2s;font-family:var(--font)}
-.tg-btn.active{background:var(--accentL);border-color:rgba(191,74,34,0.35);color:var(--accent)}
+.tg-btn{padding:5px 12px;border-radius:100px;border:1.5px solid var(--border2);background:transparent;color:var(--ink2);font-size:12px;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.tg-btn:hover{border-color:var(--terra);color:var(--terra)}
+.tg-btn.active{background:var(--terraL);border-color:rgba(194,78,40,.35);color:var(--terra)}
+.btn-analyze{width:100%;padding:14px;background:var(--terra);color:#fff;border:none;border-radius:100px;font-family:var(--serif);font-size:1.08rem;cursor:pointer;transition:all .22s;margin-top:1.4rem;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
+.btn-analyze::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--x,50%) var(--y,50%),rgba(255,255,255,.2) 0%,transparent 60%);opacity:0;transition:opacity .2s}
+.btn-analyze:hover::after{opacity:1}
+.btn-analyze:hover{background:var(--terra2);transform:translateY(-1px);box-shadow:0 6px 22px rgba(194,78,40,.28)}
+.btn-analyze:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.spinner{display:none;width:17px;height:17px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite}
 
-/* Analyze button */
-.btn-analyze{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-family:var(--font-serif);font-size:1.05rem;cursor:pointer;transition:all .22s;margin-top:1.4rem;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-analyze:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 6px 22px rgba(191,74,34,0.25)}
-.btn-analyze:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
-.spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
-
-/* ══════ RESULTS ══════ */
+/* ═══ RESULTS ═══ */
 .results-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:460px;gap:1rem;text-align:center;padding:2rem}
-.empty-illus{width:180px;margin:0 auto}
-.empty-illus svg{width:100%;height:auto}
+.empty-mascot{width:120px;height:120px;margin:0 auto;animation:float 4s ease-in-out infinite}
+.empty-mascot svg{width:100%;height:100%}
 .empty-steps{display:flex;flex-direction:column;gap:6px;width:100%;max-width:260px;margin-top:.5rem}
-.empty-step{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:9px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px}
-.step-num{font-family:var(--font-mono);color:var(--accent);font-size:11px;font-weight:500}
+.empty-step{background:var(--cream2);border:1px solid var(--border);border-radius:var(--r);padding:9px 14px;font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:8px;transition:transform .2s}
+.empty-step:hover{transform:translateX(4px)}
+.step-num{font-family:var(--mono);color:var(--terra);font-size:11px;font-weight:500}
 
 /* Summary row */
 .summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.4rem}
-.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.9rem;text-align:center}
-.sum-num{font-family:var(--font-serif);font-size:2rem;line-height:1}
-.sum-label{font-size:10px;color:var(--text3);margin-top:4px;font-family:var(--font-mono)}
+.sum-card{background:var(--cream2);border:1px solid var(--border);border-radius:var(--r2);padding:.9rem 1rem;text-align:center;transition:transform .2s,box-shadow .2s;cursor:default;position:relative;overflow:hidden}
+.sum-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.sum-card.sage-card::before{background:var(--sage)}
+.sum-card.slate-card::before{background:var(--slate)}
+.sum-card.clay-card::before{background:var(--clay)}
+.sum-card.plum-card::before{background:var(--plum)}
+.sum-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.09)}
+.sum-num{font-family:var(--serif);font-size:2.1rem;line-height:1;transition:transform .3s}
 .sum-num.sage{color:var(--sage)}.sum-num.slate{color:var(--slate)}.sum-num.clay{color:var(--clay)}.sum-num.plum{color:var(--plum)}
+.sum-label{font-size:10px;color:var(--ink3);margin-top:4px;font-family:var(--mono)}
+.sum-emoji{font-size:16px;position:absolute;top:8px;right:10px;opacity:.4}
+.match-meta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.match-meta-text{font-size:11px;color:var(--ink3);font-family:var(--mono)}
+.match-sort-btn{font-size:11px;font-family:var(--mono);color:var(--terra);background:var(--terraL);border:1px solid rgba(194,78,40,.2);padding:3px 10px;border-radius:100px;cursor:pointer;transition:all .2s}
+.match-sort-btn:hover{background:var(--terra);color:#fff}
 
-/* Match list */
+/* ── Match card ── */
 .match-list{display:flex;flex-direction:column;gap:10px;margin-bottom:1.4rem}
-
-/* ── Match Card ── */
-.match-card{
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:var(--r2);
-  padding:1.1rem 1.25rem 1rem;
-  box-shadow:var(--shadow-card);
-  transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s cubic-bezier(.16,1,.3,1),border-color .2s;
-  will-change:transform;
-  opacity:0;
-  animation:cardIn .45s ease forwards;
-}
-.match-card:hover{transform:translateY(-3px) scale(1.004);box-shadow:var(--shadow-card-hover);border-color:var(--border2)}
-.match-card.pref-hl{border-left:3px solid var(--accent)}
-.match-card.challenge{opacity:0;animation:cardIn .45s ease forwards;filter:saturate(0.7)}
-.match-card.challenge:hover{filter:saturate(1)}
-
-/* Card top row */
+.match-card{background:var(--cream2);border:1px solid var(--border);border-radius:var(--r2);padding:1.1rem 1.25rem 1rem;box-shadow:0 1px 3px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.04);transition:transform .25s var(--ease-spring),box-shadow .25s;will-change:transform;opacity:0;animation:cardPop .45s var(--ease-spring) forwards}
+.match-card:hover{transform:translateY(-3px);box-shadow:0 4px 16px rgba(0,0,0,.08),0 16px 40px rgba(0,0,0,.06)}
+.match-card.pref-hl{border-left:3px solid var(--terra)}
+.match-card.challenge-card{opacity:0;animation:cardPop .45s var(--ease-spring) forwards;filter:saturate(.75)}
+.match-card.challenge-card:hover{filter:saturate(1)}
 .mc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
 .mc-left{flex:1;min-width:0}
 .mc-name-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px}
-.mc-name{font-family:var(--font-serif);font-size:1rem}
-.mc-school{font-size:12px;color:var(--text2)}
-.mc-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
-
-/* Safety badge */
-.badge{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:500;font-family:var(--font-mono)}
-.badge.safe     {background:var(--sageL);color:var(--sage)}
-.badge.target   {background:var(--slateL);color:var(--slate)}
-.badge.reach    {background:var(--clayL);color:var(--clay)}
+.mc-name{font-family:var(--serif);font-size:1.02rem}
+.mc-school{font-size:12px;color:var(--ink2);margin-bottom:4px}
+.mc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.badge{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:500;font-family:var(--mono)}
+.badge.safe{background:var(--sageL);color:var(--sage)}
+.badge.target{background:var(--slateL);color:var(--slate)}
+.badge.reach{background:var(--clayL);color:var(--clay)}
 .badge.challenge{background:var(--plumL);color:var(--plum)}
+.chip{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-family:var(--mono);padding:2px 7px;border-radius:4px;white-space:nowrap}
+.chip-pref{background:var(--terraL);color:var(--terra);border:1px solid rgba(194,78,40,.2)}
+.chip-related{background:var(--surface);color:var(--ink3);border:1px solid var(--border2)}
+.chip-challenge{background:var(--plumL);color:var(--plum);border:1px solid rgba(139,106,154,.25)}
+.industry-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px}
+.ind-tag{padding:2px 8px;border-radius:100px;font-size:10px;font-family:var(--mono);background:var(--slateL);color:var(--slate);border:1px solid rgba(109,138,170,.15)}
 
-/* Label chips */
-.chip{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-family:var(--font-mono);padding:2px 7px;border-radius:3px;white-space:nowrap}
-.chip-pref{background:var(--accentL);color:var(--accent);border:1px solid rgba(191,74,34,0.2)}
-.chip-related{background:var(--surface);color:var(--text3);border:1px solid var(--border2)}
-.chip-challenge{background:var(--plumL);color:var(--plum);border:1px solid rgba(150,112,144,0.25)}
-
-/* Industry tags */
-.industry-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
-.ind-tag{padding:2px 8px;border-radius:100px;font-size:10px;font-family:var(--font-mono);background:var(--blueL);color:var(--blue);border:1px solid rgba(36,96,224,0.12)}
-
-/* ── AI Probability Ring ── */
-.mc-prob-ring{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+/* Prob ring */
+.mc-prob-ring{display:flex;align-items:center;gap:10px;margin-bottom:9px;padding:8px 10px;background:var(--cream3);border-radius:var(--r)}
 .prob-ring-svg{flex-shrink:0}
-.prob-ring-track{fill:none;stroke:var(--surface);stroke-width:3}
-.prob-ring-fill{fill:none;stroke-width:3;stroke-linecap:round;
-  stroke-dasharray:100;
-  animation:ringFill .9s ease .3s forwards;
-}
-.prob-ring-fill.high  {stroke:var(--sage)}
-.prob-ring-fill.mid   {stroke:var(--slate)}
-.prob-ring-fill.low   {stroke:var(--clay)}
-.prob-ring-fill.vlow  {stroke:var(--plum)}
-.prob-label{display:flex;flex-direction:column;gap:1px}
-.prob-pct{font-family:var(--font-mono);font-size:1.05rem;font-weight:600;line-height:1}
-.prob-desc{font-size:10px;color:var(--text3);font-family:var(--font-mono)}
+.prob-ring-track{fill:none;stroke:var(--surface);stroke-width:3.5}
+.prob-ring-fill{fill:none;stroke-width:3.5;stroke-linecap:round;stroke-dasharray:100;transition:stroke-dashoffset .9s var(--ease-spring)}
+.prob-ring-fill.high{stroke:var(--sage)}.prob-ring-fill.mid{stroke:var(--slate)}.prob-ring-fill.low{stroke:var(--clay)}.prob-ring-fill.vlow{stroke:var(--plum)}
+.prob-label{display:flex;flex-direction:column;gap:2px}
+.prob-pct{font-family:var(--mono);font-size:1.05rem;font-weight:600;line-height:1}
+.prob-desc{font-size:10px;color:var(--ink3);font-family:var(--mono)}
+.prob-trend{font-size:10px;font-family:var(--mono);margin-left:auto;color:var(--ink3)}
 
-/* ── Safety Band (horizontal bars) ── */
-.safety-band{margin:8px 0 6px;background:var(--bg3);border-radius:var(--r);padding:9px 11px}
-.sb-title{font-size:10px;font-family:var(--font-mono);color:var(--text3);margin-bottom:7px;letter-spacing:.04em}
+/* Safety band */
+.safety-band{margin:8px 0 7px;background:var(--cream3);border-radius:var(--r);padding:9px 11px}
+.sb-title{font-size:10px;font-family:var(--mono);color:var(--ink3);margin-bottom:7px;letter-spacing:.04em}
 .sb-row{margin-bottom:8px}
 .sb-row:last-child{margin-bottom:0}
-.sb-row.tb-row{background:rgba(125,158,138,.08);border-left:2px solid var(--sage);margin-left:-7px;padding-left:7px;border-radius:0 4px 4px 0;margin-right:-1px;padding-right:1px}
+.sb-row.tb-row{background:rgba(107,158,122,.07);border-left:2px solid var(--sage);margin-left:-7px;padding-left:7px;border-radius:0 5px 5px 0;padding-right:1px}
 .sb-top{display:flex;align-items:center;gap:5px;margin-bottom:3px}
-.sb-subj{font-size:11px;color:var(--text);font-weight:500;min-width:44px}
-.sb-mult{font-size:9px;font-family:var(--font-mono);color:var(--text3);background:var(--surface);padding:1px 4px;border-radius:3px}
-.sb-threshold-warn{font-size:9px;color:var(--plum);font-family:var(--font-mono);background:var(--plumL);padding:1px 5px;border-radius:3px}
+.sb-subj{font-size:11px;color:var(--ink);font-weight:500;min-width:42px}
+.sb-mult{font-size:9px;font-family:var(--mono);color:var(--ink3);background:var(--surface);padding:1px 4px;border-radius:3px}
+.sb-threshold-warn{font-size:9px;color:var(--plum);font-family:var(--mono);background:var(--plumL);padding:1px 5px;border-radius:3px}
 .sb-track{position:relative;height:7px;background:var(--surface);border-radius:4px;overflow:visible;margin-bottom:3px}
-.sb-fill{height:100%;border-radius:4px;position:absolute;top:0;left:0;transition:width .6s cubic-bezier(.16,1,.3,1)}
-.sb-cutoff{position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:1px;background:rgba(0,0,0,0.3);z-index:2}
-.sb-bot{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10px}
-.sb-you{color:var(--text2)}
-.sb-cut{color:var(--text3)}
-.sb-gap-badge{font-family:var(--font-mono);font-size:10px;font-weight:700;padding:1px 7px;border-radius:3px;margin-left:auto}
-.sb-gap-pos {background:var(--sageL);color:var(--sage)}
-.sb-gap-neg {background:var(--clayL);color:var(--clay)}
-.sb-gap-zero{background:var(--slateL);color:var(--slate)}
-.sb-tb-label{font-size:9px;background:rgba(125,158,138,.2);color:var(--sage);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-weight:600;border:1px solid rgba(125,158,138,.3)}
+.sb-fill{height:100%;border-radius:4px;position:absolute;top:0;left:0;transition:width .65s var(--ease-spring)}
+.sb-cutoff{position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:1px;background:rgba(0,0,0,.28);z-index:2}
+.sb-bot{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px}
+.sb-you{color:var(--ink2)}.sb-cut{color:var(--ink3)}
+.sb-gap-badge{font-family:var(--mono);font-size:10px;font-weight:700;padding:1px 7px;border-radius:3px;margin-left:auto}
+.sb-gap-pos{background:var(--sageL);color:var(--sage)}.sb-gap-neg{background:var(--clayL);color:var(--clay)}.sb-gap-zero{background:var(--slateL);color:var(--slate)}
+.sb-tb-label{font-size:9px;background:rgba(107,158,122,.2);color:var(--sage);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-weight:600;border:1px solid rgba(107,158,122,.3)}
 
-/* ── History trend mini ── */
-.mc-history{margin:6px 0;padding:6px 8px;background:var(--bg3);border-radius:6px;font-family:var(--font-mono);font-size:10px;color:var(--text3);display:flex;gap:10px;flex-wrap:wrap}
+/* History */
+.mc-history{margin:6px 0;padding:6px 8px;background:var(--cream3);border-radius:6px;font-family:var(--mono);font-size:10px;color:var(--ink3);display:flex;gap:10px;flex-wrap:wrap}
 .mc-history-item{display:flex;gap:3px;align-items:center}
-.mc-history-yr{color:var(--text3)}
-.mc-history-val{color:var(--text2);font-weight:500}
+.mc-history-yr{color:var(--ink3)}.mc-history-val{color:var(--ink2);font-weight:500}
 
-/* Card stats row */
-.mc-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;background:rgba(245,243,239,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,0.05);border-radius:var(--r);padding:6px 10px}
-.mc-stat{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3)}
-
+/* Card stats */
+.mc-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;background:rgba(248,244,238,.8);backdrop-filter:blur(8px);border:1px solid rgba(0,0,0,.05);border-radius:var(--r);padding:6px 10px}
+.mc-stat{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink3)}
 .career-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
-.ctag{padding:2px 8px;background:var(--blueL);border:1px solid rgba(36,96,224,0.15);color:var(--blue);border-radius:4px;font-size:10px;font-family:var(--font-mono)}
+.ctag{padding:2px 8px;background:var(--slateL);border:1px solid rgba(109,138,170,.15);color:var(--slate);border-radius:4px;font-size:10px;font-family:var(--mono)}
+.challenge-warn{margin-top:8px;padding:6px 9px;background:var(--plumL);border-radius:6px;border-left:2px solid var(--plum);font-size:11px;color:var(--plum);font-family:var(--mono)}
 
 /* Skeleton */
-.skeleton{background:linear-gradient(90deg,var(--sk-base) 25%,var(--sk-shine) 50%,var(--sk-base) 75%);background-size:1400px 100%;animation:shimmer 1.6s ease-in-out infinite;border-radius:4px}
+.skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--cream3) 50%,var(--surface) 75%);background-size:1200px 100%;animation:shimmer 1.6s ease-in-out infinite;border-radius:4px}
+.sk-block{background:var(--cream3);border-radius:var(--r);padding:1.2rem;margin-bottom:.5rem}
+.sk-hd{height:16px;margin-bottom:12px}
 .sk-para{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
-.sk-hd{height:17px;border-radius:4px;margin-bottom:14px}
-.sk-lg{height:14px;border-radius:4px}
-.sk-md{height:12px;border-radius:4px}
-.sk-sm{height:10px;border-radius:4px}
-.sk-block{background:var(--bg3);border-radius:var(--r);padding:1.2rem;margin-bottom:.5rem}
+.sk-lg{height:13px}.sk-md{height:11px}.sk-sm{height:9px}
 
 /* AI box */
-.ai-box{background:rgba(255,255,255,0.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(191,74,34,0.16);border-radius:var(--r2);padding:1.5rem;position:relative;overflow:hidden}
-.ai-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--amber))}
-.ai-box-hd{display:flex;align-items:center;gap:8px;margin-bottom:1rem;font-family:var(--font-serif);font-size:1rem}
-.ai-icon{width:24px;height:24px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff}
-.ai-content{font-size:14px;line-height:1.85;color:var(--text)}
-.ai-content p{margin-bottom:.7rem}
-.ai-content h2,.ai-content h3,.ai-content h4{font-family:var(--font-serif);font-size:1rem;margin:.9rem 0 .4rem}
-.ai-content ul{padding-left:1.2rem;margin-bottom:.7rem}
-.ai-content li{margin-bottom:4px}
-.ai-content strong{color:var(--accent);font-weight:600}
-.ai-reveal{opacity:0;animation:fadeIn .6s ease .1s forwards}
-
+.ai-box{background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border:1.5px solid rgba(194,78,40,.15);border-radius:var(--r2);padding:1.5rem;position:relative;overflow:hidden}
+.ai-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,var(--terra),var(--clay),var(--gold))}
+.ai-box-hd{display:flex;align-items:center;gap:8px;margin-bottom:1rem;font-family:var(--serif);font-size:1rem}
+.ai-icon{width:26px;height:26px;border-radius:7px;background:var(--terra);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+.ai-content{font-size:14px;line-height:1.88;color:var(--ink)}
+.ai-content p{margin-bottom:.7rem}.ai-content h2,.ai-content h3,.ai-content h4{font-family:var(--serif);font-size:1rem;margin:.9rem 0 .4rem}
+.ai-content ul{padding-left:1.2rem;margin-bottom:.7rem}.ai-content li{margin-bottom:4px}
+.ai-content strong{color:var(--terra);font-weight:600}
+.ai-reveal{opacity:0;animation:fadeIn .7s ease .1s forwards}
 .divider{border:none;border-top:1px solid var(--border);margin:1.4rem 0}
 
-/* ══════ COMPARISON TABLE ══════ */
-.comp-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow-sm)}
+/* ═══ FEATURES ═══ */
+.section{padding:5rem 2rem;max-width:1100px;margin:0 auto}
+.section-divider{height:1px;background:var(--border);margin:0 2rem}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;background:var(--border);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.feat-card{background:var(--cream2);padding:2rem 1.75rem;transition:background .2s;position:relative;cursor:default}
+.feat-card:hover{background:var(--cream3)}
+.feat-card:hover .feat-num{transform:scale(1.05);opacity:.5}
+.feat-tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);letter-spacing:.06em;color:var(--ink3);margin-bottom:1rem;text-transform:uppercase}
+.feat-card h3{font-family:var(--serif);font-size:1.18rem;margin-bottom:.45rem;line-height:1.3}
+.feat-card p{color:var(--ink2);font-size:13.5px;line-height:1.7}
+.feat-num{font-family:var(--serif);font-size:3rem;color:var(--surface);position:absolute;top:1rem;right:1.5rem;line-height:1;user-select:none;transition:all .3s}
+
+/* ═══ COMPARISON TABLE ═══ */
+.comp-section{background:var(--cream2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.05)}
 .comp-hd{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.comp-hd-title{font-family:var(--font-serif);font-size:1.12rem}
+.comp-hd-title{font-family:var(--serif);font-size:1.1rem}
 .comp-table{width:100%;border-collapse:collapse}
-.comp-table th{background:var(--bg3);padding:10px 16px;text-align:left;font-size:11px;font-weight:500;color:var(--text3);letter-spacing:.06em;border-bottom:1px solid var(--border);font-family:var(--font-mono)}
+.comp-table th{background:var(--cream3);padding:10px 16px;text-align:left;font-size:11px;font-weight:500;color:var(--ink3);letter-spacing:.06em;border-bottom:1px solid var(--border);font-family:var(--mono)}
 .comp-table td{padding:12px 16px;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:middle}
 .comp-table tr:last-child td{border-bottom:none}
-.comp-table tr:hover td{background:var(--bg3)}
-.dept-name{font-weight:500}.dept-school{font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--font-mono)}
-.ai-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:4px;font-family:var(--font-mono)}
-.ai-tag.pos{background:var(--sageL);color:var(--sage)}
-.ai-tag.neg{background:var(--clayL);color:var(--clay)}
-.ai-tag.neu{background:var(--slateL);color:var(--slate)}
-.trend-up{color:var(--sage);font-family:var(--font-mono);font-size:12px}
-.trend-dn{color:var(--clay);font-family:var(--font-mono);font-size:12px}
-.trend-neu{color:var(--slate);font-family:var(--font-mono);font-size:12px}
+.comp-table tr{transition:background .15s}
+.comp-table tr:hover td{background:var(--cream3)}
+.dept-name{font-weight:500}.dept-school{font-size:11px;color:var(--ink3);margin-top:1px;font-family:var(--mono)}
+.ai-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:4px;font-family:var(--mono)}
+.ai-tag.pos{background:var(--sageL);color:var(--sage)}.ai-tag.neg{background:var(--clayL);color:var(--clay)}.ai-tag.neu{background:var(--slateL);color:var(--slate)}
+.trend-up{color:var(--sage);font-family:var(--mono);font-size:12px}.trend-dn{color:var(--clay);font-family:var(--mono);font-size:12px}.trend-neu{color:var(--slate);font-family:var(--mono);font-size:12px}
 
-/* ══════ TIMELINE ══════ */
-.timeline-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 2rem}
-.timeline-inner{max-width:1120px;margin:0 auto}
-.timeline-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:2.5rem;background:var(--bg)}
-.ttab{flex:1;padding:1rem 1.5rem;border:none;background:transparent;font-family:var(--font);font-size:13.5px;cursor:pointer;color:var(--text2);transition:all .2s;border-right:1px solid var(--border);display:flex;align-items:center;gap:8px;justify-content:center}
-.ttab:last-child{border-right:none}
-.ttab.active{background:var(--bg2);color:var(--text);font-weight:500}
-.ttab-icon{font-size:16px}
-.ttab-name{font-family:var(--font-serif);font-size:1rem}
-.ttab-status{font-size:10px;font-family:var(--font-mono);padding:2px 7px;border-radius:100px}
-.ts-active{background:var(--sageL);color:var(--sage)}
-.ts-soon{background:var(--slateL);color:var(--slate)}
-.ts-wait{background:var(--bg3);color:var(--text3)}
+/* ═══ TIMELINE ═══ */
+.timeline-section{background:var(--cream2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 2rem}
+.timeline-inner{max-width:1100px;margin:0 auto}
+.timeline-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:2.5rem;background:var(--cream)}
+.ttab{flex:1;padding:1rem 1.5rem;border:none;background:transparent;font-family:var(--font);font-size:13.5px;cursor:pointer;color:var(--ink2);transition:all .2s;border-right:1px solid var(--border);display:flex;align-items:center;gap:8px;justify-content:center}
+.ttab:last-child{border-right:none}.ttab.active{background:var(--cream2);color:var(--ink);font-weight:500}
+.ttab-icon{font-size:16px}.ttab-name{font-family:var(--serif);font-size:1rem}
+.ttab-status{font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:100px}
+.ts-active{background:var(--sageL);color:var(--sage)}.ts-soon{background:var(--slateL);color:var(--slate)}.ts-wait{background:var(--cream3);color:var(--ink3)}
 .tpanel{display:none}.tpanel.active{display:block}
-.tl-group{border:1px solid var(--border);border-radius:var(--r2);background:var(--bg2);overflow:hidden;margin-bottom:12px}
+.tl-group{border:1px solid var(--border);border-radius:var(--r2);background:var(--cream2);overflow:hidden;margin-bottom:12px}
 .tl-group-hd{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.4rem;cursor:pointer;transition:background .2s;user-select:none}
-.tl-group-hd:hover{background:var(--bg3)}
+.tl-group-hd:hover{background:var(--cream3)}
 .tl-group-hd-left{display:flex;align-items:center;gap:10px}
-.tl-phase-badge{font-size:10px;font-family:var(--font-mono);padding:2px 8px;border-radius:4px;background:var(--bg3);color:var(--text2)}
-.tl-group-title{font-family:var(--font-serif);font-size:1rem}
-.tl-toggle{font-size:12px;color:var(--text3);transition:transform .3s}
-.tl-toggle.open{transform:rotate(180deg)}
-.tl-group-body{display:none;padding:0 1.4rem 1.2rem}
-.tl-group-body.open{display:block}
+.tl-phase-badge{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px;background:var(--cream3);color:var(--ink2)}
+.tl-group-title{font-family:var(--serif);font-size:1rem}
+.tl-toggle{font-size:12px;color:var(--ink3);transition:transform .3s}.tl-toggle.open{transform:rotate(180deg)}
+.tl-group-body{display:none;padding:0 1.4rem 1.2rem}.tl-group-body.open{display:block}
 .timeline-list{display:flex;flex-direction:column}
 .tl-item{display:flex;gap:14px;position:relative;padding-bottom:1.2rem}
 .tl-item:last-child{padding-bottom:0}
 .tl-item:not(:last-child)::before{content:'';position:absolute;left:17px;top:38px;width:1px;bottom:0;background:var(--border)}
-.tl-dot{width:34px;height:34px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--bg3);border:1px solid var(--border);z-index:1}
+.tl-dot{width:34px;height:34px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--cream3);border:1px solid var(--border);z-index:1}
 .tl-body{flex:1;padding-top:6px}
-.tl-date{font-size:11px;color:var(--accent);font-family:var(--font-mono);margin-bottom:2px}
+.tl-date{font-size:11px;color:var(--terra);font-family:var(--mono);margin-bottom:2px}
 .tl-title{font-size:13.5px;font-weight:500;margin-bottom:2px}
-.tl-desc{font-size:12px;color:var(--text3);line-height:1.55}
-.tl-tip{display:inline-flex;align-items:center;gap:4px;font-size:11px;background:var(--amberL);color:var(--amber);border-radius:4px;padding:2px 7px;margin-top:4px;font-family:var(--font-mono)}
+.tl-desc{font-size:12px;color:var(--ink3);line-height:1.55}
+.tl-tip{display:inline-flex;align-items:center;gap:4px;font-size:11px;background:var(--goldL);color:var(--clay);border-radius:4px;padding:2px 7px;margin-top:4px;font-family:var(--mono)}
 
-/* ══════ CHAT ══════ */
+/* ═══ CHAT ═══ */
 #chatWidget{position:fixed;bottom:2rem;right:2rem;z-index:200}
-.chat-fab{width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 18px rgba(191,74,34,0.36);transition:transform .2s,box-shadow .2s;color:#fff}
-.chat-fab:hover{transform:scale(1.07);box-shadow:0 6px 26px rgba(191,74,34,0.45)}
-.chat-win{display:none;flex-direction:column;position:absolute;bottom:68px;right:0;width:320px;height:430px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);box-shadow:var(--shadow-lg);overflow:hidden}
+.chat-fab{width:54px;height:54px;border-radius:50%;background:var(--terra);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 18px rgba(194,78,40,.38);transition:transform .2s,box-shadow .2s;color:#fff;position:relative;overflow:hidden}
+.chat-fab::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--terra);animation:ripple 2.5s ease-out infinite}
+.chat-fab:hover{transform:scale(1.1);box-shadow:0 6px 26px rgba(194,78,40,.45)}
+.chat-win{display:none;flex-direction:column;position:absolute;bottom:68px;right:0;width:330px;height:440px;background:var(--cream2);border:1px solid var(--border2);border-radius:var(--r2);box-shadow:0 8px 40px rgba(0,0,0,.15);overflow:hidden}
 .chat-win.open{display:flex}
-.chat-hd{padding:.9rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--bg)}
-.chat-hd-dot{width:7px;height:7px;border-radius:50%;background:var(--sage)}
-.chat-hd-title{font-family:var(--font-serif);font-size:1rem}
+.chat-hd{padding:.9rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--cream3)}
+.chat-hd-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);animation:pulse 2s infinite}
+.chat-hd-title{font-family:var(--serif);font-size:1rem}
 .chat-msgs{flex:1;overflow-y:auto;padding:.9rem;display:flex;flex-direction:column;gap:8px}
-.msg{max-width:86%;padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.55}
-.msg.bot{background:var(--bg3);align-self:flex-start;border-bottom-left-radius:3px}
-.msg.user{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
-.chat-inp-row{padding:.7rem;border-top:1px solid var(--border);display:flex;gap:6px;background:var(--bg)}
-.chat-inp{flex:1;background:var(--bg2);border:1.5px solid var(--border2);color:var(--text);border-radius:var(--r);padding:7px 11px;font-family:var(--font);font-size:13px;outline:none}
-.chat-inp:focus{border-color:var(--accent)}
-.chat-send{background:var(--accent);border:none;border-radius:var(--r);padding:7px 14px;color:#fff;cursor:pointer;font-size:12px;font-weight:500;transition:background .2s;font-family:var(--font)}
-.chat-send:hover{background:var(--accent2)}
+.msg{max-width:86%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.55;animation:fadeUp .3s ease}
+.msg.bot{background:var(--cream3);align-self:flex-start;border-bottom-left-radius:3px}
+.msg.user{background:var(--terra);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.chat-inp-row{padding:.7rem;border-top:1px solid var(--border);display:flex;gap:6px;background:var(--cream)}
+.chat-inp{flex:1;background:var(--cream2);border:1.5px solid var(--border2);color:var(--ink);border-radius:100px;padding:7px 14px;font-family:var(--font);font-size:13px;outline:none;transition:border-color .2s}
+.chat-inp:focus{border-color:var(--terra)}
+.chat-send{background:var(--terra);border:none;border-radius:100px;padding:7px 16px;color:#fff;cursor:pointer;font-size:12px;font-weight:500;transition:background .2s;font-family:var(--font)}
+.chat-send:hover{background:var(--terra2)}
 
-/* ══════ NOTIF ══════ */
-.notif{position:fixed;top:76px;right:2rem;z-index:300;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 16px;font-size:12px;transform:translateX(130%);transition:transform .3s;display:flex;align-items:center;gap:8px;font-family:var(--font-mono);box-shadow:var(--shadow-sm)}
+/* ═══ NOTIF ═══ */
+.notif{position:fixed;top:76px;right:2rem;z-index:300;background:var(--cream2);border:1px solid var(--border);border-radius:var(--r);padding:10px 16px;font-size:12px;transform:translateX(130%);transition:transform .32s var(--ease-spring);display:flex;align-items:center;gap:8px;font-family:var(--mono);box-shadow:0 4px 20px rgba(0,0,0,.1)}
 .notif.show{transform:translateX(0)}
 
-/* ══════ FOOTER ══════ */
+/* ═══ FOOTER ═══ */
 footer{border-top:1px solid var(--border);padding:3rem 2rem}
-.footer-inner{max-width:1120px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;flex-wrap:wrap}
-.footer-brand{font-family:var(--font-serif);font-size:1.2rem;margin-bottom:.5rem}
-.footer-tagline{font-size:12px;color:var(--text3);max-width:240px;line-height:1.6}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;flex-wrap:wrap}
+.footer-brand{font-family:var(--serif);font-size:1.2rem;margin-bottom:.5rem}
+.footer-tagline{font-size:12px;color:var(--ink3);max-width:240px;line-height:1.6}
 .footer-links{display:flex;gap:1.5rem;flex-wrap:wrap}
-.footer-links a{color:var(--text3);text-decoration:none;font-size:12.5px;transition:color .2s}
-.footer-links a:hover{color:var(--text2)}
-.footer-note{font-size:11px;color:var(--text3);margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);max-width:1120px;margin-left:auto;margin-right:auto;text-align:center}
+.footer-links a{color:var(--ink3);text-decoration:none;font-size:12.5px;transition:color .2s}
+.footer-links a:hover{color:var(--ink2)}
+.footer-note{font-size:11px;color:var(--ink3);margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);max-width:1100px;margin-left:auto;margin-right:auto;text-align:center}
 
-/* ══════ RESPONSIVE ══════ */
+/* ═══ INTERACTIVE ELEMENTS ═══ */
+/* Scroll reveal */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s var(--ease-spring)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* Hover tooltip */
+.tooltip-wrap{position:relative}
+.tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) scale(.9);background:var(--ink);color:#fff;font-size:11px;font-family:var(--mono);padding:5px 10px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:all .2s var(--ease-spring);transform-origin:bottom center}
+.tooltip-wrap:hover .tooltip{opacity:1;transform:translateX(-50%) scale(1)}
+.tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--ink)}
+
+/* Progress bar fill animation trigger */
+.sb-fill.animated{animation:slideRight .6s var(--ease-spring) forwards}
+
+/* Confetti dots for score feedback */
+.score-feedback{position:fixed;pointer-events:none;z-index:999;font-size:22px;animation:floatC .8s ease forwards}
+
+/* Section banners — new horizontal visual concept */
+.info-banner{border-radius:var(--r2);overflow:hidden;margin-bottom:14px;position:relative;cursor:pointer}
+.info-banner:hover .ib-overlay{opacity:1}
+.ib-inner{display:flex;align-items:stretch;min-height:140px}
+.ib-illus{flex-shrink:0;width:220px;position:relative;overflow:hidden}
+.ib-illus svg{width:100%;height:100%}
+.ib-body{flex:1;padding:1.6rem 1.8rem;display:flex;flex-direction:column;justify-content:center}
+.ib-tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem;opacity:.7}
+.ib-title{font-family:var(--serif);font-size:1.4rem;margin-bottom:.4rem;line-height:1.2}
+.ib-sub{font-size:13px;line-height:1.6;opacity:.75}
+.ib-overlay{position:absolute;inset:0;background:rgba(0,0,0,.04);opacity:0;transition:opacity .2s}
+
+.ib-dark{background:linear-gradient(135deg,#1c2e40 0%,#0f1e2c 100%);color:#fff}
+.ib-sage{background:linear-gradient(135deg,#e8f0eb 0%,#d5e3da 100%);color:#1c2e20}
+.ib-terra{background:linear-gradient(135deg,#f5e8e0 0%,#ecd4c0 100%);color:#3c1c10}
+.ib-slate{background:linear-gradient(135deg,#e0e8f2 0%,#c8d8ea 100%);color:#1a2c40}
+
+/* Responsive */
 @media(max-width:860px){
+  .hero-inner{grid-template-columns:1fr;gap:2.5rem}
+  .hero-visual{display:none}
   .analyzer-grid{grid-template-columns:1fr}
   .nav-links{display:none}
   .features-grid{grid-template-columns:1fr;gap:0}
   .summary-row{grid-template-columns:repeat(2,1fr)}
-  .comp-table td:nth-child(4),.comp-table th:nth-child(4){display:none}
+  .banner-row{flex-direction:column}
+  .ib-illus{width:100%;height:100px}
+  .ib-inner{flex-direction:column}
+  .info-banner .ib-inner{flex-direction:column}
   .timeline-tabs{flex-direction:column;border-radius:var(--r);gap:0}
   .ttab{border-right:none;border-bottom:1px solid var(--border)}
   .ttab:last-child{border-bottom:none}
 }
 @media(max-width:500px){
   .hero h1{font-size:2.3rem}
-  .stat-row{flex-direction:column;align-items:center}
+  .stat-row{flex-direction:column;align-items:flex-start}
   .subject-grid{grid-template-columns:1fr}
   .score-viz{grid-template-columns:repeat(4,1fr)}
   .summary-row{grid-template-columns:1fr 1fr}
+  .hero-actions{flex-direction:column}
 }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- ── NAV ── -->
 <nav>
   <a class="logo" href="#">
     <div class="logo-icon">🎓</div>
     升志 ScoreWise
-    <span class="logo-beta">v5</span>
+    <span class="logo-badge">v6</span>
   </a>
   <ul class="nav-links">
     <li><a href="#analyzer-wrap">落點分析</a></li>
@@ -468,103 +519,251 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   <button class="nav-cta" onclick="scrollToSec('#analyzer-wrap')">開始分析</button>
 </nav>
 
-<!-- HERO -->
+<!-- ── HERO ── -->
 <div class="hero">
-  <div class="hero-deco">
-    <svg width="800" height="600" style="top:-100px;left:-200px"><circle cx="400" cy="300" r="250" fill="none" stroke="#bf4a22" stroke-width="1"/><circle cx="400" cy="300" r="175" fill="none" stroke="#bf4a22" stroke-width=".5"/></svg>
-    <svg width="600" height="600" style="bottom:-100px;right:-150px"><circle cx="300" cy="300" r="200" fill="none" stroke="#2460e0" stroke-width="1"/></svg>
+  <div class="hero-bg">
+    <div class="hero-bg-grad"></div>
+    <div class="hero-dots"></div>
   </div>
-  <div class="hero-content">
-    <div class="hero-eyebrow"><span class="pill-dot"></span>115 學年度 · AI 落點預測 + 歷年趨勢</div>
-    <h1>用數據選系<br>不用<em>靠感覺</em></h1>
-    <p class="hero-sub">整合 111–115 年歷年錄取數據、AI 預測錄取率、產業標籤與今年考試背景，給你能落地的科系建議。</p>
-    <div class="hero-actions">
-      <button class="btn-primary" onclick="scrollToSec('#analyzer-wrap')">✦ 立即分析落點</button>
-      <button class="btn-outline" onclick="scrollToSec('#deadlines-section')">查看申請時程</button>
+
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-dot"></span>
+        115 學年度 · AI 落點預測 + 歷年趨勢
+      </div>
+      <h1>用數據選系<br>不用<em>靠感覺</em></h1>
+      <p class="hero-sub">整合 111–115 年歷年錄取數據、AI 預測錄取率、產業標籤，給你能落地的科系建議——不叫你追夢，而是讓你看清楚。</p>
+      <div class="hero-actions">
+        <button class="btn-hero" onclick="scrollToSec('#analyzer-wrap')">
+          <span>✦</span> 立即分析落點
+        </button>
+        <button class="btn-ghost" onclick="scrollToSec('#deadlines-section')">查看申請時程</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat-pill tooltip-wrap">
+          <span class="stat-icon">📚</span>
+          <div class="stat-info"><span class="stat-num">1000+</span><span class="stat-label">收錄科系</span></div>
+          <div class="tooltip">涵蓋台清交成政等頂大</div>
+        </div>
+        <div class="stat-pill tooltip-wrap">
+          <span class="stat-icon">🤖</span>
+          <div class="stat-info"><span class="stat-num">AI</span><span class="stat-label">預測錄取率</span></div>
+          <div class="tooltip">根據分差+名額計算</div>
+        </div>
+        <div class="stat-pill tooltip-wrap">
+          <span class="stat-icon">📈</span>
+          <div class="stat-info"><span class="stat-num">3年</span><span class="stat-label">歷史趨勢</span></div>
+          <div class="tooltip">111–113 年門檻數據</div>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon">🎁</span>
+          <div class="stat-info"><span class="stat-num">免費</span><span class="stat-label">開放使用</span></div>
+        </div>
+      </div>
     </div>
-    <div class="stat-row">
-      <div class="stat-pill"><span class="stat-num">1000+</span><span class="stat-label">收錄科系</span></div>
-      <div class="stat-pill"><span class="stat-num">AI</span><span class="stat-label">預測錄取率</span></div>
-      <div class="stat-pill"><span class="stat-num">3年</span><span class="stat-label">歷史趨勢</span></div>
-      <div class="stat-pill"><span class="stat-num">免費</span><span class="stat-label">開放使用</span></div>
+
+    <!-- Floating card illustration -->
+    <div class="hero-visual" aria-hidden="true">
+      <!-- Card A: 穩上 -->
+      <div class="floating-card fc-a">
+        <div class="fc-label">// 落點結果</div>
+        <div class="fc-title">電機工程學系</div>
+        <div class="fc-school">國立臺灣大學</div>
+        <span class="fc-badge safe">穩上 +3</span>
+        <div class="fc-bar"><div class="fc-bar-fill" style="--w:88%;background:var(--sage)"></div></div>
+        <div class="fc-prob"><span>AI 預測錄取率</span><span class="fc-pct">88%</span></div>
+      </div>
+      <!-- Card B: 目標 -->
+      <div class="floating-card fc-b">
+        <div class="fc-label">// 落點結果</div>
+        <div class="fc-title">資訊工程學系</div>
+        <div class="fc-school">國立清華大學</div>
+        <span class="fc-badge target">目標 ±0</span>
+        <div class="fc-bar"><div class="fc-bar-fill" style="--w:62%;background:var(--slate)"></div></div>
+        <div class="fc-prob"><span>AI 預測錄取率</span><span class="fc-pct" style="color:var(--slate)">62%</span></div>
+      </div>
+      <!-- Card C: History mini chart -->
+      <div class="floating-card fc-c">
+        <div class="fc-label">// 歷年門檻趨勢</div>
+        <svg width="100%" height="64" viewBox="0 0 200 64">
+          <polyline points="10,52 50,44 90,38 130,32 170,28" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round"/>
+          <polyline points="10,56 50,52 90,48 130,46 170,42" fill="none" stroke="var(--slate)" stroke-width="2" stroke-dasharray="5,3" stroke-linecap="round"/>
+          <circle cx="170" cy="28" r="4" fill="var(--sage)"/>
+          <circle cx="170" cy="42" r="4" fill="var(--slate)"/>
+          <text x="10" y="62" font-size="9" fill="var(--ink3)" font-family="monospace">111</text>
+          <text x="90" y="62" font-size="9" fill="var(--ink3)" font-family="monospace">113</text>
+          <text x="160" y="62" font-size="9" fill="var(--ink3)" font-family="monospace">115預</text>
+        </svg>
+        <div style="display:flex;gap:10px;margin-top:4px;font-size:10px;font-family:var(--mono);color:var(--ink3)">
+          <span style="color:var(--sage)">● 數學A</span>
+          <span style="color:var(--slate)">- - 英文</span>
+        </div>
+      </div>
+      <!-- Card D: Industry -->
+      <div class="floating-card fc-d">
+        <div class="fc-label">// 產業標籤</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">
+          <span style="padding:3px 9px;border-radius:100px;font-size:10px;font-family:var(--mono);background:var(--slateL);color:var(--slate);border:1px solid rgba(109,138,170,.2)">AI 工程</span>
+          <span style="padding:3px 9px;border-radius:100px;font-size:10px;font-family:var(--mono);background:var(--sageL);color:var(--sage);border:1px solid rgba(107,158,122,.2)">半導體</span>
+          <span style="padding:3px 9px;border-radius:100px;font-size:10px;font-family:var(--mono);background:var(--goldL);color:var(--gold);border:1px solid rgba(200,152,48,.2)">IC 設計</span>
+        </div>
+        <div style="font-size:11px;color:var(--ink3);font-family:var(--mono)">年薪中位 <span style="color:var(--terra);font-weight:600">160萬</span></div>
+      </div>
     </div>
   </div>
-  <div class="hero-illus">
-    <svg viewBox="0 0 960 220" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="hBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a2e4a"/><stop offset="100%" stop-color="#0f1e32"/></linearGradient>
-        <linearGradient id="gSage" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7d9e8a"/><stop offset="100%" stop-color="#5a7a66"/></linearGradient>
-        <linearGradient id="gClay" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c8603a"/><stop offset="100%" stop-color="#a84828"/></linearGradient>
-        <linearGradient id="gSlate" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7a8fa0"/><stop offset="100%" stop-color="#5a7080"/></linearGradient>
-        <linearGradient id="gAmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c88030"/><stop offset="100%" stop-color="#a06020"/></linearGradient>
-      </defs>
-      <rect width="960" height="220" fill="url(#hBg)"/>
-      <!-- grid lines -->
-      <line x1="0" y1="50" x2="960" y2="50" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-      <line x1="0" y1="100" x2="960" y2="100" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-      <line x1="0" y1="150" x2="960" y2="150" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-      <!-- score bars -->
-      <text x="55" y="28" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace">// 學測分數</text>
-      <rect x="55" y="60" width="18" height="110" rx="3" fill="url(#gSlate)" opacity=".85"/>
-      <rect x="83" y="45" width="18" height="125" rx="3" fill="url(#gClay)" opacity=".9"/>
-      <rect x="111" y="75" width="18" height="95" rx="3" fill="url(#gSage)" opacity=".85"/>
-      <rect x="139" y="50" width="18" height="120" rx="3" fill="url(#gAmber)" opacity=".85"/>
-      <text x="55" y="188" fill="rgba(255,255,255,0.25)" font-size="9" font-family="monospace">國文</text>
-      <text x="82" y="188" fill="rgba(255,255,255,0.25)" font-size="9" font-family="monospace">英文</text>
-      <text x="109" y="188" fill="rgba(255,255,255,0.25)" font-size="9" font-family="monospace">數甲</text>
-      <text x="136" y="188" fill="rgba(255,255,255,0.25)" font-size="9" font-family="monospace">自然</text>
-      <!-- match cards preview -->
-      <text x="215" y="28" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace">// 落點結果 + AI預測機率</text>
-      <rect x="215" y="42" width="195" height="40" rx="6" fill="rgba(125,158,138,0.22)" stroke="rgba(125,158,138,0.5)" stroke-width="1"/>
-      <text x="226" y="57" fill="#7d9e8a" font-size="9" font-family="monospace">穩上 +3 ｜ 預測錄取 88%</text>
-      <text x="226" y="72" fill="white" font-size="11" font-family="sans-serif">國立臺灣大學 電機工程</text>
-      <rect x="215" y="90" width="195" height="40" rx="6" fill="rgba(122,143,160,0.2)" stroke="rgba(122,143,160,0.45)" stroke-width="1"/>
-      <text x="226" y="105" fill="#7a8fa0" font-size="9" font-family="monospace">目標 ±0 ｜ 預測錄取 62%</text>
-      <text x="226" y="120" fill="white" font-size="11" font-family="sans-serif">國立清華大學 資訊工程</text>
-      <rect x="215" y="138" width="195" height="40" rx="6" fill="rgba(176,128,96,0.2)" stroke="rgba(176,128,96,0.45)" stroke-width="1"/>
-      <text x="226" y="153" fill="#b08060" font-size="9" font-family="monospace">衝刺 -2 ｜ 預測錄取 28%</text>
-      <text x="226" y="168" fill="white" font-size="11" font-family="sans-serif">國立成功大學 醫學系</text>
-      <!-- history trend chart -->
-      <text x="455" y="28" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace">// 歷年門檻趨勢（111–115）</text>
-      <polyline points="455,155 520,148 585,143 650,138 715,135" fill="none" stroke="#7d9e8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <polyline points="455,162 520,158 585,155 650,152 715,148" fill="none" stroke="#7a8fa0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
-      <circle cx="715" cy="135" r="3.5" fill="#7d9e8a"/>
-      <circle cx="715" cy="148" r="3.5" fill="#7a8fa0"/>
-      <text x="723" y="139" fill="#7d9e8a" font-size="9" font-family="monospace">數學A 14</text>
-      <text x="723" y="152" fill="#7a8fa0" font-size="9" font-family="monospace">英文 13</text>
-      <text x="455" y="175" fill="rgba(255,255,255,0.2)" font-size="8" font-family="monospace">111 → 112 → 113 → 114 → 115預測</text>
-      <!-- industry tags preview -->
-      <text x="455" y="55" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace">// 產業標籤</text>
-      <rect x="455" y="62" width="48" height="17" rx="8" fill="rgba(36,96,224,0.25)" stroke="rgba(36,96,224,0.5)" stroke-width="1"/>
-      <text x="462" y="74" fill="#6a9fff" font-size="9" font-family="monospace">AI</text>
-      <rect x="511" y="62" width="60" height="17" rx="8" fill="rgba(36,96,224,0.25)" stroke="rgba(36,96,224,0.5)" stroke-width="1"/>
-      <text x="517" y="74" fill="#6a9fff" font-size="9" font-family="monospace">半導體</text>
-      <rect x="579" y="62" width="60" height="17" rx="8" fill="rgba(36,96,224,0.25)" stroke="rgba(36,96,224,0.5)" stroke-width="1"/>
-      <text x="585" y="74" fill="#6a9fff" font-size="9" font-family="monospace">IC設計</text>
-    </svg>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    向下探索
   </div>
-  <div class="scroll-hint"><div class="scroll-line"></div>向下探索</div>
 </div>
 
-<!-- TICKER -->
+<!-- ── TICKER ── -->
 <div class="ticker-wrap">
   <div class="ticker" id="ticker">
-    <div class="ticker-item">資訊工程 <span class="up">▲ AI熱門 | 預測 88%</span><div class="ticker-sep"></div></div>
+    <div class="ticker-item">資訊工程 <span class="up">▲ AI熱門 · 預測88%</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">電機工程 <span class="up">▲ 半導體缺工</span><div class="ticker-sep"></div></div>
-    <div class="ticker-item">醫學系 <span class="up">▲ 穩定高薪</span><div class="ticker-sep"></div></div>
+    <div class="ticker-item">醫學系 <span class="up">▲ 穩定高薪250萬+</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">外文系 <span class="dn">▼ AI衝擊高</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">數學A <span class="dn">▼ 今年偏難，均標估8</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">護理系 <span class="up">▲ 月薪衝破7萬</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">商管私立 <span class="dn">▼ 缺額壓力增加</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">奈米/材料 <span class="up">▲ 台積電需求</span><div class="ticker-sep"></div></div>
-    <div class="ticker-item">資訊工程 <span class="up">▲ AI熱門 | 預測 88%</span><div class="ticker-sep"></div></div>
+    <div class="ticker-item">資訊工程 <span class="up">▲ AI熱門 · 預測88%</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">電機工程 <span class="up">▲ 半導體缺工</span><div class="ticker-sep"></div></div>
-    <div class="ticker-item">醫學系 <span class="up">▲ 穩定高薪</span><div class="ticker-sep"></div></div>
+    <div class="ticker-item">醫學系 <span class="up">▲ 穩定高薪250萬+</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">外文系 <span class="dn">▼ AI衝擊高</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">數學A <span class="dn">▼ 今年偏難，均標估8</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">護理系 <span class="up">▲ 月薪衝破7萬</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">商管私立 <span class="dn">▼ 缺額壓力增加</span><div class="ticker-sep"></div></div>
     <div class="ticker-item">奈米/材料 <span class="up">▲ 台積電需求</span><div class="ticker-sep"></div></div>
+  </div>
+</div>
+
+<!-- ── HORIZONTAL BANNER SECTION ── -->
+<div class="banner-section reveal">
+  <!-- Row 1 -->
+  <div class="banner-row">
+    <!-- Wide: Score trends -->
+    <div class="info-banner ib-dark" style="flex:2">
+      <div class="ib-inner">
+        <div class="ib-illus" style="background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:1.2rem">
+          <svg width="160" height="110" viewBox="0 0 160 110">
+            <text x="4" y="14" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">// 歷年門檻</text>
+            <!-- Axes -->
+            <line x1="20" y1="20" x2="20" y2="90" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+            <line x1="20" y1="90" x2="155" y2="90" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+            <!-- Data lines -->
+            <polyline points="30,78 60,65 90,55 120,46 150,40" fill="none" stroke="#7d9e8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="30,82 60,76 90,72 120,68 150,63" fill="none" stroke="#7a8fa0" stroke-width="2" stroke-dasharray="5,3" stroke-linecap="round"/>
+            <polyline points="30,72 60,68 90,62 120,58 150,54" fill="none" stroke="#c89830" stroke-width="1.5" stroke-dasharray="3,3" stroke-linecap="round"/>
+            <!-- Points -->
+            <circle cx="150" cy="40" r="4" fill="#7d9e8a"/>
+            <circle cx="150" cy="63" r="3.5" fill="#7a8fa0"/>
+            <circle cx="150" cy="54" r="3" fill="#c89830"/>
+            <!-- Labels -->
+            <text x="22" y="95" font-size="7" fill="rgba(255,255,255,.3)" font-family="monospace">111</text>
+            <text x="55" y="95" font-size="7" fill="rgba(255,255,255,.3)" font-family="monospace">112</text>
+            <text x="85" y="95" font-size="7" fill="rgba(255,255,255,.3)" font-family="monospace">113</text>
+            <text x="115" y="95" font-size="7" fill="rgba(255,255,255,.3)" font-family="monospace">114</text>
+            <text x="142" y="95" font-size="7" fill="rgba(255,255,255,.5)" font-family="monospace">115預</text>
+            <text x="155" y="43" font-size="8" fill="#7d9e8a" font-family="monospace">14</text>
+            <text x="155" y="66" font-size="8" fill="#7a8fa0" font-family="monospace">13</text>
+          </svg>
+        </div>
+        <div class="ib-body">
+          <div class="ib-tag" style="color:rgba(255,255,255,.45)">📊 歷年趨勢</div>
+          <div class="ib-title">門檻走勢一目了然</div>
+          <div class="ib-sub">整合 111–115 年各科系錄取門檻，預測今年分數線走向，讓落點不再靠猜。</div>
+        </div>
+      </div>
+      <div class="ib-overlay"></div>
+    </div>
+
+    <!-- AI Prediction banner -->
+    <div class="info-banner ib-terra">
+      <div class="ib-inner">
+        <div class="ib-illus" style="background:rgba(194,78,40,.1);display:flex;align-items:center;justify-content:center">
+          <svg width="110" height="110" viewBox="0 0 110 110">
+            <!-- Probability rings -->
+            <circle cx="55" cy="55" r="40" fill="none" stroke="rgba(194,78,40,.15)" stroke-width="8"/>
+            <circle cx="55" cy="55" r="40" fill="none" stroke="#c24e28" stroke-width="8" stroke-linecap="round" stroke-dasharray="175 251" transform="rotate(-90 55 55)" opacity=".85"/>
+            <text x="55" y="50" text-anchor="middle" font-size="18" fill="#c24e28" font-family="monospace" font-weight="600">75%</text>
+            <text x="55" y="65" text-anchor="middle" font-size="9" fill="rgba(60,28,16,.6)" font-family="monospace">AI預測</text>
+            <!-- Stars -->
+            <text x="88" y="24" font-size="14" fill="rgba(194,78,40,.6)">✦</text>
+            <text x="14" y="92" font-size="10" fill="rgba(194,78,40,.4)">✦</text>
+          </svg>
+        </div>
+        <div class="ib-body">
+          <div class="ib-tag">🤖 AI 預測</div>
+          <div class="ib-title">個人化錄取率</div>
+          <div class="ib-sub">根據你的分差、科系名額與今年考試難度，計算專屬錄取機率。</div>
+        </div>
+      </div>
+      <div class="ib-overlay"></div>
+    </div>
+  </div>
+
+  <!-- Row 2 -->
+  <div class="banner-row">
+    <!-- Industry pulse -->
+    <div class="info-banner ib-sage">
+      <div class="ib-inner">
+        <div class="ib-illus" style="background:rgba(107,158,122,.12);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;padding:1rem">
+          <div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;max-width:130px">
+            <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);background:rgba(107,158,122,.25);color:var(--sage);border:1px solid rgba(107,158,122,.4)">▲ AI</span>
+            <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);background:rgba(107,158,122,.25);color:var(--sage);border:1px solid rgba(107,158,122,.4)">▲ 半導體</span>
+            <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);background:rgba(184,112,64,.18);color:var(--clay);border:1px solid rgba(184,112,64,.3)">▼ 文字工作</span>
+            <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);background:rgba(107,158,122,.25);color:var(--sage);border:1px solid rgba(107,158,122,.4)">▲ 護理</span>
+            <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);background:rgba(109,138,170,.2);color:var(--slate);border:1px solid rgba(109,138,170,.3)">→ 商管</span>
+          </div>
+        </div>
+        <div class="ib-body">
+          <div class="ib-tag">🏭 產業標籤</div>
+          <div class="ib-title">不只看分數，更看出路</div>
+          <div class="ib-sub">每個科系標注產業景氣、AI 衝擊度與今年就業趨勢，選系更有底氣。</div>
+        </div>
+      </div>
+      <div class="ib-overlay"></div>
+    </div>
+
+    <!-- Tiebreak concept -->
+    <div class="info-banner ib-slate" style="flex:2">
+      <div class="ib-inner">
+        <div class="ib-illus" style="background:rgba(109,138,170,.12);display:flex;align-items:center;justify-content:center;padding:1.2rem">
+          <svg width="150" height="100" viewBox="0 0 150 100">
+            <text x="4" y="14" font-size="8" fill="rgba(26,44,64,.5)" font-family="monospace">// 各科分差</text>
+            <!-- Bars -->
+            <rect x="10" y="25" width="130" height="8" rx="4" fill="rgba(109,138,170,.15)"/>
+            <rect x="10" y="25" width="104" height="8" rx="4" fill="#7a8fa0" opacity=".7"/>
+            <line x1="93" y1="22" x2="93" y2="36" stroke="rgba(26,44,64,.5)" stroke-width="1.5"/>
+            <text x="10" y="22" font-size="8" fill="rgba(26,44,64,.6)" font-family="monospace">數學A</text>
+            <text x="100" y="22" font-size="8" fill="#7a8fa0" font-family="monospace">+2 ⭐決勝</text>
+
+            <rect x="10" y="45" width="130" height="8" rx="4" fill="rgba(109,138,170,.15)"/>
+            <rect x="10" y="45" width="87" height="8" rx="4" fill="#b08060" opacity=".6"/>
+            <line x1="93" y1="42" x2="93" y2="56" stroke="rgba(26,44,64,.5)" stroke-width="1.5"/>
+            <text x="10" y="42" font-size="8" fill="rgba(26,44,64,.6)" font-family="monospace">英文</text>
+            <text x="85" y="62" font-size="8" fill="#b08060" font-family="monospace">-1</text>
+
+            <rect x="10" y="65" width="130" height="8" rx="4" fill="rgba(109,138,170,.15)"/>
+            <rect x="10" y="65" width="116" height="8" rx="4" fill="#6b9e7a" opacity=".7"/>
+            <line x1="93" y1="62" x2="93" y2="76" stroke="rgba(26,44,64,.5)" stroke-width="1.5"/>
+            <text x="10" y="62" font-size="8" fill="rgba(26,44,64,.6)" font-family="monospace">自然</text>
+            <text x="118" y="82" font-size="8" fill="#6b9e7a" font-family="monospace">+3</text>
+            <text x="100" y="90" font-size="8" fill="rgba(26,44,64,.4)" font-family="monospace">│ 錄取線</text>
+          </svg>
+        </div>
+        <div class="ib-body">
+          <div class="ib-tag">🎯 安全區間</div>
+          <div class="ib-title">逐科差距視覺化</div>
+          <div class="ib-sub">橫條圖清楚標示每科與錄取線的差距，⭐決勝科目特別顯示，一眼看懂差在哪。</div>
+        </div>
+      </div>
+      <div class="ib-overlay"></div>
+    </div>
   </div>
 </div>
 
@@ -572,15 +771,15 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 <div id="analyzer-wrap">
 <div class="analyzer-inner">
   <div class="eyebrow">落點分析工具</div>
-  <h2 class="sec-title" style="margin-bottom:.4rem">輸入分數，AI 幫你算</h2>
-  <p class="sec-sub" style="margin-bottom:2rem;font-size:14px">填入學測各科成績，立即獲得落點卡片、AI 預測錄取率、歷年趨勢與個人化升學報告</p>
+  <h2 class="sec-title">輸入分數，AI 幫你算</h2>
+  <p class="sec-sub">填入學測各科成績，立即獲得落點卡片、AI 預測錄取率、歷年趨勢與個人化升學報告</p>
 
   <div class="analyzer-grid">
     <!-- INPUT PANEL -->
     <div class="panel">
       <div class="panel-hd">
         <span class="panel-title">📋 輸入資料</span>
-        <span style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">STEP 1/2</span>
+        <span style="font-size:11px;color:var(--ink3);font-family:var(--mono)">STEP 1/2</span>
       </div>
       <div class="panel-body">
         <div class="tabs">
@@ -595,19 +794,19 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
           <div class="subject-grid">
             <div class="sub-item">
               <div class="sub-label">國文 <span class="sub-val" id="v-chi">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-chi" oninput="updateSub('chi',this.value,'#8b5cf6')">
+              <input type="range" min="1" max="15" value="10" id="s-chi" oninput="updateSub('chi',this.value)">
             </div>
             <div class="sub-item">
               <div class="sub-label">英文 <span class="sub-val" id="v-eng">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-eng" oninput="updateSub('eng',this.value,'#2460e0')">
+              <input type="range" min="1" max="15" value="10" id="s-eng" oninput="updateSub('eng',this.value)">
             </div>
             <div class="sub-item">
               <div class="sub-label">數學 A <span class="sub-val" id="v-matA">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-matA" oninput="updateSub('matA',this.value,'#bf4a22')">
+              <input type="range" min="1" max="15" value="10" id="s-matA" oninput="updateSub('matA',this.value)">
             </div>
             <div class="sub-item">
               <div class="sub-label">自然 <span class="sub-val" id="v-sci">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-sci" oninput="updateSub('sci',this.value,'#2e7a50')">
+              <input type="range" min="1" max="15" value="10" id="s-sci" oninput="updateSub('sci',this.value)">
             </div>
           </div>
           <div class="score-viz" id="scoreViz"></div>
@@ -615,11 +814,11 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
           <div class="subject-grid">
             <div class="sub-item">
               <div class="sub-label">數學 B <span class="sub-optional" id="matB-opt">未選考</span><span class="sub-val" id="v-matB" style="display:none">0</span></div>
-              <input type="range" min="0" max="15" value="0" id="s-matB" oninput="updateOptional('matB',this.value,'#b8720c')">
+              <input type="range" min="0" max="15" value="0" id="s-matB" oninput="updateOptional('matB',this.value)">
             </div>
             <div class="sub-item">
               <div class="sub-label">社會 <span class="sub-optional" id="soc-opt">未選考</span><span class="sub-val" id="v-soc" style="display:none">0</span></div>
-              <input type="range" min="0" max="15" value="0" id="s-soc" oninput="updateOptional('soc',this.value,'#ec4899')">
+              <input type="range" min="0" max="15" value="0" id="s-soc" oninput="updateOptional('soc',this.value)">
             </div>
           </div>
           <div class="optional-note">⚠ 數B 和社會為選考科目，未報名請保持 0。</div>
@@ -667,7 +866,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
             </div>
           </div>
           <div class="fg">
-            <label class="fl">學校偏好 <span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)">（符合偏好的科系排在前面，不隱藏其他）</span></label>
+            <label class="fl">學校偏好 <span style="font-size:10px;color:var(--ink3);font-family:var(--mono)">（符合偏好的排前面，不隱藏其他）</span></label>
             <select class="fs" id="school-pref">
               <option value="any">不限，依分數優先</option>
               <option value="top3">頂大（台清交成）優先</option>
@@ -676,19 +875,19 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
               <option value="national">國立大學優先</option>
             </select>
           </div>
-          <div style="margin-top:12px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);border-left:2px solid var(--sage)">
-            <div style="font-size:11px;font-family:var(--font-mono);color:var(--text3);margin-bottom:4px">// 邏輯鬆綁說明</div>
-            <div style="font-size:12px;color:var(--text2);line-height:1.65">
-              所有科系都會顯示，包含未達門檻的「挑戰志願」（以淡化方式呈現）。<br>
-              <strong style="color:var(--sage)">穩上</strong>（+2↑）·
-              <strong style="color:var(--slate)">目標</strong>（-1~+1）·
-              <strong style="color:var(--clay)">衝刺</strong>（-2~-4）·
-              <strong style="color:var(--plum)">挑戰</strong>（未達門檻）
+          <div style="margin-top:12px;padding:10px 12px;background:var(--cream3);border-radius:var(--r);border-left:2px solid var(--sage)">
+            <div style="font-size:11px;font-family:var(--mono);color:var(--ink3);margin-bottom:4px">// 顯示邏輯說明</div>
+            <div style="font-size:12px;color:var(--ink2);line-height:1.65">
+              所有科系都顯示，包含未達門檻的「挑戰志願」（淡化呈現）。<br>
+              <span style="color:var(--sage);font-weight:500">穩上</span>（+2↑）·
+              <span style="color:var(--slate);font-weight:500">目標</span>（-1~+1）·
+              <span style="color:var(--clay);font-weight:500">衝刺</span>（-2~-4）·
+              <span style="color:var(--plum);font-weight:500">挑戰</span>（未達門檻）
             </div>
           </div>
         </div>
 
-        <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">
+        <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis(event)">
           <span id="btn-text">✦ 開始 AI 落點分析</span>
           <div class="spinner" id="btn-spinner"></div>
         </button>
@@ -699,53 +898,89 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
     <div class="panel" id="results-panel">
       <div class="panel-hd">
         <span class="panel-title">📈 分析結果</span>
-        <span style="font-size:11px;color:var(--text3);font-family:var(--font-mono)" id="result-time">—</span>
+        <span style="font-size:11px;color:var(--ink3);font-family:var(--mono)" id="result-time">—</span>
       </div>
       <div class="panel-body">
-        <!-- Empty State -->
+        <!-- Empty state with cute mascot -->
         <div class="results-empty" id="results-empty">
-          <div class="empty-illus">
-            <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
-              <ellipse cx="100" cy="148" rx="68" ry="8" fill="rgba(0,0,0,0.05)"/>
-              <rect x="62" y="70" width="76" height="8" rx="3" fill="#bf4a22" opacity=".85"/>
-              <polygon points="100,50 148,74 100,80 52,74" fill="#9e3a18" opacity=".9"/>
-              <polygon points="100,50 148,74 100,66 52,74" fill="#bf4a22"/>
-              <line x1="148" y1="74" x2="152" y2="96" stroke="#bf4a22" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="152" cy="100" r="4" fill="#bf4a22" opacity=".7"/>
-              <rect x="55" y="110" width="38" height="28" rx="3" fill="#7d9e8a" opacity=".7"/>
-              <rect x="108" y="115" width="36" height="24" rx="3" fill="#7a8fa0" opacity=".7"/>
-              <circle cx="40" cy="60" r="2.5" fill="#bf4a22" opacity=".2"/>
-              <circle cx="164" cy="55" r="2" fill="#7d9e8a" opacity=".3"/>
+          <div class="empty-mascot" aria-hidden="true">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <!-- Graduation cap mascot -->
+              <ellipse cx="60" cy="108" rx="32" ry="7" fill="rgba(0,0,0,.08)"/>
+              <!-- Body -->
+              <rect x="30" y="58" width="60" height="46" rx="16" fill="#c24e28"/>
+              <!-- Face -->
+              <circle cx="60" cy="52" r="30" fill="#f5e8e0"/>
+              <circle cx="60" cy="52" r="28" fill="#fdf0e8"/>
+              <!-- Eyes -->
+              <ellipse cx="48" cy="50" rx="5" ry="6" fill="#1c1712"/>
+              <ellipse cx="72" cy="50" rx="5" ry="6" fill="#1c1712"/>
+              <circle cx="50" cy="48" r="2" fill="white"/>
+              <circle cx="74" cy="48" r="2" fill="white"/>
+              <!-- Smile -->
+              <path d="M48 60 Q60 70 72 60" fill="none" stroke="#c24e28" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Rosy cheeks -->
+              <ellipse cx="40" cy="58" rx="7" ry="5" fill="rgba(194,78,40,.2)"/>
+              <ellipse cx="80" cy="58" rx="7" ry="5" fill="rgba(194,78,40,.2)"/>
+              <!-- Graduation cap -->
+              <rect x="32" y="18" width="56" height="8" rx="3" fill="#1c1712"/>
+              <polygon points="60,10 88,24 60,28 32,24" fill="#2c2018"/>
+              <!-- Tassel -->
+              <line x1="88" y1="20" x2="94" y2="38" stroke="#c89830" stroke-width="2"/>
+              <circle cx="94" cy="40" r="3" fill="#c89830"/>
+              <!-- Stars -->
+              <text x="8" y="30" font-size="14" fill="rgba(194,78,40,.3)" style="animation:starSpin 1s ease .5s both;display:inline-block">✦</text>
+              <text x="98" y="50" font-size="10" fill="rgba(200,152,48,.4)">★</text>
+              <text x="4" y="70" font-size="8" fill="rgba(107,158,122,.4)">✦</text>
             </svg>
           </div>
-          <div style="font-family:var(--font-serif);font-size:1.15rem">準備好了嗎？</div>
-          <div style="font-size:13px;color:var(--text3);max-width:220px;line-height:1.7">填入分數後按分析，幾秒內獲得 AI 落點報告</div>
+          <div style="font-family:var(--serif);font-size:1.15rem;margin-top:.5rem">準備好了嗎？</div>
+          <div style="font-size:13px;color:var(--ink3);max-width:220px;line-height:1.7;text-align:center">填入分數後按分析，幾秒內獲得 AI 落點報告 ✨</div>
           <div class="empty-steps">
             <div class="empty-step"><span class="step-num">01</span>拖動滑桿輸入各科分數</div>
             <div class="empty-step"><span class="step-num">02</span>（選填）個人資料讓結果更準</div>
-            <div class="empty-step"><span class="step-num">03</span>點擊「開始 AI 落點分析」</div>
+            <div class="empty-step"><span class="step-num">03</span>點擊「開始 AI 落點分析」✦</div>
           </div>
         </div>
 
-        <!-- Results Content -->
+        <!-- Results content -->
         <div id="results-content" style="display:none">
-          <div class="summary-row" id="summary-row">
-            <div class="sum-card"><div class="sum-num sage" id="r-safe">0</div><div class="sum-label">穩上 ≥+2</div></div>
-            <div class="sum-card"><div class="sum-num slate" id="r-target">0</div><div class="sum-label">目標 -1~+1</div></div>
-            <div class="sum-card"><div class="sum-num clay" id="r-reach">0</div><div class="sum-label">衝刺 -2~-4</div></div>
-            <div class="sum-card"><div class="sum-num plum" id="r-challenge">0</div><div class="sum-label">挑戰 未達門檻</div></div>
+          <div class="summary-row">
+            <div class="sum-card sage-card">
+              <span class="sum-emoji">🎯</span>
+              <div class="sum-num sage" id="r-safe">0</div>
+              <div class="sum-label">穩上 ≥+2</div>
+            </div>
+            <div class="sum-card slate-card">
+              <span class="sum-emoji">📊</span>
+              <div class="sum-num slate" id="r-target">0</div>
+              <div class="sum-label">目標 -1~+1</div>
+            </div>
+            <div class="sum-card clay-card">
+              <span class="sum-emoji">⚡</span>
+              <div class="sum-num clay" id="r-reach">0</div>
+              <div class="sum-label">衝刺 -2~-4</div>
+            </div>
+            <div class="sum-card plum-card">
+              <span class="sum-emoji">🌟</span>
+              <div class="sum-num plum" id="r-challenge">0</div>
+              <div class="sum-label">挑戰 未達門檻</div>
+            </div>
           </div>
-          <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:var(--font-mono)" id="match-meta">// 載入中…</div>
+          <div class="match-meta-row">
+            <div class="match-meta-text" id="match-meta">// 載入中…</div>
+            <button class="match-sort-btn" onclick="toggleSort()">⇅ 排序</button>
+          </div>
           <div class="match-list" id="match-list"></div>
           <hr class="divider">
-          <div class="ai-box" id="ai-box">
+          <div class="ai-box">
             <div class="ai-box-hd"><div class="ai-icon">✦</div>AI 升學顧問分析報告</div>
             <div class="ai-content" id="ai-content">
               <div id="ai-skeleton">
                 <div class="sk-block">
                   <div class="sk-hd skeleton" style="width:55%"></div>
                   <div class="sk-para"><div class="sk-lg skeleton" style="width:92%"></div><div class="sk-md skeleton" style="width:84%"></div><div class="sk-md skeleton" style="width:77%"></div></div>
-                  <div class="sk-para"><div class="sk-lg skeleton" style="width:88%"></div><div class="sk-md skeleton" style="width:70%"></div><div class="sk-sm skeleton" style="width:58%"></div></div>
+                  <div class="sk-para"><div class="sk-lg skeleton" style="width:88%"></div><div class="sk-md skeleton" style="width:70%"></div></div>
                   <div class="sk-para"><div class="sk-md skeleton" style="width:95%"></div><div class="sk-md skeleton" style="width:80%"></div></div>
                 </div>
               </div>
@@ -761,7 +996,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 <div class="section-divider"></div>
 
 <!-- COMPARISON TABLE -->
-<section class="section" id="compare-section">
+<section class="section reveal" id="compare-section">
   <div class="eyebrow">科系比較</div>
   <h2 class="sec-title">選系前先看這張表</h2>
   <p class="sec-sub">整合就業率、年薪中位、AI 衝擊度，幫你做出有依據的決定</p>
@@ -771,25 +1006,25 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
     <table class="comp-table">
       <thead><tr><th>科系 / 學校</th><th>年薪中位</th><th>AI 衝擊</th><th>就業穩定</th><th>趨勢</th></tr></thead>
       <tbody>
-        <tr><td><div class="dept-name">資訊工程學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--font-mono);font-size:13px;color:var(--accent)">160 萬</span></td><td><span class="ai-tag pos">💚 受益</span></td><td><span class="trend-up">98%</span></td><td><span class="trend-up">↑ 強勢</span></td></tr>
-        <tr><td><div class="dept-name">電機工程學系</div><div class="dept-school">國立成功大學</div></td><td><span style="font-family:var(--font-mono);font-size:13px;color:var(--accent)">150 萬</span></td><td><span class="ai-tag pos">💚 受益</span></td><td><span class="trend-up">97%</span></td><td><span class="trend-up">↑ 強勢</span></td></tr>
-        <tr><td><div class="dept-name">醫學系</div><div class="dept-school">國立成功大學</div></td><td><span style="font-family:var(--font-mono);font-size:13px;color:var(--accent)">250 萬+</span></td><td><span class="ai-tag neu">🟡 輔助化</span></td><td><span class="trend-up">99%</span></td><td><span class="trend-up">↑ 穩健</span></td></tr>
-        <tr><td><div class="dept-name">財務金融學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--font-mono);font-size:13px;color:var(--accent)">100 萬</span></td><td><span class="ai-tag neu">🟡 部分</span></td><td><span class="trend-up">88%</span></td><td><span class="trend-neu">→ 穩定</span></td></tr>
-        <tr><td><div class="dept-name">護理學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--font-mono);font-size:13px;color:var(--accent)">85 萬</span></td><td><span class="ai-tag pos">💚 低影響</span></td><td><span class="trend-up">98%</span></td><td><span class="trend-up">↑ 缺工</span></td></tr>
-        <tr><td><div class="dept-name">外文學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--font-mono);font-size:13px;color:var(--accent)">55 萬</span></td><td><span class="ai-tag neg">🔴 高度衝擊</span></td><td><span class="trend-dn">75%</span></td><td><span class="trend-dn">↓ 承壓</span></td></tr>
+        <tr><td><div class="dept-name">資訊工程學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">160 萬</span></td><td><span class="ai-tag pos">💚 受益</span></td><td><span class="trend-up">98%</span></td><td><span class="trend-up">↑ 強勢</span></td></tr>
+        <tr><td><div class="dept-name">電機工程學系</div><div class="dept-school">國立成功大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">150 萬</span></td><td><span class="ai-tag pos">💚 受益</span></td><td><span class="trend-up">97%</span></td><td><span class="trend-up">↑ 強勢</span></td></tr>
+        <tr><td><div class="dept-name">醫學系</div><div class="dept-school">國立成功大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">250 萬+</span></td><td><span class="ai-tag neu">🟡 輔助化</span></td><td><span class="trend-up">99%</span></td><td><span class="trend-up">↑ 穩健</span></td></tr>
+        <tr><td><div class="dept-name">財務金融學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">100 萬</span></td><td><span class="ai-tag neu">🟡 部分</span></td><td><span class="trend-up">88%</span></td><td><span class="trend-neu">→ 穩定</span></td></tr>
+        <tr><td><div class="dept-name">護理學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">85 萬</span></td><td><span class="ai-tag pos">💚 低影響</span></td><td><span class="trend-up">98%</span></td><td><span class="trend-up">↑ 缺工</span></td></tr>
+        <tr><td><div class="dept-name">外文學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">55 萬</span></td><td><span class="ai-tag neg">🔴 高度衝擊</span></td><td><span class="trend-dn">75%</span></td><td><span class="trend-dn">↓ 承壓</span></td></tr>
       </tbody>
     </table>
     </div>
   </div>
-  <p style="font-size:11px;color:var(--text3);margin-top:.75rem;font-family:var(--font-mono)">* 年薪中位估算，以大學甄選委員會公告為準。</p>
+  <p style="font-size:11px;color:var(--ink3);margin-top:.75rem;font-family:var(--mono)">* 年薪中位估算，以大學甄選委員會公告為準。</p>
 </section>
 
 <div class="section-divider"></div>
 
 <!-- FEATURES -->
-<section class="section" id="features-section">
+<section class="section reveal" id="features-section">
   <div class="eyebrow">為什麼不一樣</div>
-  <h2 class="sec-title">不只查分數，<em style="font-style:italic;color:var(--accent)">更看趨勢</em></h2>
+  <h2 class="sec-title">不只查分數，<em style="font-style:italic;color:var(--terra)">更看趨勢</em></h2>
   <p class="sec-sub">整合歷年數據、AI 預測錄取率、產業標籤，讓你做出有根據的選擇</p>
   <div class="features-grid">
     <div class="feat-card"><div class="feat-num">01</div><div class="feat-tag">📊 歷史數據</div><h3>三年趨勢分析</h3><p>整合 111–113 年歷年門檻數據，判斷今年分數線走勢，讓你的落點預測更準確。</p></div>
@@ -803,8 +1038,8 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 
 <div class="section-divider"></div>
 
-<!-- DEADLINES -->
-<div class="timeline-section" id="deadlines-section">
+<!-- TIMELINE -->
+<div class="timeline-section reveal" id="deadlines-section">
 <div class="timeline-inner">
   <div class="eyebrow">重要時程</div>
   <h2 class="sec-title">申請時程整合</h2>
@@ -844,14 +1079,14 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   <div class="tpanel" id="track-exam">
     <div class="tl-group"><div class="tl-group-hd" onclick="toggleGroup(this)"><div class="tl-group-hd-left"><span class="tl-phase-badge">PHASE 1</span><span class="tl-group-title">報名與考試</span></div><div class="tl-toggle">▾</div></div>
     <div class="tl-group-body open"><div class="timeline-list">
-      <div class="tl-item"><div class="tl-dot">✏️</div><div class="tl-body"><div class="tl-date">2025年6月3日–16日</div><div class="tl-title">分科測驗報名</div><div class="tl-desc">至大考中心網站完成報名並繳費。</div></div></div>
-      <div class="tl-item"><div class="tl-dot">📚</div><div class="tl-body"><div class="tl-date">2025年7月11日–12日</div><div class="tl-title">分科測驗考試</div><div class="tl-desc">物理化學數甲生物（第一天）；歷史地理數乙公民（第二天）。</div></div></div>
+      <div class="tl-item"><div class="tl-dot">✏️</div><div class="tl-body"><div class="tl-date">2025年6月3日–16日</div><div class="tl-title">分科測驗報名</div></div></div>
+      <div class="tl-item"><div class="tl-dot">📚</div><div class="tl-body"><div class="tl-date">2025年7月11日–12日</div><div class="tl-title">分科測驗考試</div></div></div>
     </div></div></div>
     <div class="tl-group"><div class="tl-group-hd" onclick="toggleGroup(this)"><div class="tl-group-hd-left"><span class="tl-phase-badge">PHASE 2</span><span class="tl-group-title">放榜與志願填寫</span></div><div class="tl-toggle">▾</div></div>
     <div class="tl-group-body open"><div class="timeline-list">
-      <div class="tl-item"><div class="tl-dot">📊</div><div class="tl-body"><div class="tl-date">2025年7月29日</div><div class="tl-title">分科測驗成績放榜</div><div class="tl-desc">研究各校採計科目組合，規劃最有利志願組合。</div></div></div>
-      <div class="tl-item"><div class="tl-dot">✏️</div><div class="tl-body"><div class="tl-date">2025年8月1日–4日</div><div class="tl-title">分發入學志願選填</div><div class="tl-desc">最多可填 100 個志願，建議分三層：穩上、目標、衝刺。</div><div class="tl-tip">💡 填好填滿比只填幾個安全</div></div></div>
-      <div class="tl-item"><div class="tl-dot">🎉</div><div class="tl-body"><div class="tl-date">2025年8月13日</div><div class="tl-title">分發入學放榜</div><div class="tl-desc">統一分發結果公布，於規定期限內完成入學手續。</div></div></div>
+      <div class="tl-item"><div class="tl-dot">📊</div><div class="tl-body"><div class="tl-date">2025年7月29日</div><div class="tl-title">分科測驗成績放榜</div></div></div>
+      <div class="tl-item"><div class="tl-dot">✏️</div><div class="tl-body"><div class="tl-date">2025年8月1日–4日</div><div class="tl-title">分發入學志願選填</div><div class="tl-desc">最多可填 100 個志願。</div><div class="tl-tip">💡 填好填滿比只填幾個安全</div></div></div>
+      <div class="tl-item"><div class="tl-dot">🎉</div><div class="tl-body"><div class="tl-date">2025年8月13日</div><div class="tl-title">分發入學放榜</div></div></div>
     </div></div></div>
   </div>
 </div>
@@ -879,7 +1114,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   <div class="chat-win" id="chatWin">
     <div class="chat-hd"><div class="chat-hd-dot"></div><div class="chat-hd-title">AI 升學顧問</div></div>
     <div class="chat-msgs" id="chatMsgs">
-      <div class="msg bot">嗨！我是 AI 升學顧問，有任何關於學測落點、科系選擇、申請流程的問題都可以問我 😊</div>
+      <div class="msg bot">嗨！我是 AI 升學顧問，有任何關於學測落點、科系選擇的問題都可以問我 😊</div>
     </div>
     <div class="chat-inp-row">
       <input type="text" class="chat-inp" id="chatInp" placeholder="問我任何問題..." onkeydown="if(event.key==='Enter')sendChat()">
@@ -895,11 +1130,26 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 const API_BASE = 'https://college-ai-api.onrender.com';
 let abroad = 'n';
 let selStr = [], selInt = [];
+let sortAsc = false;
+let lastMatches = [];
+let lastSchoolPrefVal = null;
 
 const subColors = {chi:'#8b5cf6',eng:'#2460e0',matA:'#bf4a22',sci:'#2e7a50',matB:'#b8720c',soc:'#ec4899'};
 const subNames  = {chi:'國文',eng:'英文',matA:'數甲',sci:'自然',matB:'數乙',soc:'社會'};
 
-/* ── helpers ── */
+/* ── Scroll reveal ── */
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}});
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+/* ── Nav ripple on btn-analyze ── */
+document.querySelector('.btn-analyze')?.addEventListener('mousemove',function(e){
+  const r=this.getBoundingClientRect();
+  this.style.setProperty('--x',((e.clientX-r.left)/r.width*100)+'%');
+  this.style.setProperty('--y',((e.clientY-r.top)/r.height*100)+'%');
+});
+
 function scrollToSec(sel){document.querySelector(sel)?.scrollIntoView({behavior:'smooth',block:'start'})}
 
 function notify(msg,ok=true){
@@ -926,9 +1176,8 @@ function switchTrack(name,btn){
 function toggleGroup(hd){
   const body=hd.nextElementSibling;
   const tog=hd.querySelector('.tl-toggle');
-  const open=body.classList.contains('open');
-  body.classList.toggle('open',!open);
-  tog.classList.toggle('open',!open);
+  body.classList.toggle('open',!body.classList.contains('open'));
+  tog.classList.toggle('open',!tog.classList.contains('open'));
 }
 
 /* ── Score viz ── */
@@ -939,20 +1188,35 @@ function renderScoreViz(){
     const v=+document.getElementById('s-'+k).value;
     const pct=Math.round((v/15)*100);
     return `<div class="sv-col">
-      <div class="sv-bar-wrap"><div class="sv-bar" style="height:${Math.max(4,pct*.54)}px;background:${subColors[k]}55;border-top:2px solid ${subColors[k]}"></div></div>
+      <div class="sv-bar-wrap"><div class="sv-bar" style="height:${Math.max(4,pct*.52)}px;background:${subColors[k]}55;border-top:2.5px solid ${subColors[k]};border-radius:3px 3px 0 0"></div></div>
       <div class="sv-val" style="color:${subColors[k]}">${v}</div>
       <div class="sv-label">${subNames[k]}</div></div>`;
   }).join('');
   const matBv=+document.getElementById('s-matB').value;
   const socv=+document.getElementById('s-soc').value;
-  if(matBv>0) html+=`<div class="sv-col"><div class="sv-bar-wrap"><div class="sv-bar" style="height:${Math.max(4,(matBv/15)*100*.54)}px;background:${subColors.matB}55;border-top:2px solid ${subColors.matB}"></div></div><div class="sv-val" style="color:${subColors.matB}">${matBv}</div><div class="sv-label">數乙</div></div>`;
-  if(socv>0) html+=`<div class="sv-col"><div class="sv-bar-wrap"><div class="sv-bar" style="height:${Math.max(4,(socv/15)*100*.54)}px;background:${subColors.soc}55;border-top:2px solid ${subColors.soc}"></div></div><div class="sv-val" style="color:${subColors.soc}">${socv}</div><div class="sv-label">社會</div></div>`;
+  if(matBv>0) html+=`<div class="sv-col"><div class="sv-bar-wrap"><div class="sv-bar" style="height:${Math.max(4,(matBv/15)*100*.52)}px;background:${subColors.matB}55;border-top:2.5px solid ${subColors.matB};border-radius:3px 3px 0 0"></div></div><div class="sv-val" style="color:${subColors.matB}">${matBv}</div><div class="sv-label">數乙</div></div>`;
+  if(socv>0) html+=`<div class="sv-col"><div class="sv-bar-wrap"><div class="sv-bar" style="height:${Math.max(4,(socv/15)*100*.52)}px;background:${subColors.soc}55;border-top:2.5px solid ${subColors.soc};border-radius:3px 3px 0 0"></div></div><div class="sv-val" style="color:${subColors.soc}">${socv}</div><div class="sv-label">社會</div></div>`;
   viz.innerHTML=html;
 }
 
 function updateSub(id,v){
-  document.getElementById('v-'+id).textContent=v;
+  const el=document.getElementById('v-'+id);
+  el.textContent=v;
+  el.classList.remove('bump');
+  void el.offsetWidth; // reflow
+  el.classList.add('bump');
   updateTotal(); renderScoreViz();
+  // Emit tiny star on high scores
+  if(+v===15) spawnStar(document.getElementById('s-'+id));
+}
+
+function spawnStar(rangeEl){
+  const r=rangeEl.getBoundingClientRect();
+  const star=document.createElement('div');
+  star.textContent='⭐';
+  star.style.cssText=`position:fixed;left:${r.left+r.width*.8}px;top:${r.top-10}px;font-size:18px;pointer-events:none;z-index:999;animation:floatC .9s ease forwards`;
+  document.body.appendChild(star);
+  setTimeout(()=>star.remove(),900);
 }
 
 function updateOptional(id,v){
@@ -985,218 +1249,196 @@ function setAbroad(v){
   document.getElementById('abroad-y').classList.toggle('active',v==='y');
 }
 
-/* ── Probability Ring SVG ── */
+/* ── Toggle sort ── */
+function toggleSort(){
+  sortAsc=!sortAsc;
+  if(lastMatches.length) renderMatchCards(lastMatches,lastSchoolPrefVal);
+}
+
+/* ── Prob ring ── */
 function buildProbRing(prob){
-  const offset = 100 - prob;  // stroke-dashoffset: 0 = full, 100 = empty
-  const cls = prob>=75?'high':prob>=50?'mid':prob>=25?'low':'vlow';
-  const color = {high:'var(--sage)',mid:'var(--slate)',low:'var(--clay)',vlow:'var(--plum)'}[cls];
-  // Use a circle with stroke-dasharray=100 + stroke-dashoffset trick via inline CSS
+  const pct=Math.round(prob)||0;
+  const offset=100-pct;
+  const cls=pct>=75?'high':pct>=50?'mid':pct>=25?'low':'vlow';
+  const color={high:'var(--sage)',mid:'var(--slate)',low:'var(--clay)',vlow:'var(--plum)'}[cls];
+  const desc=pct>=75?'高機率':pct>=50?'有機會':pct>=25?'需努力':'低機率';
   return `<div class="mc-prob-ring">
     <svg class="prob-ring-svg" width="44" height="44" viewBox="0 0 36 36">
       <circle class="prob-ring-track" cx="18" cy="18" r="15.9"/>
       <circle class="prob-ring-fill ${cls}" cx="18" cy="18" r="15.9"
         transform="rotate(-90 18 18)"
-        style="stroke-dashoffset:${offset};--offset:${offset}"
-      />
-      <text x="18" y="13" text-anchor="middle" font-family="monospace" font-size="6" fill="${color}" font-weight="600">${prob}%</text>
-      <text x="18" y="22" text-anchor="middle" font-family="monospace" font-size="4.5" fill="rgba(0,0,0,0.35)">預測</text>
+        style="stroke-dashoffset:${offset}"/>
+      <text x="18" y="13" text-anchor="middle" font-family="monospace" font-size="6.5" fill="${color}" font-weight="600">${pct}%</text>
+      <text x="18" y="22" text-anchor="middle" font-family="monospace" font-size="4.2" fill="rgba(0,0,0,0.3)">預測</text>
     </svg>
     <div class="prob-label">
-      <span class="prob-pct" style="color:${color}">${prob}%</span>
-      <span class="prob-desc">${prob>=75?'高機率'  :prob>=50?'有機會':prob>=25?'需努力':'低機率'}</span>
+      <span class="prob-pct" style="color:${color}">${pct}%</span>
+      <span class="prob-desc">${desc}</span>
     </div>
+    <span class="prob-trend">${pct>=75?'📈 強':pct>=50?'📊 穩':pct>=25?'📉 衝':' ⚠ 難'}</span>
   </div>`;
 }
 
-/* ── Safety Band ── */
+/* ── Safety band ── */
 function buildSafetyBand(m){
-  const detail = m.subject_detail || {};
+  const detail=m.subject_detail||{};
   if(!Object.keys(detail).length) return '';
-
-  const sorted = Object.entries(detail).sort((a,b)=>{
+  const sorted=Object.entries(detail).sort((a,b)=>{
     if(a[1].is_tiebreak) return -1;
     if(b[1].is_tiebreak) return 1;
-    return b[1].multiplier - a[1].multiplier;
+    return b[1].multiplier-a[1].multiplier;
   });
-
-  const rows = sorted.map(([subj,d])=>{
-    const {student,cutoff,gap,multiplier,is_tiebreak,below_threshold} = d;
+  const rows=sorted.map(([subj,d])=>{
+    const {student,cutoff,gap,multiplier,is_tiebreak,below_threshold}=d;
     if(cutoff===null||cutoff===undefined) return '';
-
-    const pctY = Math.min(100,Math.max(0,Math.round(((student-1)/14)*100)));
-    const pctC = Math.min(100,Math.max(0,Math.round(((cutoff-1)/14)*100)));
-    const fillColor = gap>0?'var(--sage)':gap<0?'var(--clay)':'var(--slate)';
-
-    let gapBadge;
-    if(gap>0)       gapBadge=`<span class="sb-gap-badge sb-gap-pos">+${gap}</span>`;
-    else if(gap<0)  gapBadge=`<span class="sb-gap-badge sb-gap-neg">${gap}</span>`;
-    else            gapBadge=`<span class="sb-gap-badge sb-gap-zero">±0</span>`;
-
-    const tbLabel  = is_tiebreak ?`<span class="sb-tb-label">⭐決勝</span>`:'' ;
-    const thrWarn  = below_threshold?`<span class="sb-threshold-warn">⚠未達門檻</span>`:'';
-
+    const pctY=Math.min(100,Math.max(0,Math.round(((student-1)/14)*100)));
+    const pctC=Math.min(100,Math.max(0,Math.round(((cutoff-1)/14)*100)));
+    const fillColor=gap>0?'var(--sage)':gap<0?'var(--clay)':'var(--slate)';
+    let gapBadge=gap>0?`<span class="sb-gap-badge sb-gap-pos">+${gap}</span>`:gap<0?`<span class="sb-gap-badge sb-gap-neg">${gap}</span>`:`<span class="sb-gap-badge sb-gap-zero">±0</span>`;
+    const tbLabel=is_tiebreak?`<span class="sb-tb-label">⭐決勝</span>`:'';
+    const thrWarn=below_threshold?`<span class="sb-threshold-warn">⚠未達門檻</span>`:'';
     return `<div class="sb-row${is_tiebreak?' tb-row':''}">
-      <div class="sb-top">
-        <span class="sb-subj">${subj}</span>
-        <span class="sb-mult">×${multiplier}</span>
-        ${tbLabel}${thrWarn}
-      </div>
+      <div class="sb-top"><span class="sb-subj">${subj}</span><span class="sb-mult">×${multiplier}</span>${tbLabel}${thrWarn}</div>
       <div class="sb-track">
         <div class="sb-fill" style="width:${Math.min(pctY,pctC)}%;background:${fillColor};opacity:.4"></div>
         ${gap>0?`<div class="sb-fill" style="left:${pctC}%;width:${pctY-pctC}%;background:var(--sage);opacity:.55"></div>`:''}
         <div class="sb-cutoff" style="left:calc(${pctC}% - 1px)"></div>
       </div>
-      <div class="sb-bot">
-        <span class="sb-you">你 <b style="color:${fillColor}">${student}</b></span>
-        <span class="sb-cut">線 ${cutoff}</span>
-        ${gapBadge}
-      </div>
+      <div class="sb-bot"><span class="sb-you">你 <b style="color:${fillColor}">${student}</b></span><span class="sb-cut">線 ${cutoff}</span>${gapBadge}</div>
     </div>`;
   }).join('');
-
-  return `<div class="safety-band">
-    <div class="sb-title">// 各科安全區間 ｜ = 錄取線 ⭐ = 決勝科目</div>
-    ${rows}
-  </div>`;
+  return `<div class="safety-band"><div class="sb-title">// 各科安全區間 ｜=錄取線 ⭐=決勝</div>${rows}</div>`;
 }
 
 /* ── History mini ── */
 function buildHistory(past){
   if(!past||!Object.keys(past).length) return '';
-  const items = Object.entries(past).map(([yr,thr])=>{
-    const vals = Object.values(thr).join('/');
+  const items=Object.entries(past).map(([yr,thr])=>{
+    const vals=Object.values(thr).join('/');
     return `<span class="mc-history-item"><span class="mc-history-yr">${yr}年</span><span class="mc-history-val">${vals}</span></span>`;
   }).join('');
   return `<div class="mc-history">歷年門檻：${items}</div>`;
 }
 
 /* ── Render match cards ── */
-function renderMatchCards(matches, schoolPrefVal){
-  const ml = document.getElementById('match-list');
-  ml.innerHTML = '';
-
-  const TOP_SCHOOLS=['國立臺灣大學','國立清華大學','國立交通大學','國立陽明交通大學','國立成功大學'];
-  const withPref = matches.slice(0,15).map(m=>({
+function renderMatchCards(matches,schoolPrefVal){
+  lastMatches=matches; lastSchoolPrefVal=schoolPrefVal;
+  const ml=document.getElementById('match-list');
+  ml.innerHTML='';
+  const TOP=['國立臺灣大學','國立清華大學','國立交通大學','國立陽明交通大學','國立成功大學'];
+  const withPref=matches.slice(0,15).map(m=>({
     ...m,
-    _pref: schoolPrefVal!==null&&(
-      (schoolPrefVal==='top3'&&TOP_SCHOOLS.includes(m.school))||
+    _pref:schoolPrefVal!==null&&(
+      (schoolPrefVal==='top3'&&TOP.includes(m.school))||
       (schoolPrefVal==='north'&&m.school_region==='north')||
       (schoolPrefVal==='south'&&m.school_region==='south')||
       (schoolPrefVal==='national'&&m.school_is_national)
     )
   }));
-
-  const prefList  = withPref.filter(m=>m._pref);
-  const otherList = withPref.filter(m=>!m._pref);
-  const sorted    = [...prefList,...otherList];
+  const sorted=[...withPref].sort((a,b)=>sortAsc?a.gap-b.gap:b.gap-a.gap);
+  const prefList=sorted.filter(m=>m._pref);
+  const otherList=sorted.filter(m=>!m._pref);
+  const final=[...prefList,...otherList];
 
   if(schoolPrefVal&&prefList.length>0){
     const hd=document.createElement('div');
-    hd.style.cssText='font-size:10px;color:var(--accent);font-family:var(--font-mono);padding:2px 0 6px;letter-spacing:.06em';
+    hd.style.cssText='font-size:10px;color:var(--terra);font-family:var(--mono);padding:2px 0 6px;letter-spacing:.06em';
     hd.textContent=`★ 符合偏好（${prefList.length} 筆）`;
     ml.appendChild(hd);
   }
 
-  sorted.forEach((m,idx)=>{
-    const isChallenge = m.safety==='挑戰';
-    const sc = {穩上:'safe',目標:'target',衝刺:'reach',挑戰:'challenge'}[m.safety]||'reach';
-
+  final.forEach((m,idx)=>{
+    const isChallenge=m.safety==='挑戰';
+    const sc={穩上:'safe',目標:'target',衝刺:'reach',挑戰:'challenge'}[m.safety]||'reach';
     if(idx===prefList.length&&prefList.length>0){
       const sep=document.createElement('div');
-      sep.style.cssText='font-size:10px;color:var(--text3);font-family:var(--font-mono);padding:6px 0 4px;letter-spacing:.06em;border-top:1px dashed var(--border);margin-top:4px';
+      sep.style.cssText='font-size:10px;color:var(--ink3);font-family:var(--mono);padding:6px 0 4px;letter-spacing:.06em;border-top:1px dashed var(--border);margin-top:4px';
       sep.textContent=`其他科系（${otherList.length} 筆）`;
       ml.appendChild(sep);
     }
-
-    let cardClass='match-card';
-    if(m._pref)      cardClass+=' pref-hl';
-    if(isChallenge)  cardClass+=' challenge';
-
-    // chips
     const chips=[];
-    if(m._pref)       chips.push(`<span class="chip chip-pref">★ 偏好</span>`);
-    if(isChallenge)   chips.push(`<span class="chip chip-challenge">挑戰志願</span>`);
+    if(m._pref) chips.push(`<span class="chip chip-pref">★ 偏好</span>`);
+    if(isChallenge) chips.push(`<span class="chip chip-challenge">挑戰志願</span>`);
     else if(!m.is_preferred) chips.push(`<span class="chip chip-related">相關推薦</span>`);
-
-    // industry tags
     const indTags=(m.industry_tags||[]).map(t=>`<span class="ind-tag">${t}</span>`).join('');
-
-    // salary
     const salStr=(m.salary_median_raw&&m.salary_median_raw!=='—')?m.salary_median_raw:'—';
-
-    const probRing  = buildProbRing(m.admission_prob||0);
-    const safetyBand= buildSafetyBand(m);
-    const history   = buildHistory(m.past_thresholds);
-    const careers   = (m.career||[]).map(c=>`<span class="ctag">${c}</span>`).join('');
-
     const card=document.createElement('div');
-    card.className=cardClass;
-    card.style.animationDelay=`${idx*.06}s`;
+    card.className=`match-card${m._pref?' pref-hl':''}${isChallenge?' challenge-card':''}`;
+    card.style.animationDelay=`${idx*.065}s`;
     card.innerHTML=`
       <div class="mc-top">
         <div class="mc-left">
-          <div class="mc-name-row">
-            <span class="mc-name">${m.major}</span>
-            ${chips.join('')}
-          </div>
+          <div class="mc-name-row"><span class="mc-name">${m.major}</span>${chips.join('')}</div>
           <div class="mc-school">${m.school}</div>
           ${indTags?`<div class="industry-tags" style="margin-top:4px">${indTags}</div>`:''}
         </div>
         <div class="mc-right">
           <span class="badge ${sc}">${m.safety}</span>
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">決勝差 ${m.gap>=0?'+':''}${m.gap}</span>
-          ${m.quota?`<span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">名額 ${m.quota}</span>`:''}
+          <span style="font-family:var(--mono);font-size:10px;color:var(--ink3)">決勝差 ${m.gap>=0?'+':''}${m.gap}</span>
+          ${m.quota?`<span style="font-family:var(--mono);font-size:9px;color:var(--ink3)">名額 ${m.quota}</span>`:''}
         </div>
       </div>
-      ${probRing}
-      ${safetyBand}
-      ${history}
+      ${buildProbRing(m.admission_prob||0)}
+      ${buildSafetyBand(m)}
+      ${buildHistory(m.past_thresholds||{})}
       <div class="mc-stats">
         <div class="mc-stat">💰 ${salStr}</div>
         ${m.group?`<div class="mc-stat">🏫 ${m.group}</div>`:''}
         ${m.employment_rate?`<div class="mc-stat">📊 就業率 ${m.employment_rate}%</div>`:''}
         ${m.ai_impact&&m.ai_impact!=='未知'?`<div class="mc-stat">🤖 ${m.ai_impact}</div>`:''}
       </div>
-      ${careers?`<div class="career-tags">${careers}</div>`:''}
-      ${m.notes?`<div style="font-size:11px;color:var(--text3);margin-top:6px">💡 ${m.notes}</div>`:''}
-      ${isChallenge&&m.failed_thresholds&&Object.keys(m.failed_thresholds).length?`
-        <div style="margin-top:8px;padding:6px 9px;background:var(--plumL);border-radius:6px;border-left:2px solid var(--plum);font-size:11px;color:var(--plum);font-family:var(--font-mono)">
-          ⚠ 未達門檻：${Object.entries(m.failed_thresholds).map(([s,r])=>`${s} 需 ${r} 級`).join('、')}
-        </div>`:''}
+      ${(m.career||[]).length?`<div class="career-tags">${(m.career||[]).map(c=>`<span class="ctag">${c}</span>`).join('')}</div>`:''}
+      ${m.notes?`<div style="font-size:11px;color:var(--ink3);margin-top:6px">💡 ${m.notes}</div>`:''}
+      ${isChallenge&&m.failed_thresholds&&Object.keys(m.failed_thresholds).length?`<div class="challenge-warn">⚠ 未達門檻：${Object.entries(m.failed_thresholds).map(([s,r])=>`${s} 需 ${r} 級`).join('、')}</div>`:''}
     `;
     ml.appendChild(card);
   });
 
   if(!matches.length){
-    ml.innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--text3);font-size:13px">目前分數條件下無符合科系，請確認選考科目是否正確（數學A/B、自然、社會）</div>';
+    ml.innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--ink3);font-size:13px">目前分數條件下無符合科系，請確認選考科目是否正確（數學A/B、自然、社會）</div>';
   }
 }
 
-/* ── Main analysis function ── */
-async function runAnalysis(){
-  const scores={
-    '國文': +document.getElementById('s-chi').value,
-    '英文': +document.getElementById('s-eng').value,
-    '數學A':+document.getElementById('s-matA').value,
-    '自然': +document.getElementById('s-sci').value,
-  };
-  const matB=+document.getElementById('s-matB').value;
-  const soc =+document.getElementById('s-soc').value;
-  if(matB>0) scores['數學B']=matB;
-  if(soc>0)  scores['社會']=soc;
+/* ── Main ── */
+async function runAnalysis(e){
+  // Ripple effect on button
+  if(e){
+    const btn=document.getElementById('analyzeBtn');
+    const r=btn.getBoundingClientRect();
+    btn.style.setProperty('--x',((e.clientX-r.left)/r.width*100)+'%');
+    btn.style.setProperty('--y',((e.clientY-r.top)/r.height*100)+'%');
+  }
 
-  const schoolPref   =document.getElementById('school-pref').value;
+  const chiV=+document.getElementById('s-chi').value;
+  const engV=+document.getElementById('s-eng').value;
+  const matAV=+document.getElementById('s-matA').value;
+  const sciV=+document.getElementById('s-sci').value;
+
+  // Client-side validation
+  const missing=[];
+  if(!chiV||chiV<1||chiV>15) missing.push('國文');
+  if(!engV||engV<1||engV>15) missing.push('英文');
+  if(!matAV||matAV<1||matAV>15) missing.push('數學A');
+  if(!sciV||sciV<1||sciV>15) missing.push('自然');
+  if(missing.length){notify('請確認必考科目：'+missing.join('、'),false);return;}
+
+  const scores={'國文':chiV,'英文':engV,'數學A':matAV,'自然':sciV};
+  const matB=+document.getElementById('s-matB').value;
+  const soc=+document.getElementById('s-soc').value;
+  if(matB>0) scores['數學B']=matB;
+  if(soc>0) scores['社會']=soc;
+
+  const schoolPref=document.getElementById('school-pref').value;
   const schoolPrefVal=schoolPref!=='any'?schoolPref:null;
   const profile={
-    name:       document.getElementById('name').value||'同學',
-    strengths:  selStr.join('、'),
-    interests:  selInt.join('、'),
+    name:document.getElementById('name').value||'同學',
+    strengths:selStr.join('、'),
+    interests:selInt.join('、'),
     personality:document.getElementById('personality').value,
-    出國意願:   abroad,
+    出國意願:abroad,
     school_pref:schoolPref,
   };
 
-  // UI reset
   document.getElementById('analyzeBtn').disabled=true;
   document.getElementById('btn-text').style.display='none';
   document.getElementById('btn-spinner').style.display='block';
@@ -1206,56 +1448,58 @@ async function runAnalysis(){
   document.getElementById('result-time').textContent='分析中...';
   document.getElementById('match-meta').textContent='// 載入中…';
 
-  // Reset AI skeleton
   const aiContent=document.getElementById('ai-content');
   aiContent.innerHTML=`<div id="ai-skeleton"><div class="sk-block">
     <div class="sk-hd skeleton" style="width:55%"></div>
     <div class="sk-para"><div class="sk-lg skeleton" style="width:92%"></div><div class="sk-md skeleton" style="width:84%"></div><div class="sk-md skeleton" style="width:77%"></div></div>
     <div class="sk-para"><div class="sk-lg skeleton" style="width:88%"></div><div class="sk-md skeleton" style="width:70%"></div></div>
-    <div class="sk-para"><div class="sk-md skeleton" style="width:95%"></div><div class="sk-md skeleton" style="width:80%"></div></div>
+    <div class="sk-para"><div class="sk-md skeleton" style="width:95%"></div><div class="sk-sm skeleton" style="width:65%"></div></div>
   </div></div>`;
 
   try{
-    const res  = await fetch(`${API_BASE}/analyze`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({scores,profile})
-    });
-    const data = await res.json();
-    if(data.status!=='success') throw new Error(data.message||'分析失敗');
+    const res=await fetch(`${API_BASE}/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scores,profile})});
+    const data=await res.json();
+    if(data.status!=='success'){
+      const msg=data.message||'分析失敗';
+      if(msg.includes('缺少')||msg.includes('missing')) throw new Error('⚠ '+msg+' — 請切換到「學測分數」確認填寫');
+      throw new Error(msg);
+    }
 
-    // Re-enable button immediately
     document.getElementById('analyzeBtn').disabled=false;
     document.getElementById('btn-text').style.display='';
     document.getElementById('btn-spinner').style.display='none';
 
-    // Summary
     const s=data.summary||{};
-    document.getElementById('r-safe').textContent      =s.safe      ||0;
-    document.getElementById('r-target').textContent    =s.target    ||0;
-    document.getElementById('r-reach').textContent     =s.reach     ||0;
-    document.getElementById('r-challenge').textContent =s.challenge ||0;
+    // Animate count up for summary numbers
+    ['r-safe','r-target','r-reach','r-challenge'].forEach((id,i)=>{
+      const el=document.getElementById(id);
+      const val=[s.safe,s.target,s.reach||s.challenge||0,s.challenge||0][i]||0;
+      el.style.animation='none'; void el.offsetWidth;
+      el.style.animation='countUp .5s ease both';
+      el.style.animationDelay=`${i*.08}s`;
+      setTimeout(()=>el.textContent=val,i*80);
+    });
 
     const total=data.matches?.length||0;
     document.getElementById('match-meta').textContent=
-      `// ${total} 個科系（穩上 ${s.safe||0} · 目標 ${s.target||0} · 衝刺 ${s.reach||0} · 挑戰 ${s.challenge||0}）`;
+      `// ${total} 個科系（穩上 ${s.safe||0} · 目標 ${s.target||0} · 衝刺 ${(s.reach)||0} · 挑戰 ${s.challenge||0}）`;
 
-    renderMatchCards(data.matches||[], schoolPrefVal);
+    renderMatchCards(data.matches||[],schoolPrefVal);
     document.getElementById('result-time').textContent=new Date().toLocaleTimeString('zh-TW');
-    notify('✓ 落點卡片已載入');
+    notify('✓ 落點卡片載入完成 🎉');
 
-    // AI reveal
     const aiSkel=document.getElementById('ai-skeleton');
     if(aiSkel) aiSkel.remove();
     const reveal=document.createElement('div');
     reveal.className='ai-reveal';
     reveal.innerHTML=data.result||'<p>AI 分析無回應</p>';
     aiContent.appendChild(reveal);
-    notify('✓ AI 報告完成');
+    notify('✓ AI 報告生成完成 ✦');
 
-  }catch(e){
-    document.getElementById('ai-content').innerHTML=`<p style="color:var(--clay)">⚠️ ${e.message}</p>`;
+  }catch(err){
+    aiContent.innerHTML=`<p style="color:var(--clay)">⚠️ ${err.message}</p>`;
     document.getElementById('result-time').textContent='分析失敗';
-    notify('分析失敗：'+e.message,false);
+    notify('分析失敗：'+err.message,false);
     document.getElementById('analyzeBtn').disabled=false;
     document.getElementById('btn-text').style.display='';
     document.getElementById('btn-spinner').style.display='none';
@@ -1268,7 +1512,6 @@ function toggleChat(){
   chatOpen=!chatOpen;
   document.getElementById('chatWin').classList.toggle('open',chatOpen);
 }
-
 async function sendChat(){
   const inp=document.getElementById('chatInp');
   const msg=inp.value.trim();
@@ -1280,13 +1523,10 @@ async function sendChat(){
   loadEl.className='msg bot'; loadEl.textContent='...';
   msgs.appendChild(loadEl); msgs.scrollTop=msgs.scrollHeight;
   try{
-    const res=await fetch(`${API_BASE}/chat`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({message:msg,session_id:'web_'+location.hostname})
-    });
+    const res=await fetch(`${API_BASE}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,session_id:'web_'+location.hostname})});
     const data=await res.json();
     loadEl.textContent=data.reply||'（無回應）';
-  }catch(e){loadEl.textContent='連線失敗，請稍後再試。';}
+  }catch{loadEl.textContent='連線失敗，請稍後再試。';}
   msgs.scrollTop=msgs.scrollHeight;
 }
 
