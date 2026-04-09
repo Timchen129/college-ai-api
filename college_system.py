@@ -65,7 +65,8 @@ def normalize_subject_keys(scores: dict) -> dict:
     """
     out = {}
     for k, v in scores.items():
-        normalized = SUBJECT_ALIASES.get(k, k)   # 有別名就換，沒有就原樣
+        clean_key = str(k).strip()
+        normalized = SUBJECT_ALIASES.get(clean_key, clean_key)   # 有別名就換，沒有就原樣
         if normalized in out:
             # 同一科目送了兩次（例如同時有 '數學' 和 '數學A'），取較大值
             out[normalized] = max(out[normalized], v)
