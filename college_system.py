@@ -32,10 +32,9 @@ app = Flask(__name__)
 CORS(app, origins="*")
 
 # ============================================================
-# 第一階段：科目名稱對照表 & 正規化（修復 NameError）
+# 第一階段：科目名稱對照表 & 正規化
 # ============================================================
 
-# 前端或不同版本 JSON 可能送來的科目別名 → 統一名稱
 SUBJECT_ALIASES: dict[str, str] = {
     "數學":   "數學A",
     "數甲":   "數學A",
@@ -54,11 +53,6 @@ SUBJECT_ALIASES: dict[str, str] = {
 ALL_SUBJECTS = ["國文", "英文", "數學A", "數學B", "自然", "社會", "物理", "化學", "生物", "地科"]
 
 def normalize_subject_keys(scores: dict) -> dict:
-    """
-    把前端送來的 scores dict 中的科目名稱正規化。
-    例如 {"數甲": 14} → {"數學A": 14}
-    不認識的 key 直接保留（避免誤刪）。
-    """
     out = {}
     for k, v in scores.items():
         canonical = SUBJECT_ALIASES.get(k, k)
@@ -81,7 +75,7 @@ def school_region(school: str) -> str:
     return "central"
 
 # ============================================================
-# 第二階段：今年考試環境背景（寫死常數）
+# 第二階段：今年考試環境背景
 # ============================================================
 
 EXAM_CONTEXT_2025 = {
@@ -118,13 +112,43 @@ EXAM_CONTEXT_STR = "\n".join([
 ])
 
 # ============================================================
-# 科系資料庫（擴充格式：支援 past_thresholds / quota / industry_tags）
+# 科系資料庫
 # ============================================================
+
+def _normalize_major_types(m: dict) -> dict:
+    """
+    ✅ 修復：將 majors.json 讀入的數值欄位統一轉為 int，
+    防止 JSON 字串型數字（如 "14"）在比較與排序時引發
+    'str' > 'int' TypeError。
+    """
+    for field in ("last_year_cutoff_by_subject", "thresholds"):
+        if field in m and isinstance(m[field], dict):
+            m[field] = {
+                k: int(v)
+                for k, v in m[field].items()
+                if v is not None
+            }
+    if "quota" in m:
+        try:
+            m["quota"] = int(m["quota"])
+        except (TypeError, ValueError):
+            m["quota"] = 50  # 預設值
+    # past_thresholds 內層也正規化
+    if "past_thresholds" in m and isinstance(m["past_thresholds"], dict):
+        for yr, thr in m["past_thresholds"].items():
+            if isinstance(thr, dict):
+                m["past_thresholds"][yr] = {
+                    k: int(v) for k, v in thr.items() if v is not None
+                }
+    return m
+
 
 def load_majors() -> list:
     try:
         with open("majors.json", "r", encoding="utf-8") as f:
             data = json.load(f)
+        # ✅ 修復：讀入後立即做型別正規化
+        data = [_normalize_major_types(m) for m in data]
         print(f"[OK] 讀入 majors.json，共 {len(data)} 筆科系")
         return data
     except FileNotFoundError:
@@ -132,7 +156,7 @@ def load_majors() -> list:
     except Exception as e:
         print(f"[WARN] majors.json 讀取失敗：{e}")
 
-    # 內建資料集（含新欄位示範）
+    # 內建資料集（值均為 int，不需正規化）
     return [
         {
             "school": "國立臺灣大學", "major": "電機工程學系", "group": "理工",
@@ -319,20 +343,13 @@ def calculate_combined_pr(scores: dict) -> int:
     return round(sum(calculate_pr(v) for v in scores.values()) / len(scores))
 
 # ============================================================
-# 第一階段：邏輯鬆綁的落點配對
+# 落點配對
 # ============================================================
 
 def compute_admission_probability(gap: int, passed_threshold: bool, quota: int = 50) -> int:
-    """
-    根據分差、門檻狀況與錄取名額估算「AI預測錄取率」（%）。
-    這是啟發式估算，非精確統計模型。
-    """
     if not passed_threshold:
-        # 未達門檻：根據差距給出低機率
-        base = max(0, 5 + gap * 3)   # gap 是負數，如 -2 → 5-6 = -1 → 0
+        base = max(0, 5 + gap * 3)
         return min(base, 15)
-
-    # 已達門檻：gap 越大越穩
     if gap >= 3:    return 95
     if gap >= 2:    return 88
     if gap >= 1:    return 78
@@ -341,27 +358,31 @@ def compute_admission_probability(gap: int, passed_threshold: bool, quota: int =
     if gap == -2:   return 28
     return max(5, 15 + gap * 5)
 
+
 def match_majors(scores: dict) -> list:
-    """
-    邏輯鬆綁版：不再硬性過濾任何科系。
-    門檻未達 → is_preferred = False、safety = "挑戰"、opacity 提示前端淡化。
-    gap 極低（< -5）才跳過（防止清單爆炸）。
-    """
     results = []
-    MIN_GAP_HARD = -5  # 只過濾差距極大的（純防爆用）
+    MIN_GAP_HARD = -5
 
     for m in majors_db:
         multipliers: dict = m.get("multipliers", {})
-        thresholds: dict  = m.get("thresholds", {})
-        cutoff_map: dict  = m.get("last_year_cutoff_by_subject", {})
-        past: dict        = m.get("past_thresholds", {})
+        # ✅ 修復：每次從 majors_db 取出時再次確保型別正確，
+        # 防止直接操作 dict 物件時殘留字串型數字。
+        cutoff_map: dict = {
+            k: int(v)
+            for k, v in m.get("last_year_cutoff_by_subject", {}).items()
+            if v is not None
+        }
+        thresholds: dict = {
+            k: int(v)
+            for k, v in m.get("thresholds", {}).items()
+            if v is not None
+        }
+        past: dict = m.get("past_thresholds", {})
 
-        # 過濾出學生有分數且倍率 > 0 的科目
         active = {s: w for s, w in multipliers.items() if w > 0 and s in scores}
         if not active:
             continue
 
-        # ── 門檻檢查（不過濾，只標記）──
         failed_thresholds = {
             subj: req
             for subj, req in thresholds.items()
@@ -369,25 +390,23 @@ def match_majors(scores: dict) -> list:
         }
         passed_threshold = len(failed_thresholds) == 0
 
-        # ── 決勝科目計算 ──
         min_mult = min(active.values())
         tiebreak_subjects = [s for s, w in active.items() if w == min_mult]
 
         gap = None
         tiebreak_subject = None
         for subj in tiebreak_subjects:
-            student_val = scores.get(subj, 0)
+            student_val = int(scores.get(subj, 0))   # ✅ 確保學生分數也是 int
             cutoff_val  = cutoff_map.get(subj)
             if cutoff_val is None: continue
-            g = student_val - cutoff_val
+            g = student_val - cutoff_val              # int - int，安全
             if gap is None or g < gap:
                 gap = g
                 tiebreak_subject = subj
 
         if gap is None: continue
-        if gap < MIN_GAP_HARD: continue  # 只過濾極端情況
+        if gap < MIN_GAP_HARD: continue
 
-        # ── 安全分類 ──
         if not passed_threshold:
             safety = "挑戰"
         elif gap >= 2:
@@ -397,11 +416,10 @@ def match_majors(scores: dict) -> list:
         else:
             safety = "衝刺"
 
-        # ── 各科詳情 ──
         subject_detail = {}
         for subj, mult in multipliers.items():
             if mult > 0:
-                sv  = scores.get(subj, 0)
+                sv  = int(scores.get(subj, 0))        # ✅ 強制 int
                 cv  = cutoff_map.get(subj)
                 subject_detail[subj] = {
                     "student":    sv,
@@ -413,12 +431,8 @@ def match_majors(scores: dict) -> list:
                     "below_threshold": sv < thresholds.get(subj, 0) if subj in thresholds else False,
                 }
 
-        # ── 歷年數據摘要 ──
-        history_summary = {}
-        for yr, thr in sorted(past.items()):
-            history_summary[yr] = thr
+        history_summary = {yr: thr for yr, thr in sorted(past.items())}
 
-        # ── AI 預測錄取率 ──
         quota = m.get("quota", 50)
         admission_prob = compute_admission_probability(gap, passed_threshold, quota)
 
@@ -431,21 +445,18 @@ def match_majors(scores: dict) -> list:
             "group":               m.get("group", ""),
             "tiebreak_subject":    tiebreak_subject,
             "tiebreak_multiplier": min_mult,
-            "gap":                 gap,
+            "gap":                 int(gap),           # ✅ 確保輸出的 gap 是 int
             "safety":              safety,
-            "is_preferred":        passed_threshold,   # False = 挑戰志願
-            "failed_thresholds":   failed_thresholds,  # 未達門檻詳情
+            "is_preferred":        passed_threshold,
+            "failed_thresholds":   failed_thresholds,
             "subject_detail":      subject_detail,
             "multipliers":         multipliers,
-            # ── 第二階段新欄位 ──
             "past_thresholds":     history_summary,
             "quota":               quota,
             "industry_tags":       m.get("industry_tags", []),
-            "admission_prob":      admission_prob,     # AI 預測錄取率
-            # ── 薪資 ──
+            "admission_prob":      admission_prob,
             "salary_median_raw":   m.get("salary_median", "—"),
             "salary_year_wan":     salary_year,
-            # ── 其他 ──
             "career":              m.get("career", []),
             "ai_impact":           m.get("ai_impact", "未知"),
             "notes":               m.get("notes", ""),
@@ -458,8 +469,8 @@ def match_majors(scores: dict) -> list:
             "school_region":       school_region(m["school"]),
         })
 
-    # 排序：passed_threshold 優先，然後 gap 降冪
-    results.sort(key=lambda x: (0 if x["is_preferred"] else 1, -x["gap"]))
+    # ✅ 修復：排序 key 使用 int(x["gap"]) 防禦殘留字串
+    results.sort(key=lambda x: (0 if x["is_preferred"] else 1, -int(x["gap"])))
     return results
 
 
@@ -474,7 +485,11 @@ def sort_by_school_pref(matches: list, pref: str) -> list:
         if pref == "national": return 0 if m["school_is_national"] else 1
         return 0
 
-    return sorted(matches, key=lambda m: (pref_score(m), 0 if m["is_preferred"] else 1, -m["gap"]))
+    # ✅ 修復：-int(m["gap"]) 確保排序 key 永遠是數值型別
+    return sorted(
+        matches,
+        key=lambda m: (pref_score(m), 0 if m["is_preferred"] else 1, -int(m["gap"]))
+    )
 
 # ============================================================
 # Markdown → HTML
@@ -502,7 +517,7 @@ def md_to_html(text: str) -> str:
     return f"<p>{text}</p>"
 
 # ============================================================
-# 第三階段：強化 AI Prompt（歷史數據 + 環境背景 + 預測機率）
+# AI Prompt
 # ============================================================
 
 def generate_advice(profile: dict, matches: list) -> str:
@@ -522,7 +537,6 @@ def generate_advice(profile: dict, matches: list) -> str:
         else "5. 出國升學：此同學目前無意願，略過。"
     )
 
-    # 前5名完整數據（含歷史 + 錄取名額 + 預測機率）
     compact = []
     for m in matches[:5]:
         entry = {
@@ -672,18 +686,15 @@ def analyze():
         scores  = data.get("scores", {})
         profile = data.get("profile", {})
 
-        # 正規化科目名稱（修復 NameError + 相容舊前端）
         scores = normalize_subject_keys(scores)
         profile["scores"] = scores
 
-        # 必填驗證
         missing = [s for s in ["國文", "英文"] if s not in scores]
         if missing:
             return jsonify({"status": "error", "message": f"缺少科目分數：{', '.join(missing)}"}), 400
         if "數學A" not in scores and "數學B" not in scores:
             return jsonify({"status": "error", "message": "請至少填入 數學A 或 數學B"}), 400
 
-        # 分數範圍驗證
         for subj, val in list(scores.items()):
             try:
                 val = int(val)
@@ -724,7 +735,7 @@ def analyze():
             "result":  ai_result,
             "matches": matches,
             "summary": summary,
-            "exam_context": EXAM_CONTEXT_2025["key_trends"][:3],  # 前端用
+            "exam_context": EXAM_CONTEXT_2025["key_trends"][:3],
         })
 
     except Exception as e:
