@@ -442,7 +442,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
   <a class="logo" href="#">
     <div class="logo-icon">🎓</div>
     升志 ScoreWise
-    <span class="logo-beta">v1.1</span>
+    <span class="logo-beta">v1.1.1</span>
   </a>
   <ul class="nav-links">
     <li><a href="#analyzer-wrap">落點分析</a></li>
@@ -1274,17 +1274,16 @@ async function runAnalysis(){
     notify('請確認必考科目分數：' + missingSubjs.join('、') + '（需為 1~15 級分）', false);
     return;
   }
-
+  
   const scores = {
     '國文':  chiVal,
     '英文':  engVal,
     '數學A': matAVal,
     '自然':  sciVal,
+    '數學B': matBVal,
+    '社會':  socVal
   };
-  const matB = +document.getElementById('s-matB').value;
-  const soc  = +document.getElementById('s-soc').value;
-  if(matB > 0) scores['數學B'] = matB;
-  if(soc  > 0) scores['社會']  = soc;
+  
 
   const schoolPref = document.getElementById('school-pref').value;
   const profile = {
