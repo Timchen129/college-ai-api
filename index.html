@@ -442,7 +442,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
   <a class="logo" href="#">
     <div class="logo-icon">🎓</div>
     升志 ScoreWise
-    <span class="logo-beta">v1.1.2</span>
+    <span class="logo-beta">v1.1.3</span>
   </a>
   <ul class="nav-links">
     <li><a href="#analyzer-wrap">落點分析</a></li>
@@ -504,8 +504,8 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
       <rect x="188" y="90" width="22" height="90" rx="3" fill="url(#barG4)" opacity="0.85"/>
       <text x="60" y="195" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace">國文</text>
       <text x="91" y="195" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace">英文</text>
-      <text x="122" y="195" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace">數甲</text>
-      <text x="154" y="195" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace">數乙</text>
+      <text x="122" y="195" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace">數A</text>
+      <text x="154" y="195" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace">數B</text>
       <text x="186" y="195" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace">自然</text>
       <text x="280" y="30" fill="rgba(255,255,255,0.4)" font-size="10" font-family="monospace">// 落點比對</text>
       <rect x="280" y="50" width="180" height="34" rx="6" fill="rgba(45,122,79,0.25)" stroke="rgba(45,122,79,0.5)" stroke-width="1"/>
@@ -984,7 +984,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
       <div class="tl-group-body open">
         <div class="timeline-list">
           <div class="tl-item"><div class="tl-dot">✏️</div><div class="tl-body"><div class="tl-date">2025年6月3日–6月16日</div><div class="tl-title">分科測驗報名</div><div class="tl-desc">至大考中心網站完成報名並繳費。</div></div></div>
-          <div class="tl-item"><div class="tl-dot">📚</div><div class="tl-body"><div class="tl-date">2025年7月11日–12日</div><div class="tl-title">分科測驗考試</div><div class="tl-desc">物理、化學、數甲、生物（第一天）；歷史、地理、數乙、公民（第二天）。</div></div></div>
+          <div class="tl-item"><div class="tl-dot">📚</div><div class="tl-body"><div class="tl-date">2025年7月11日–12日</div><div class="tl-title">分科測驗考試</div><div class="tl-desc">物理、化學、數A、生物（第一天）；歷史、地理、B、公民（第二天）。</div></div></div>
         </div>
       </div>
     </div>
@@ -1048,7 +1048,7 @@ const subColors = {
   chi:'#8b5cf6', eng:'#2563eb', matA:'#c8502a', sci:'#2d7a4f',
   matB:'#b5720a', soc:'#ec4899'
 };
-const subNames = {chi:'國文', eng:'英文', matA:'數甲', sci:'自然', matB:'數乙', soc:'社會'};
+const subNames = {chi:'國文', eng:'英文', matA:'數A', sci:'自然', matB:'數B', soc:'社會'};
 
 function scrollToSec(sel){document.querySelector(sel)?.scrollIntoView({behavior:'smooth',block:'start'})}
 
@@ -1098,7 +1098,7 @@ function renderScoreViz(){
   }).join('');
   const matBv=+document.getElementById('s-matB').value;
   const socv=+document.getElementById('s-soc').value;
-  if(matBv>0) html+=`<div class="sv-col"><div class="sv-bar-wrap"><div class="sv-bar" style="height:${Math.max(4,(matBv/15)*100*0.55)}px;background:${subColors.matB}55;border-top:2px solid ${subColors.matB}"></div></div><div class="sv-val" style="color:${subColors.matB}">${matBv}</div><div class="sv-label">數乙</div></div>`;
+  if(matBv>0) html+=`<div class="sv-col"><div class="sv-bar-wrap"><div class="sv-bar" style="height:${Math.max(4,(matBv/15)*100*0.55)}px;background:${subColors.matB}55;border-top:2px solid ${subColors.matB}"></div></div><div class="sv-val" style="color:${subColors.matB}">${matBv}</div><div class="sv-label">數B</div></div>`;
   if(socv>0) html+=`<div class="sv-col"><div class="sv-bar-wrap"><div class="sv-bar" style="height:${Math.max(4,(socv/15)*100*0.55)}px;background:${subColors.soc}55;border-top:2px solid ${subColors.soc}"></div></div><div class="sv-val" style="color:${subColors.soc}">${socv}</div><div class="sv-label">社會</div></div>`;
   viz.innerHTML=html;
 }
