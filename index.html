@@ -442,7 +442,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem;position:relative}
   <a class="logo" href="#">
     <div class="logo-icon">🎓</div>
     升志 ScoreWise
-    <span class="logo-beta">v1.1.3</span>
+    <span class="logo-beta">v1.1.2</span>
   </a>
   <ul class="nav-links">
     <li><a href="#analyzer-wrap">落點分析</a></li>
@@ -1257,12 +1257,12 @@ function advanceLoadingSteps(){
 // ── 主分析函式 ──
 async function runAnalysis(){
   // ── 收集分數（必考科目直接包含，選考科目僅在 > 0 時送出）──
-  const chiVal  = +document.getElementById('s-chi').value || 0;
-  const engVal  = +document.getElementById('s-eng').value || 0;
-  const matAVal = +document.getElementById('s-matA').value || 0;
-  const sciVal  = +document.getElementById('s-sci').value || 0;
-  const matBVal = +document.getElementById('s-matB').value || 0;
-  const socVal  = +document.getElementById('s-soc').value || 0;
+  const chiVal  = Number(document.getElementById('s-chi').value)  || 0;
+  const engVal  = Number(document.getElementById('s-eng').value)  || 0;
+  const matAVal = Number(document.getElementById('s-matA').value) || 0;
+  const matBVal = Number(document.getElementById('s-matB').value) || 0;
+  const sciVal  = Number(document.getElementById('s-sci').value)  || 0;
+  const socVal  = Number(document.getElementById('s-soc').value)  || 0;
   
   // ── Client-side 驗證：防止 0 值或無效分數送出 ──
   //const missingSubjs = [];
