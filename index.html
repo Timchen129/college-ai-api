@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>升志 ScoreWise v6 — AI 學測落點分析</title>
+<title>升志 ScoreWise v8 — AI 學測落點分析</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -54,8 +54,17 @@ body{font-family:var(--font);background:var(--cream);color:var(--ink);overflow-x
 @keyframes slideRight{from{width:0}to{width:var(--w)}}
 @keyframes cardPop{0%{opacity:0;transform:translateY(12px) scale(.97)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes ribbonSlide{from{transform:translateX(-100%)}to{transform:translateX(0)}}
-@keyframes starSpin{from{transform:rotate(0) scale(0)}to{transform:rotate(360deg) scale(1)}}
+@keyframes starSpin{0%{transform:rotate(0deg) scale(0);opacity:1}60%{transform:rotate(300deg) scale(1.4);opacity:1}100%{transform:rotate(720deg) scale(0.2);opacity:0}}
 @keyframes ripple{0%{transform:scale(0);opacity:.5}100%{transform:scale(4);opacity:0}}
+/* Star burst - particle flies off screen */
+@keyframes starBurst{0%{transform:translate(0,0) scale(1) rotate(0deg);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+@keyframes starGlow{0%{transform:scale(0) rotate(-20deg);opacity:0}30%{transform:scale(1.5) rotate(10deg);opacity:1}60%{transform:scale(1.1) rotate(-5deg);opacity:1}100%{transform:scale(0.3) rotate(20deg) translateY(-60px);opacity:0}}
+/* Apple-style parallax tilt */
+@keyframes tiltIn{from{transform:perspective(800px) rotateY(-8deg) translateY(10px);opacity:0}to{transform:perspective(800px) rotateY(0deg) translateY(0);opacity:1}}
+/* Magnetic hover pulse */
+@keyframes magneticPop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+/* Scroll indicator */
+@keyframes scrollDrop{0%{transform:translateY(0);opacity:1}100%{transform:translateY(12px);opacity:0}}
 
 /* ═══ NAV ═══ */
 nav{position:fixed;top:0;left:0;right:0;z-index:200;height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;background:rgba(248,244,238,0.94);backdrop-filter:blur(22px);border-bottom:1px solid var(--border)}
@@ -470,10 +479,84 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 .ib-sub{font-size:13px;line-height:1.6;opacity:.75}
 .ib-overlay{position:absolute;inset:0;background:rgba(0,0,0,.04);opacity:0;transition:opacity .2s}
 
-.ib-dark{background:linear-gradient(135deg,#1c2e40 0%,#0f1e2c 100%);color:#fff}
-.ib-sage{background:linear-gradient(135deg,#e8f0eb 0%,#d5e3da 100%);color:#1c2e20}
-.ib-terra{background:linear-gradient(135deg,#f5e8e0 0%,#ecd4c0 100%);color:#3c1c10}
-.ib-slate{background:linear-gradient(135deg,#e0e8f2 0%,#c8d8ea 100%);color:#1a2c40}
+/* ═══ FEATURE BANNERS — rebuilt with image support ═══ */
+.feature-banner{
+  border-radius:var(--r2);overflow:hidden;
+  display:flex;align-items:stretch;
+  position:relative;cursor:pointer;
+  transition:transform .32s var(--ease-spring),box-shadow .32s;
+  box-shadow:0 3px 16px rgba(0,0,0,.1);
+  flex:1;min-height:200px;
+}
+.feature-banner:hover{transform:translateY(-5px) scale(1.005);box-shadow:0 12px 40px rgba(0,0,0,.18)}
+.fb-photo-layer{
+  flex-shrink:0;width:260px;min-height:200px;
+  position:relative;overflow:hidden;
+}
+.fb-photo-layer img{
+  transition:transform .6s var(--ease-spring);
+}
+.feature-banner:hover .fb-photo-layer img{
+  transform:scale(1.06);
+}
+.fb-chart-anim{width:100%;height:100%;position:relative;z-index:1}
+.fb-content{
+  flex:1;padding:1.8rem 2rem;
+  display:flex;flex-direction:column;justify-content:center;
+  gap:0;
+}
+.fb-kicker{
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:.55rem;opacity:.65;
+}
+.fb-title{
+  font-family:var(--serif);font-size:1.55rem;margin-bottom:.55rem;
+  line-height:1.2;
+}
+.fb-desc{font-size:13px;line-height:1.7;opacity:.72;margin-bottom:.9rem}
+.fb-news-links{display:flex;flex-direction:column;gap:5px}
+.fb-news-link{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-family:var(--mono);
+  padding:4px 10px;border-radius:100px;
+  text-decoration:none;
+  border:1px solid;
+  transition:all .2s;width:fit-content;
+}
+/* Banner color themes */
+.fb-dark{background:linear-gradient(135deg,#1c2e40 0%,#0f1e2c 100%);color:#fff}
+.fb-dark .fb-news-link{color:rgba(255,255,255,.65);border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+.fb-dark .fb-news-link:hover{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.35)}
+.fb-terra{background:linear-gradient(135deg,#4a1a08 0%,#2e0f04 100%);color:#f5d8c8}
+.fb-terra .fb-news-link{color:rgba(245,216,200,.6);border-color:rgba(194,78,40,.3);background:rgba(194,78,40,.1)}
+.fb-terra .fb-news-link:hover{background:rgba(194,78,40,.25);color:#fde8d8;border-color:rgba(194,78,40,.5)}
+.fb-sage{background:linear-gradient(135deg,#1a3322 0%,#0d2015 100%);color:#d0eeda}
+.fb-sage .fb-news-link{color:rgba(107,158,122,.8);border-color:rgba(107,158,122,.25);background:rgba(107,158,122,.1)}
+.fb-sage .fb-news-link:hover{background:rgba(107,158,122,.2);color:#b0ddc0;border-color:rgba(107,158,122,.45)}
+.fb-slate{background:linear-gradient(135deg,#152035 0%,#0a1528 100%);color:#c8d8f0}
+.fb-slate .fb-news-link{color:rgba(109,138,170,.8);border-color:rgba(109,138,170,.25);background:rgba(109,138,170,.1)}
+.fb-slate .fb-news-link:hover{background:rgba(109,138,170,.2);color:#b8ccee;border-color:rgba(109,138,170,.45)}
+
+/* Industry pill glow variants for dark bg */
+.ind-pill-glow{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:100px;font-size:10px;
+  font-family:var(--mono);font-weight:500;
+  border:1px solid;
+  transition:transform .2s;
+  animation:magneticPop 3s ease-in-out infinite;
+}
+.ind-pill-glow:hover{transform:scale(1.08)}
+.ind-pill-glow.ind-up{background:rgba(107,158,122,.22);color:#8dccaa;border-color:rgba(107,158,122,.4)}
+.ind-pill-glow.ind-dn{background:rgba(184,112,64,.18);color:#dba870;border-color:rgba(184,112,64,.35)}
+.ind-pill-glow.ind-neu{background:rgba(109,138,170,.18);color:#90b8e0;border-color:rgba(109,138,170,.35)}
+
+/* Feature banner bar animation */
+.fb-bar-anim{
+  width:0!important;
+  animation:fbBarGrow .9s var(--ease-spring) 1s both;
+}
+@keyframes fbBarGrow{to{width:var(--fw)!important}}
 
 /* Responsive */
 @media(max-width:860px){
@@ -515,7 +598,9 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   transition:transform .3s var(--ease-spring),box-shadow .3s;
 }
 .inspire-card:hover{transform:translateY(-5px) scale(1.01);box-shadow:0 8px 36px rgba(0,0,0,.14),0 24px 60px rgba(0,0,0,.10)}
+.inspire-card:hover img{transform:scale(1.07)}
 .inspire-card svg{position:absolute;inset:0;width:100%;height:100%}
+.inspire-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease-spring)}
 .inspire-overlay{
   position:absolute;inset:0;
   display:flex;flex-direction:column;justify-content:flex-end;
@@ -638,9 +723,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   max-height:0;overflow:hidden;
   transition:max-height .4s var(--ease-spring);
 }
-.match-card-compact.expanded .mcc-expand{max-height:800px}
-.match-card-compact:not(.pinned) .mcc-expand{pointer-events:none}
-.match-card-compact.expanded:not(.pinned) .mcc-expand{pointer-events:auto}
+.match-card-compact.expanded .mcc-expand{max-height:800px;pointer-events:auto}
 .mcc-expand-inner{
   padding:.2rem 1.1rem 1rem;
   border-top:1px solid var(--border);
@@ -911,10 +994,80 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   .explore-grid{grid-template-columns:repeat(2,1fr)}
   .tl-detail-drawer{width:100%;top:60px}
 }
+/* ══ APPLE-STYLE ENHANCEMENTS ══ */
+
+/* Smooth transitions on interactive elements */
+.match-card-compact{
+  transition:transform .32s var(--ease-spring),
+             box-shadow .32s var(--ease-spring),
+             border-color .2s;
+}
+.match-card-compact.expanded{
+  border-color:var(--terra);
+  box-shadow:0 6px 28px rgba(0,0,0,.1),0 20px 56px rgba(0,0,0,.08);
+}
+.match-card-compact .mcc-arrow{
+  transition:transform .3s var(--ease-spring);
+}
+.match-card-compact.expanded .mcc-arrow{transform:rotate(180deg)}
+
+/* Cursor pointer on all interactive cards */
+.match-card-compact,.explore-card,.feature-banner,.stat-pill{cursor:pointer}
+
+/* Hero dots parallax */
+.hero-dots,.hero-bg-grad{
+  transition:transform .06s linear;
+  will-change:transform;
+}
+
+/* Explore card smooth 3D */
+.explore-card{
+  transition:transform .25s var(--ease-spring),box-shadow .25s;
+  will-change:transform;
+}
+
+/* Feature banner 3D */
+.feature-banner{
+  transition:transform .28s var(--ease-spring),box-shadow .28s;
+  will-change:transform;
+}
+
+/* Nav smooth transition */
+nav{transition:background .3s ease,box-shadow .3s ease}
+
+/* Ticker pause cursor indicator */
+.ticker-wrap{cursor:default}
+.ticker-wrap:hover .ticker{animation-play-state:paused}
+
+/* Range slider glow on active */
+input[type=range]:active::-webkit-slider-thumb{
+  transform:scale(1.3);
+  box-shadow:0 0 0 6px rgba(194,78,40,.18),0 2px 8px rgba(194,78,40,.4);
+}
+
+/* Score viz col — data-id for bounce targeting */
+.sv-col{transition:transform .2s var(--ease-spring);transform-origin:bottom}
+
+/* Stat pill magnetic */
+.stat-pill{
+  transition:transform .15s ease,box-shadow .15s ease;
+  will-change:transform;
+}
+
+/* Explore card image fallback */
+.fb-photo-layer>img{
+  will-change:transform;
+}
+
+/* Responsive tweaks for new banners */
+@media(max-width:860px){
+  .feature-banner{flex-direction:column;min-height:auto}
+  .fb-photo-layer{width:100%;min-height:160px}
+  .fb-content{padding:1.4rem 1.6rem}
+}
 @media(max-width:500px){
-  .explore-grid{grid-template-columns:1fr}
-  .cat-tabs{gap:4px}
-  .cat-tab{min-width:60px;padding:6px 8px}
+  .fb-title{font-size:1.25rem}
+  .fb-desc{font-size:12px}
 }
 
 </style>
@@ -926,7 +1079,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   <a class="logo" href="#">
     <div class="logo-icon">🎓</div>
     升志 ScoreWise
-    <span class="logo-badge">v6</span>
+    <span class="logo-badge">v8</span>
   </a>
   <ul class="nav-links">
     <li><a href="#analyzer-wrap">落點分析</a></li>
@@ -1061,126 +1214,201 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 
 <!-- ── HORIZONTAL BANNER SECTION ── -->
 <div class="banner-section reveal">
-  <!-- Row 1 -->
+  <!-- Row 1: 門檻走勢 (wide) + AI 預測 -->
   <div class="banner-row">
-    <!-- Wide: Score trends -->
-    <div class="info-banner ib-dark" style="flex:2">
-      <div class="ib-inner">
-        <div class="ib-illus" style="background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:1.2rem">
-          <svg width="160" height="110" viewBox="0 0 160 110">
-            <text x="4" y="14" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">// 歷年門檻</text>
-            <!-- Axes -->
-            <line x1="20" y1="20" x2="20" y2="90" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-            <line x1="20" y1="90" x2="155" y2="90" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-            <!-- Data lines -->
-            <polyline points="30,78 60,65 90,55 120,46 150,40" fill="none" stroke="#7d9e8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <polyline points="30,82 60,76 90,72 120,68 150,63" fill="none" stroke="#7a8fa0" stroke-width="2" stroke-dasharray="5,3" stroke-linecap="round"/>
-            <polyline points="30,72 60,68 90,62 120,58 150,54" fill="none" stroke="#c89830" stroke-width="1.5" stroke-dasharray="3,3" stroke-linecap="round"/>
-            <!-- Points -->
-            <circle cx="150" cy="40" r="4" fill="#7d9e8a"/>
-            <circle cx="150" cy="63" r="3.5" fill="#7a8fa0"/>
-            <circle cx="150" cy="54" r="3" fill="#c89830"/>
-            <!-- Labels -->
-            <text x="22" y="95" font-size="7" fill="rgba(255,255,255,.3)" font-family="monospace">111</text>
-            <text x="55" y="95" font-size="7" fill="rgba(255,255,255,.3)" font-family="monospace">112</text>
-            <text x="85" y="95" font-size="7" fill="rgba(255,255,255,.3)" font-family="monospace">113</text>
-            <text x="115" y="95" font-size="7" fill="rgba(255,255,255,.3)" font-family="monospace">114</text>
-            <text x="142" y="95" font-size="7" fill="rgba(255,255,255,.5)" font-family="monospace">115預</text>
-            <text x="155" y="43" font-size="8" fill="#7d9e8a" font-family="monospace">14</text>
-            <text x="155" y="66" font-size="8" fill="#7a8fa0" font-family="monospace">13</text>
+    <!-- Wide: Score trends — redesigned with real photo feel -->
+    <div class="feature-banner fb-dark" style="flex:2">
+      <div class="fb-photo-layer" style="background:linear-gradient(135deg,#0d1f33 0%,#1a3352 50%,#0a1728 100%)">
+        <!-- Animated chart illustration -->
+        <div class="fb-chart-anim">
+          <svg width="100%" height="100%" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="chartGrad1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#6b9e7a" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#6b9e7a" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="chartGrad2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#7a9fc0" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#7a9fc0" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="chartGrad3" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#c89830" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#c89830" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid lines -->
+            <line x1="40" y1="20" x2="40" y2="125" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+            <line x1="100" y1="20" x2="100" y2="125" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+            <line x1="160" y1="20" x2="160" y2="125" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+            <line x1="220" y1="20" x2="220" y2="125" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+            <line x1="280" y1="20" x2="280" y2="125" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+            <line x1="30" y1="40" x2="295" y2="40" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+            <line x1="30" y1="70" x2="295" y2="70" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+            <line x1="30" y1="100" x2="295" y2="100" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+            <!-- Area fills -->
+            <path d="M40,105 L100,88 L160,72 L220,58 L280,46 L280,125 L40,125 Z" fill="url(#chartGrad1)"/>
+            <path d="M40,112 L100,102 L160,94 L220,86 L280,78 L280,125 L40,125 Z" fill="url(#chartGrad2)"/>
+            <!-- Main lines -->
+            <polyline points="40,105 100,88 160,72 220,58 280,46" fill="none" stroke="#6b9e7a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:400;stroke-dashoffset:400;animation:drawLine 2s ease .5s forwards"/>
+            <polyline points="40,112 100,102 160,94 220,86 280,78" fill="none" stroke="#7a9fc0" stroke-width="2" stroke-dasharray="6,3" stroke-linecap="round" style="stroke-dasharray:400;stroke-dashoffset:400;animation:drawLine 2s ease .8s forwards"/>
+            <polyline points="40,95 100,88 160,83 220,76 280,68" fill="none" stroke="#c89830" stroke-width="1.5" stroke-dasharray="4,4" stroke-linecap="round" style="stroke-dasharray:400;stroke-dashoffset:400;animation:drawLine 2s ease 1.1s forwards"/>
+            <!-- Data points with glow -->
+            <circle cx="280" cy="46" r="5" fill="#6b9e7a" style="filter:drop-shadow(0 0 6px #6b9e7a)"/>
+            <circle cx="280" cy="78" r="4" fill="#7a9fc0" style="filter:drop-shadow(0 0 5px #7a9fc0)"/>
+            <circle cx="280" cy="68" r="3.5" fill="#c89830" style="filter:drop-shadow(0 0 4px #c89830)"/>
+            <!-- Animated scanning line -->
+            <line x1="280" y1="25" x2="280" y2="120" stroke="rgba(255,255,255,.15)" stroke-width="1" stroke-dasharray="3,3"/>
+            <!-- Year labels -->
+            <text x="36" y="135" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">111</text>
+            <text x="96" y="135" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">112</text>
+            <text x="156" y="135" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">113</text>
+            <text x="216" y="135" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">114</text>
+            <text x="267" y="135" font-size="8" fill="rgba(255,255,255,.6)" font-family="monospace" font-weight="600">115預</text>
+            <!-- Score labels -->
+            <text x="286" y="50" font-size="9" fill="#6b9e7a" font-family="monospace" font-weight="600">14</text>
+            <text x="286" y="82" font-size="9" fill="#7a9fc0" font-family="monospace">13</text>
+            <text x="286" y="72" font-size="9" fill="#c89830" font-family="monospace">13</text>
+            <!-- Legend -->
+            <rect x="34" y="22" width="8" height="2" rx="1" fill="#6b9e7a"/>
+            <text x="46" y="25" font-size="7.5" fill="rgba(255,255,255,.55)" font-family="monospace">數學A</text>
+            <rect x="90" y="22" width="8" height="2" rx="1" fill="#7a9fc0"/>
+            <text x="102" y="25" font-size="7.5" fill="rgba(255,255,255,.55)" font-family="monospace">英文</text>
+            <rect x="140" y="22" width="8" height="2" rx="1" fill="#c89830"/>
+            <text x="152" y="25" font-size="7.5" fill="rgba(255,255,255,.55)" font-family="monospace">自然</text>
           </svg>
         </div>
-        <div class="ib-body">
-          <div class="ib-tag" style="color:rgba(255,255,255,.45)">📊 歷年趨勢</div>
-          <div class="ib-title">門檻走勢一目了然</div>
-          <div class="ib-sub">整合 111–115 年各科系錄取門檻，預測今年分數線走向，讓落點不再靠猜。</div>
+      </div>
+      <div class="fb-content">
+        <div class="fb-kicker">📊 歷年趨勢</div>
+        <div class="fb-title">門檻走勢，一目了然</div>
+        <div class="fb-desc">整合 111–115 年各科系錄取門檻，動態預測今年分數線走向，讓落點不再靠猜。</div>
+        <div class="fb-news-links">
+          <a href="https://www.ceec.edu.tw" target="_blank" rel="noopener" class="fb-news-link">↗ 大考中心歷年統計</a>
+          <a href="https://www.caac.ccu.edu.tw" target="_blank" rel="noopener" class="fb-news-link">↗ 大學甄選委員會</a>
         </div>
       </div>
-      <div class="ib-overlay"></div>
     </div>
 
-    <!-- AI Prediction banner -->
-    <div class="info-banner ib-terra">
-      <div class="ib-inner">
-        <div class="ib-illus" style="background:rgba(194,78,40,.1);display:flex;align-items:center;justify-content:center">
-          <svg width="110" height="110" viewBox="0 0 110 110">
-            <!-- Probability rings -->
-            <circle cx="55" cy="55" r="40" fill="none" stroke="rgba(194,78,40,.15)" stroke-width="8"/>
-            <circle cx="55" cy="55" r="40" fill="none" stroke="#c24e28" stroke-width="8" stroke-linecap="round" stroke-dasharray="175 251" transform="rotate(-90 55 55)" opacity=".85"/>
-            <text x="55" y="50" text-anchor="middle" font-size="18" fill="#c24e28" font-family="monospace" font-weight="600">75%</text>
-            <text x="55" y="65" text-anchor="middle" font-size="9" fill="rgba(60,28,16,.6)" font-family="monospace">AI預測</text>
+    <!-- AI Prediction banner — redesigned -->
+    <div class="feature-banner fb-terra">
+      <div class="fb-photo-layer" style="background:linear-gradient(135deg,#3d1508 0%,#6b2010 60%,#2a0d05 100%)">
+        <div class="fb-chart-anim" style="display:flex;align-items:center;justify-content:center">
+          <svg width="130" height="130" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+            <!-- Outer ring -->
+            <circle cx="65" cy="65" r="50" fill="none" stroke="rgba(194,78,40,.12)" stroke-width="12"/>
+            <!-- Progress ring -->
+            <circle cx="65" cy="65" r="50" fill="none" stroke="#c24e28" stroke-width="12" stroke-linecap="round"
+              stroke-dasharray="220 314" transform="rotate(-90 65 65)" opacity=".85"
+              style="filter:drop-shadow(0 0 8px rgba(194,78,40,.5))"/>
+            <!-- Inner ring pulse -->
+            <circle cx="65" cy="65" r="38" fill="none" stroke="rgba(194,78,40,.08)" stroke-width="1" style="animation:pulse 3s ease-in-out infinite"/>
+            <!-- Center text -->
+            <text x="65" y="59" text-anchor="middle" font-size="22" fill="#c24e28" font-family="monospace" font-weight="700">75%</text>
+            <text x="65" y="74" text-anchor="middle" font-size="10" fill="rgba(255,200,160,.6)" font-family="monospace">AI 預測錄取率</text>
+            <!-- Orbiting dots -->
+            <circle cx="65" cy="15" r="4" fill="rgba(194,78,40,.5)" style="transform-origin:65px 65px;animation:spin 8s linear infinite"/>
+            <circle cx="115" cy="65" r="2.5" fill="rgba(200,152,48,.4)" style="transform-origin:65px 65px;animation:spin 12s linear infinite reverse"/>
             <!-- Stars -->
-            <text x="88" y="24" font-size="14" fill="rgba(194,78,40,.6)">✦</text>
-            <text x="14" y="92" font-size="10" fill="rgba(194,78,40,.4)">✦</text>
+            <text x="105" y="25" font-size="16" fill="rgba(194,78,40,.5)" style="animation:wiggle 2s ease-in-out infinite">✦</text>
+            <text x="14" y="108" font-size="11" fill="rgba(194,78,40,.35)">✦</text>
+            <text x="102" y="105" font-size="8" fill="rgba(200,152,48,.3)">★</text>
           </svg>
         </div>
-        <div class="ib-body">
-          <div class="ib-tag">🤖 AI 預測</div>
-          <div class="ib-title">個人化錄取率</div>
-          <div class="ib-sub">根據你的分差、科系名額與今年考試難度，計算專屬錄取機率。</div>
+      </div>
+      <div class="fb-content">
+        <div class="fb-kicker">🤖 AI 預測</div>
+        <div class="fb-title">個人化錄取率</div>
+        <div class="fb-desc">根據你的分差、科系名額與今年考試難度，計算專屬錄取機率，不再靠感覺猜。</div>
+        <div class="fb-news-links">
+          <a href="https://udn.com/news/story/6925/8552819" target="_blank" rel="noopener" class="fb-news-link">↗ 今年學測難度分析</a>
         </div>
       </div>
-      <div class="ib-overlay"></div>
     </div>
   </div>
 
-  <!-- Row 2 -->
+  <!-- Row 2: 出路 + 逐科差距 (wide) -->
   <div class="banner-row">
-    <!-- Industry pulse -->
-    <div class="info-banner ib-sage">
-      <div class="ib-inner">
-        <div class="ib-illus" style="background:rgba(107,158,122,.12);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;padding:1rem">
-          <div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;max-width:130px">
-            <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);background:rgba(107,158,122,.25);color:var(--sage);border:1px solid rgba(107,158,122,.4)">▲ AI</span>
-            <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);background:rgba(107,158,122,.25);color:var(--sage);border:1px solid rgba(107,158,122,.4)">▲ 半導體</span>
-            <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);background:rgba(184,112,64,.18);color:var(--clay);border:1px solid rgba(184,112,64,.3)">▼ 文字工作</span>
-            <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);background:rgba(107,158,122,.25);color:var(--sage);border:1px solid rgba(107,158,122,.4)">▲ 護理</span>
-            <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-family:var(--mono);background:rgba(109,138,170,.2);color:var(--slate);border:1px solid rgba(109,138,170,.3)">→ 商管</span>
+    <!-- Industry pulse — redesigned with real Unsplash photo -->
+    <div class="feature-banner fb-sage">
+      <div class="fb-photo-layer" style="position:relative;overflow:hidden">
+        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80&auto=format&fit=crop" 
+             alt="台灣科技產業" 
+             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35;mix-blend-mode:luminosity"
+             loading="lazy">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,60,30,.7) 0%,rgba(0,40,20,.5) 100%)"></div>
+        <!-- Industry pills overlay -->
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:1rem">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:150px">
+            <span class="ind-pill-glow ind-up" style="animation-delay:0s">▲ AI 工程</span>
+            <span class="ind-pill-glow ind-up" style="animation-delay:.3s">▲ 半導體</span>
+            <span class="ind-pill-glow ind-dn" style="animation-delay:.6s">▼ 文字工作</span>
+            <span class="ind-pill-glow ind-up" style="animation-delay:.9s">▲ 護理醫療</span>
+            <span class="ind-pill-glow ind-neu" style="animation-delay:1.2s">→ 商管</span>
           </div>
         </div>
-        <div class="ib-body">
-          <div class="ib-tag">🏭 產業標籤</div>
-          <div class="ib-title">不只看分數，更看出路</div>
-          <div class="ib-sub">每個科系標注產業景氣、AI 衝擊度與今年就業趨勢，選系更有底氣。</div>
+      </div>
+      <div class="fb-content">
+        <div class="fb-kicker">🏭 產業前景</div>
+        <div class="fb-title">不只看分數，更看出路</div>
+        <div class="fb-desc">每個科系標注產業景氣、AI 衝擊度與就業趨勢，選系更有底氣，不後悔。</div>
+        <div class="fb-news-links">
+          <a href="https://www.cw.com.tw/article/5130788" target="_blank" rel="noopener" class="fb-news-link">↗ 天下：2025最夯科系報告</a>
+          <a href="https://www.104.com.tw/jobs/main/" target="_blank" rel="noopener" class="fb-news-link">↗ 104 就業市場趨勢</a>
         </div>
       </div>
-      <div class="ib-overlay"></div>
     </div>
 
-    <!-- Tiebreak concept -->
-    <div class="info-banner ib-slate" style="flex:2">
-      <div class="ib-inner">
-        <div class="ib-illus" style="background:rgba(109,138,170,.12);display:flex;align-items:center;justify-content:center;padding:1.2rem">
-          <svg width="150" height="100" viewBox="0 0 150 100">
-            <text x="4" y="14" font-size="8" fill="rgba(26,44,64,.5)" font-family="monospace">// 各科分差</text>
-            <!-- Bars -->
-            <rect x="10" y="25" width="130" height="8" rx="4" fill="rgba(109,138,170,.15)"/>
-            <rect x="10" y="25" width="104" height="8" rx="4" fill="#7a8fa0" opacity=".7"/>
-            <line x1="93" y1="22" x2="93" y2="36" stroke="rgba(26,44,64,.5)" stroke-width="1.5"/>
-            <text x="10" y="22" font-size="8" fill="rgba(26,44,64,.6)" font-family="monospace">數學A</text>
-            <text x="100" y="22" font-size="8" fill="#7a8fa0" font-family="monospace">+2 ⭐決勝</text>
-
-            <rect x="10" y="45" width="130" height="8" rx="4" fill="rgba(109,138,170,.15)"/>
-            <rect x="10" y="45" width="87" height="8" rx="4" fill="#b08060" opacity=".6"/>
-            <line x1="93" y1="42" x2="93" y2="56" stroke="rgba(26,44,64,.5)" stroke-width="1.5"/>
-            <text x="10" y="42" font-size="8" fill="rgba(26,44,64,.6)" font-family="monospace">英文</text>
-            <text x="85" y="62" font-size="8" fill="#b08060" font-family="monospace">-1</text>
-
-            <rect x="10" y="65" width="130" height="8" rx="4" fill="rgba(109,138,170,.15)"/>
-            <rect x="10" y="65" width="116" height="8" rx="4" fill="#6b9e7a" opacity=".7"/>
-            <line x1="93" y1="62" x2="93" y2="76" stroke="rgba(26,44,64,.5)" stroke-width="1.5"/>
-            <text x="10" y="62" font-size="8" fill="rgba(26,44,64,.6)" font-family="monospace">自然</text>
-            <text x="118" y="82" font-size="8" fill="#6b9e7a" font-family="monospace">+3</text>
-            <text x="100" y="90" font-size="8" fill="rgba(26,44,64,.4)" font-family="monospace">│ 錄取線</text>
+    <!-- Subject gap — redesigned with Unsplash photo + visual -->
+    <div class="feature-banner fb-slate" style="flex:2">
+      <div class="fb-photo-layer" style="position:relative;overflow:hidden">
+        <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&q=80&auto=format&fit=crop" 
+             alt="學生讀書考試" 
+             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.22;mix-blend-mode:luminosity"
+             loading="lazy">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,30,55,.82) 0%,rgba(25,45,75,.7) 100%)"></div>
+        <!-- Animated subject bars -->
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:1.2rem">
+          <svg width="100%" height="100%" viewBox="0 0 280 130" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+            <text x="8" y="14" font-size="8" fill="rgba(180,210,255,.4)" font-family="monospace">// 各科與錄取線差距</text>
+            <!-- Subject bars -->
+            <!-- 數甲 -->
+            <text x="8" y="32" font-size="9" fill="rgba(180,210,255,.7)" font-family="monospace">數甲</text>
+            <rect x="42" y="24" width="210" height="11" rx="5" fill="rgba(109,138,170,.12)"/>
+            <rect x="42" y="24" width="168" height="11" rx="5" fill="#7a9fc0" opacity=".7" class="fb-bar-anim" style="--fw:168px"/>
+            <line x1="155" y1="21" x2="155" y2="38" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
+            <text x="160" y="20" font-size="8" fill="#7a9fc0" font-family="monospace" font-weight="700">+2 ⭐決勝</text>
+            <!-- 英文 -->
+            <text x="8" y="58" font-size="9" fill="rgba(180,210,255,.7)" font-family="monospace">英文</text>
+            <rect x="42" y="50" width="210" height="11" rx="5" fill="rgba(109,138,170,.12)"/>
+            <rect x="42" y="50" width="138" height="11" rx="5" fill="#b08060" opacity=".6" class="fb-bar-anim" style="--fw:138px;animation-delay:.2s"/>
+            <line x1="155" y1="47" x2="155" y2="64" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
+            <text x="140" y="73" font-size="8" fill="#b08060" font-family="monospace">−1</text>
+            <!-- 自然 -->
+            <text x="8" y="84" font-size="9" fill="rgba(180,210,255,.7)" font-family="monospace">自然</text>
+            <rect x="42" y="76" width="210" height="11" rx="5" fill="rgba(109,138,170,.12)"/>
+            <rect x="42" y="76" width="185" height="11" rx="5" fill="#6b9e7a" opacity=".7" class="fb-bar-anim" style="--fw:185px;animation-delay:.4s"/>
+            <line x1="155" y1="73" x2="155" y2="90" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
+            <text x="186" y="99" font-size="8" fill="#6b9e7a" font-family="monospace">+3</text>
+            <!-- 國文 -->
+            <text x="8" y="110" font-size="9" fill="rgba(180,210,255,.7)" font-family="monospace">國文</text>
+            <rect x="42" y="102" width="210" height="11" rx="5" fill="rgba(109,138,170,.12)"/>
+            <rect x="42" y="102" width="145" height="11" rx="5" fill="#8b6a9a" opacity=".6" class="fb-bar-anim" style="--fw:145px;animation-delay:.6s"/>
+            <line x1="155" y1="99" x2="155" y2="116" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
+            <text x="147" y="126" font-size="8" fill="#8b6a9a" font-family="monospace">±0</text>
+            <!-- Cutoff label -->
+            <text x="150" y="13" font-size="7.5" fill="rgba(255,255,255,.35)" font-family="monospace">│錄取線</text>
           </svg>
         </div>
-        <div class="ib-body">
-          <div class="ib-tag">🎯 安全區間</div>
-          <div class="ib-title">逐科差距視覺化</div>
-          <div class="ib-sub">橫條圖清楚標示每科與錄取線的差距，⭐決勝科目特別顯示，一眼看懂差在哪。</div>
+      </div>
+      <div class="fb-content">
+        <div class="fb-kicker">🎯 安全區間</div>
+        <div class="fb-title">逐科差距視覺化</div>
+        <div class="fb-desc">橫條圖清楚標示每科與錄取線的差距，⭐決勝科目特別顯示，一眼看懂差在哪、如何補強。</div>
+        <div class="fb-news-links">
+          <a href="https://www.ceec.edu.tw/modules/exam/ceec-exam.aspx" target="_blank" rel="noopener" class="fb-news-link">↗ 學科能力測驗試題</a>
+          <a href="https://www.caac.ccu.edu.tw/enroll115/index.php" target="_blank" rel="noopener" class="fb-news-link">↗ 個人申請查詢系統</a>
         </div>
       </div>
-      <div class="ib-overlay"></div>
     </div>
   </div>
 </div>
@@ -1189,148 +1417,25 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 <!-- ── INSPIRATIONAL PHOTO BANNERS ── -->
 <div class="inspire-strip reveal">
 
-  <!-- Card 1: Morning study atmosphere -->
-  <div class="inspire-card">
-    <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#fde8d0"/>
-          <stop offset="60%" stop-color="#faf0e6"/>
-          <stop offset="100%" stop-color="#f5e8dc"/>
-        </linearGradient>
-        <linearGradient id="desk1" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#d4a882"/>
-          <stop offset="100%" stop-color="#b8906a"/>
-        </linearGradient>
-        <radialGradient id="sun1" cx="75%" cy="20%" r="35%">
-          <stop offset="0%" stop-color="rgba(255,200,100,0.4)"/>
-          <stop offset="100%" stop-color="rgba(255,200,100,0)"/>
-        </radialGradient>
-        <filter id="blur1"><feGaussianBlur stdDeviation="3"/></filter>
-      </defs>
-      <!-- Sky background -->
-      <rect width="640" height="280" fill="url(#sky1)"/>
-      <!-- Sun glow -->
-      <rect width="640" height="280" fill="url(#sun1)"/>
-      <!-- Window frame -->
-      <rect x="360" y="20" width="240" height="160" rx="6" fill="rgba(255,255,255,.35)" stroke="rgba(255,255,255,.6)" stroke-width="2"/>
-      <line x1="480" y1="20" x2="480" y2="180" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
-      <line x1="360" y1="100" x2="600" y2="100" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
-      <!-- Outside view through window -->
-      <ellipse cx="490" cy="65" rx="60" ry="40" fill="rgba(107,158,122,.25)" filter="url(#blur1)"/>
-      <ellipse cx="430" cy="80" rx="30" ry="20" fill="rgba(107,158,122,.2)" filter="url(#blur1)"/>
-      <!-- Desk surface -->
-      <rect x="0" y="195" width="640" height="85" fill="url(#desk1)"/>
-      <rect x="0" y="192" width="640" height="6" rx="3" fill="#c09070"/>
-      <!-- Books stack -->
-      <rect x="40" y="145" width="14" height="52" rx="2" fill="#c87048"/>
-      <rect x="55" y="152" width="14" height="45" rx="2" fill="#6b9e7a"/>
-      <rect x="70" y="158" width="14" height="39" rx="2" fill="#7a8fa0"/>
-      <rect x="85" y="148" width="14" height="49" rx="2" fill="#8b6a9a"/>
-      <rect x="100" y="163" width="14" height="34" rx="2" fill="#c89830"/>
-      <!-- Open notebook -->
-      <rect x="130" y="166" width="160" height="30" rx="4" fill="#fffef8" stroke="rgba(0,0,0,.08)" stroke-width="1"/>
-      <line x1="210" y1="170" x2="210" y2="192" stroke="rgba(0,0,0,.08)" stroke-width="1"/>
-      <rect x="138" y="173" width="60" height="2" rx="1" fill="rgba(0,0,0,.12)"/>
-      <rect x="138" y="179" width="50" height="2" rx="1" fill="rgba(0,0,0,.10)"/>
-      <rect x="138" y="185" width="55" height="2" rx="1" fill="rgba(0,0,0,.08)"/>
-      <rect x="218" y="173" width="62" height="2" rx="1" fill="rgba(194,78,40,.3)"/>
-      <rect x="218" y="179" width="50" height="2" rx="1" fill="rgba(0,0,0,.08)"/>
-      <rect x="218" y="185" width="58" height="2" rx="1" fill="rgba(0,0,0,.08)"/>
-      <!-- Coffee cup -->
-      <rect x="310" y="170" width="30" height="24" rx="4" fill="#5c3a1e"/>
-      <rect x="313" y="173" width="24" height="18" rx="2" fill="#8b5a2a"/>
-      <ellipse cx="325" cy="173" rx="15" ry="4" fill="#6b4020"/>
-      <path d="M340 178 Q350 183 340 188" fill="none" stroke="#5c3a1e" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Steam -->
-      <path d="M320 168 Q322 163 320 158" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5" stroke-linecap="round"/>
-      <path d="M326 167 Q328 161 326 156" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-linecap="round"/>
-      <!-- Lamp -->
-      <line x1="200" y1="80" x2="200" y2="168" stroke="#d4a882" stroke-width="3" stroke-linecap="round"/>
-      <ellipse cx="200" cy="75" rx="35" ry="18" fill="#f0d8a0" stroke="#d4a882" stroke-width="1.5"/>
-      <ellipse cx="200" cy="75" rx="30" ry="14" fill="rgba(255,220,100,.6)"/>
-      <!-- Warm light glow -->
-      <ellipse cx="200" cy="160" rx="80" ry="15" fill="rgba(255,200,80,.12)" filter="url(#blur1)"/>
-      <!-- Small plant -->
-      <rect x="560" y="168" width="18" height="26" rx="3" fill="#8b6040" opacity=".8"/>
-      <ellipse cx="569" cy="163" rx="22" ry="18" fill="#5a8a64"/>
-      <ellipse cx="555" cy="168" rx="14" ry="10" fill="#6b9e7a"/>
-      <ellipse cx="583" cy="166" rx="13" ry="9" fill="#4a7a54"/>
-    </svg>
+  <!-- Card 1: Real study photo -->
+  <div class="inspire-card" onclick="scrollToSec('#analyzer-wrap')">
+    <img src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=800&q=85&auto=format&fit=crop" 
+         alt="學生認真讀書備考" 
+         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease-spring)"
+         loading="lazy">
     <div class="inspire-overlay">
-      <div class="inspire-tag">勵志故事</div>
-      <div class="inspire-title">每個清晨，都是新的機會</div>
-      <div class="inspire-sub">分數只是起點，選對方向，才是決勝關鍵。</div>
+      <div class="inspire-tag">開始行動</div>
+      <div class="inspire-title">資料都備齊了，就差你的分數</div>
+      <div class="inspire-sub">填入學測成績，幾秒內看清自己的落點地圖。</div>
     </div>
   </div>
 
-  <!-- Card 2: University campus bright day -->
-  <div class="inspire-card">
-    <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <linearGradient id="campus-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#c8e0f4"/>
-          <stop offset="100%" stop-color="#e8f4ff"/>
-        </linearGradient>
-        <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#8abe7a"/>
-          <stop offset="100%" stop-color="#6aaa5a"/>
-        </linearGradient>
-        <radialGradient id="sun2" cx="80%" cy="15%" r="30%">
-          <stop offset="0%" stop-color="rgba(255,230,160,.55)"/>
-          <stop offset="100%" stop-color="rgba(255,230,160,0)"/>
-        </radialGradient>
-        <filter id="shadow2"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,.15)"/></filter>
-      </defs>
-      <!-- Sky -->
-      <rect width="640" height="280" fill="url(#campus-sky)"/>
-      <rect width="640" height="280" fill="url(#sun2)"/>
-      <!-- Clouds -->
-      <ellipse cx="120" cy="60" rx="55" ry="22" fill="rgba(255,255,255,.85)"/>
-      <ellipse cx="155" cy="52" rx="40" ry="20" fill="rgba(255,255,255,.9)"/>
-      <ellipse cx="80" cy="62" rx="36" ry="18" fill="rgba(255,255,255,.8)"/>
-      <ellipse cx="480" cy="80" rx="48" ry="20" fill="rgba(255,255,255,.75)"/>
-      <ellipse cx="510" cy="72" rx="35" ry="17" fill="rgba(255,255,255,.8)"/>
-      <!-- Ground -->
-      <rect x="0" y="200" width="640" height="80" fill="url(#grass)"/>
-      <rect x="0" y="198" width="640" height="5" rx="2" fill="#7ab86a"/>
-      <!-- Path -->
-      <path d="M300 280 L280 200 L360 200 L340 280 Z" fill="rgba(230,210,180,.8)"/>
-      <!-- Main building -->
-      <rect x="200" y="80" width="240" height="125" rx="3" fill="#f0e8d8" filter="url(#shadow2)"/>
-      <!-- Columns -->
-      <rect x="215" y="95" width="12" height="110" rx="2" fill="#e0d0b8"/>
-      <rect x="237" y="95" width="12" height="110" rx="2" fill="#e0d0b8"/>
-      <rect x="380" y="95" width="12" height="110" rx="2" fill="#e0d0b8"/>
-      <rect x="403" y="95" width="12" height="110" rx="2" fill="#e0d0b8"/>
-      <!-- Windows -->
-      <rect x="252" y="100" width="32" height="40" rx="3" fill="rgba(100,160,220,.4)" stroke="rgba(200,190,170,.6)" stroke-width="1"/>
-      <rect x="298" y="100" width="32" height="40" rx="3" fill="rgba(100,160,220,.35)" stroke="rgba(200,190,170,.6)" stroke-width="1"/>
-      <rect x="344" y="100" width="32" height="40" rx="3" fill="rgba(100,160,220,.4)" stroke="rgba(200,190,170,.6)" stroke-width="1"/>
-      <!-- Door -->
-      <rect x="296" y="155" width="48" height="50" rx="3" fill="#c8a878" stroke="rgba(200,190,170,.6)" stroke-width="1"/>
-      <rect x="317" y="168" width="5" height="5" rx="2" fill="#8b6040"/>
-      <!-- Roof triangle -->
-      <polygon points="200,80 320,35 440,80" fill="#e8d8c0"/>
-      <line x1="200" y1="80" x2="440" y2="80" stroke="#d4c4a8" stroke-width="2"/>
-      <!-- Flag / dome detail -->
-      <line x1="320" y1="35" x2="320" y2="18" stroke="#b8a080" stroke-width="2"/>
-      <rect x="320" y="18" width="18" height="11" fill="#c24e28"/>
-      <!-- Trees -->
-      <rect x="115" y="165" width="8" height="38" rx="2" fill="#8b6040"/>
-      <ellipse cx="119" cy="152" rx="25" ry="28" fill="#5a8a48"/>
-      <ellipse cx="105" cy="162" rx="18" ry="20" fill="#6a9e58"/>
-      <ellipse cx="133" cy="160" rx="18" ry="22" fill="#4a7a38"/>
-      <rect x="490" y="168" width="8" height="35" rx="2" fill="#8b6040"/>
-      <ellipse cx="494" cy="156" rx="24" ry="26" fill="#5a8a48"/>
-      <ellipse cx="478" cy="165" rx="16" ry="18" fill="#6a9e58"/>
-      <ellipse cx="510" cy="163" rx="17" ry="20" fill="#4a7a38"/>
-      <!-- People silhouettes -->
-      <ellipse cx="290" cy="198" rx="5" ry="6" fill="#7a6050"/>
-      <rect x="287" y="204" width="6" height="12" rx="2" fill="#6b9e7a"/>
-      <ellipse cx="345" cy="197" rx="5" ry="6" fill="#7a6050"/>
-      <rect x="342" y="203" width="6" height="12" rx="2" fill="#c24e28"/>
-    </svg>
+  <!-- Card 2: University campus photo -->
+  <div class="inspire-card" onclick="scrollToSec('#compare-section')">
+    <img src="https://images.unsplash.com/photo-1562774053-701939374585?w=800&q=85&auto=format&fit=crop" 
+         alt="大學校園建築" 
+         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease-spring)"
+         loading="lazy">
     <div class="inspire-overlay">
       <div class="inspire-tag">你的未來</div>
       <div class="inspire-title">理想校園，等你親自踏上</div>
@@ -1339,7 +1444,6 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   </div>
 
 </div>
-
 <!-- ── ANALYZER ── -->
 <div id="analyzer-wrap">
 <div class="analyzer-inner">
@@ -1545,7 +1649,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
           </div>
           <div class="match-meta-row">
             <div class="results-section-label" id="match-meta">載入中…</div>
-            <button class="match-sort-btn" onclick="toggleSort()">⇅ 排序</button>
+            <button class="match-sort-btn" onclick="toggleSort()">⇅ 降冪排序</button>
           </div>
           <div class="match-list" id="match-list"></div>
           <!-- Show more button -->
@@ -1554,20 +1658,6 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
               <span>▼</span> 顯示更多符合科系
             </button>
             <span class="show-more-count" id="show-more-count"></span>
-          </div>
-          <hr class="divider">
-          <div class="ai-box">
-            <div class="ai-box-hd"><div class="ai-icon">✦</div>AI 升學顧問分析報告</div>
-            <div class="ai-content" id="ai-content">
-              <div id="ai-skeleton">
-                <div class="sk-block">
-                  <div class="sk-hd skeleton" style="width:55%"></div>
-                  <div class="sk-para"><div class="sk-lg skeleton" style="width:92%"></div><div class="sk-md skeleton" style="width:84%"></div><div class="sk-md skeleton" style="width:77%"></div></div>
-                  <div class="sk-para"><div class="sk-lg skeleton" style="width:88%"></div><div class="sk-md skeleton" style="width:70%"></div></div>
-                  <div class="sk-para"><div class="sk-md skeleton" style="width:95%"></div><div class="sk-md skeleton" style="width:80%"></div></div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -2150,17 +2240,55 @@ function updateSub(id,v){
   void el.offsetWidth; // reflow
   el.classList.add('bump');
   updateTotal(); renderScoreViz();
-  // Emit tiny star on high scores
-  if(+v===15) spawnStar(document.getElementById('s-'+id));
+  // Emit star burst on any subject reaching 15
+  if(+v===15) spawnStarBurst(document.getElementById('s-'+id));
 }
 
-function spawnStar(rangeEl){
+function spawnStarBurst(rangeEl){
   const r=rangeEl.getBoundingClientRect();
-  const star=document.createElement('div');
-  star.textContent='⭐';
-  star.style.cssText=`position:fixed;left:${r.left+r.width*.8}px;top:${r.top-10}px;font-size:18px;pointer-events:none;z-index:999;animation:floatC .9s ease forwards`;
-  document.body.appendChild(star);
-  setTimeout(()=>star.remove(),900);
+  const cx=r.left+r.width*0.85;
+  const cy=r.top+r.height/2;
+  const PARTICLES=18;
+  const EMOJIS=['⭐','✦','★','✨','🌟','✦'];
+  
+  for(let i=0;i<PARTICLES;i++){
+    const p=document.createElement('div');
+    const emoji=EMOJIS[i%EMOJIS.length];
+    const angle=(i/PARTICLES)*360;
+    const rad=angle*(Math.PI/180);
+    // Vary distance — some fly far off screen edge
+    const dist=120+Math.random()*280;
+    const dx=Math.cos(rad)*dist;
+    const dy=Math.sin(rad)*dist - (Math.random()*80+20); // bias upward
+    const sz=10+Math.random()*14;
+    const delay=Math.random()*150;
+    const dur=600+Math.random()*500;
+    p.textContent=emoji;
+    p.style.cssText=`
+      position:fixed;
+      left:${cx}px;top:${cy}px;
+      font-size:${sz}px;
+      pointer-events:none;z-index:9999;
+      --dx:${dx}px;--dy:${dy}px;
+      animation:starBurst ${dur}ms cubic-bezier(.25,.46,.45,.94) ${delay}ms both;
+      will-change:transform,opacity;
+    `;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),dur+delay+50);
+  }
+  
+  // Central flash glow ring
+  const ring=document.createElement('div');
+  ring.style.cssText=`
+    position:fixed;left:${cx-30}px;top:${cy-30}px;
+    width:60px;height:60px;border-radius:50%;
+    background:radial-gradient(circle,rgba(200,152,48,.6) 0%,rgba(194,78,40,.2) 50%,transparent 70%);
+    pointer-events:none;z-index:9998;
+    animation:starGlow 700ms ease forwards;
+    will-change:transform,opacity;
+  `;
+  document.body.appendChild(ring);
+  setTimeout(()=>ring.remove(),750);
 }
 
 function updateOptional(id,v){
@@ -2169,6 +2297,7 @@ function updateOptional(id,v){
   if(+v===0){optEl.style.display='';valEl.style.display='none';}
   else{optEl.style.display='none';valEl.style.display='';valEl.textContent=v;}
   updateTotal(); renderScoreViz();
+  if(+v===15) spawnStarBurst(document.getElementById('s-'+id));
 }
 
 function updateTotal(){
@@ -2196,6 +2325,8 @@ function setAbroad(v){
 /* ── Toggle sort ── */
 function toggleSort(){
   sortAsc=!sortAsc;
+  const btn = document.querySelector('.match-sort-btn');
+  if(btn) btn.innerHTML = sortAsc ? '⇅ 升冪排序' : '⇅ 降冪排序';
   if(lastMatches.length) renderMatchCards(lastMatches,lastSchoolPrefVal);
 }
 
@@ -2362,7 +2493,7 @@ function renderMatchCards(matches, schoolPrefVal){
           ${(m.career||[]).length?`<div class="career-tags">${(m.career||[]).map(c=>`<span class="ctag">${c}</span>`).join('')}</div>`:''}
           ${m.notes?`<div style="font-size:11px;color:var(--ink3);margin-top:6px">💡 ${m.notes}</div>`:''}
           ${isChallenge&&m.failed_thresholds&&Object.keys(m.failed_thresholds||{}).length?`<div class="challenge-warn">⚠ 未達門檻：${Object.entries(m.failed_thresholds).map(([s,r])=>`${s} 需 ${r} 級`).join('、')}</div>`:''}
-          <div class="mcc-pin-hint">滑鼠移入展開 · 點擊固定</div>
+          <div class="mcc-pin-hint">點擊展開詳細資訊</div>
         </div>
       </div>
     `;
@@ -2438,14 +2569,6 @@ async function runAnalysis(e){
   document.getElementById('result-time').textContent='分析中...';
   document.getElementById('match-meta').textContent='// 載入中…';
 
-  const aiContent=document.getElementById('ai-content');
-  aiContent.innerHTML=`<div id="ai-skeleton"><div class="sk-block">
-    <div class="sk-hd skeleton" style="width:55%"></div>
-    <div class="sk-para"><div class="sk-lg skeleton" style="width:92%"></div><div class="sk-md skeleton" style="width:84%"></div><div class="sk-md skeleton" style="width:77%"></div></div>
-    <div class="sk-para"><div class="sk-lg skeleton" style="width:88%"></div><div class="sk-md skeleton" style="width:70%"></div></div>
-    <div class="sk-para"><div class="sk-md skeleton" style="width:95%"></div><div class="sk-sm skeleton" style="width:65%"></div></div>
-  </div></div>`;
-
   try{
     const res=await fetch(`${API_BASE}/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scores,profile})});
     const data=await res.json();
@@ -2477,18 +2600,9 @@ async function runAnalysis(e){
 
     renderMatchCards(data.matches||[],schoolPrefVal);
     document.getElementById('result-time').textContent=new Date().toLocaleTimeString('zh-TW');
-    notify('✓ 落點卡片載入完成 🎉');
-
-    const aiSkel=document.getElementById('ai-skeleton');
-    if(aiSkel) aiSkel.remove();
-    const reveal=document.createElement('div');
-    reveal.className='ai-reveal';
-    reveal.innerHTML=data.result||'<p>AI 分析無回應</p>';
-    aiContent.appendChild(reveal);
-    notify('✓ AI 報告生成完成 ✦');
+    notify('✓ 落點分析完成 🎉');
 
   }catch(err){
-    aiContent.innerHTML=`<p style="color:var(--clay)">⚠️ ${err.message}</p>`;
     document.getElementById('result-time').textContent='分析失敗';
     notify('分析失敗：'+err.message,false);
     document.getElementById('analyzeBtn').disabled=false;
@@ -2608,8 +2722,7 @@ function toggleExploreAll(btn){
 const analyzerObs = new IntersectionObserver((entries)=>{
   entries.forEach(e=>{
     if(!e.isIntersecting){
-      // Collapse all expanded compact cards
-      document.querySelectorAll('.match-card-compact.expanded:not(.pinned)').forEach(c=>{
+      document.querySelectorAll('.match-card-compact.expanded').forEach(c=>{
         c.classList.remove('expanded');
       });
     }
@@ -2620,29 +2733,167 @@ document.getElementById && document.getElementById('analyzer-wrap') &&
 
 /* ── Compact card hover/pin logic ── */
 function attachCardInteractions(card){
-  let hoverTimer;
-  card.addEventListener('mouseenter',()=>{
-    if(card.classList.contains('pinned')) return;
-    hoverTimer = setTimeout(()=>card.classList.add('expanded'),160);
-  });
-  card.addEventListener('mouseleave',()=>{
-    clearTimeout(hoverTimer);
-    if(!card.classList.contains('pinned')) card.classList.remove('expanded');
-  });
+  // Click only to expand/collapse — no hover expand
   card.addEventListener('click',()=>{
-    const wasPinned = card.classList.contains('pinned');
+    const wasPinned = card.classList.contains('expanded');
     if(!wasPinned){
-      card.classList.add('pinned','expanded');
-      card.querySelector('.mcc-pin-hint').textContent = '已固定展開，再次點擊收起';
+      card.classList.add('expanded');
+      card.querySelector('.mcc-pin-hint').textContent = '點擊收起';
       card.querySelector('.mcc-pin-hint').classList.add('pinned');
     } else {
-      card.classList.remove('pinned','expanded');
-      card.querySelector('.mcc-pin-hint').textContent = '滑鼠移入展開 · 點擊固定';
+      card.classList.remove('expanded');
+      card.querySelector('.mcc-pin-hint').textContent = '點擊展開詳細資訊';
       card.querySelector('.mcc-pin-hint').classList.remove('pinned');
     }
   });
 }
 
+
+
+/* ══════════════════════════════════════
+   APPLE-STYLE MICRO-INTERACTIONS
+══════════════════════════════════════ */
+
+/* — Magnetic hover on cards — */
+function initMagnetic(){
+  document.querySelectorAll('.floating-card,.stat-pill,.btn-hero,.btn-ghost,.nav-cta').forEach(el=>{
+    el.addEventListener('mousemove',(e)=>{
+      const r=el.getBoundingClientRect();
+      const cx=r.left+r.width/2, cy=r.top+r.height/2;
+      const dx=(e.clientX-cx)/r.width*10;
+      const dy=(e.clientY-cy)/r.height*10;
+      el.style.transform=`translate(${dx}px,${dy}px) scale(1.02)`;
+    });
+    el.addEventListener('mouseleave',()=>{
+      el.style.transform='';
+      el.style.transition='transform .4s var(--ease-spring)';
+    });
+    el.addEventListener('mouseenter',()=>{
+      el.style.transition='transform .12s ease';
+    });
+  });
+}
+
+/* — Parallax hero dots on mouse move — */
+const heroDots=document.querySelector('.hero-dots');
+const heroGrad=document.querySelector('.hero-bg-grad');
+document.querySelector('.hero')?.addEventListener('mousemove',(e)=>{
+  const vw=window.innerWidth, vh=window.innerHeight;
+  const px=(e.clientX/vw-.5)*18, py=(e.clientY/vh-.5)*12;
+  if(heroDots) heroDots.style.transform=`translate(${px}px,${py}px)`;
+  if(heroGrad) heroGrad.style.transform=`translate(${px*0.4}px,${py*0.4}px)`;
+});
+
+/* — 3D tilt on feature banners — */
+document.querySelectorAll('.feature-banner').forEach(card=>{
+  card.addEventListener('mousemove',(e)=>{
+    const r=card.getBoundingClientRect();
+    const nx=(e.clientX-r.left)/r.width-.5;
+    const ny=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`translateY(-5px) scale(1.005) perspective(600px) rotateX(${-ny*5}deg) rotateY(${nx*7}deg)`;
+    card.style.boxShadow=`${-nx*12}px ${-ny*8}px 40px rgba(0,0,0,.22)`;
+  });
+  card.addEventListener('mouseleave',()=>{
+    card.style.transform='';
+    card.style.boxShadow='';
+  });
+});
+
+/* — Smooth scroll link highlight — */
+const navLinks=document.querySelectorAll('.nav-links a');
+const sections=[
+  {id:'analyzer-wrap',link:0},
+  {id:'compare-section',link:1},
+  {id:'deadlines-section',link:2},
+  {id:'features-section',link:3}
+];
+const navObs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const sec=sections.find(s=>s.id===e.target.id);
+      if(sec){
+        navLinks.forEach(l=>l.style.color='');
+        if(navLinks[sec.link]) navLinks[sec.link].style.color='var(--terra)';
+      }
+    }
+  });
+},{threshold:0.35});
+sections.forEach(s=>{
+  const el=document.getElementById(s.id);
+  if(el) navObs.observe(el);
+});
+
+/* — Ripple effect on match cards — */
+document.addEventListener('click',(e)=>{
+  const card=e.target.closest('.match-card-compact');
+  if(!card) return;
+  const r=card.getBoundingClientRect();
+  const ripple=document.createElement('span');
+  ripple.style.cssText=`
+    position:absolute;border-radius:50%;
+    background:rgba(194,78,40,.1);
+    width:0;height:0;
+    left:${e.clientX-r.left}px;top:${e.clientY-r.top}px;
+    transform:translate(-50%,-50%);
+    animation:ripple .5s ease forwards;
+    pointer-events:none;z-index:0;
+  `;
+  card.style.position='relative';
+  card.style.overflow='hidden';
+  card.appendChild(ripple);
+  setTimeout(()=>ripple.remove(),550);
+});
+
+/* — Feature banner bar animations on scroll-in — */
+const bannerObs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.fb-bar-anim').forEach(b=>b.classList.add('animated'));
+      bannerObs.unobserve(e.target);
+    }
+  });
+},{threshold:0.3});
+document.querySelectorAll('.feature-banner').forEach(b=>bannerObs.observe(b));
+
+/* — Explore card tilt — */
+document.querySelectorAll('.explore-card').forEach(card=>{
+  card.addEventListener('mousemove',(e)=>{
+    const r=card.getBoundingClientRect();
+    const nx=(e.clientX-r.left)/r.width-.5;
+    const ny=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`translateY(-4px) perspective(400px) rotateX(${-ny*4}deg) rotateY(${nx*5}deg)`;
+  });
+  card.addEventListener('mouseleave',()=>{card.style.transform='';});
+});
+
+/* — Ticker pause on hover — */
+const ticker=document.querySelector('.ticker');
+ticker?.parentElement?.addEventListener('mouseenter',()=>{if(ticker)ticker.style.animationPlayState='paused';});
+ticker?.parentElement?.addEventListener('mouseleave',()=>{if(ticker)ticker.style.animationPlayState='running';});
+
+/* — Nav background blur intensity on scroll — */
+const navEl=document.querySelector('nav');
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  if(navEl){
+    const alpha=Math.min(.98,.85+y/500*.13);
+    navEl.style.background=`rgba(248,244,238,${alpha})`;
+    navEl.style.boxShadow=y>40?'0 2px 20px rgba(0,0,0,.09)':'none';
+  }
+},{passive:true});
+
+/* — Score viz bars get micro bounce on update — */
+function triggerScoreBarBounce(subjectId){
+  const col=document.querySelector(`.sv-col[data-id="${subjectId}"]`);
+  if(col){
+    col.animate([
+      {transform:'scaleY(1.15)',transformOrigin:'bottom'},
+      {transform:'scaleY(1)',transformOrigin:'bottom'}
+    ],{duration:300,easing:'cubic-bezier(.16,1,.3,1)'});
+  }
+}
+
+initMagnetic();
 
 // Init
 renderScoreViz();
@@ -2663,4 +2914,3 @@ updateTotal();
 
 </body>
 </html>
- 
