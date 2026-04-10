@@ -420,10 +420,10 @@ def match_majors(scores: dict, profile: dict = None) -> list:
     if profile is None:
         profile = {}
 
-    QUOTA_SAFE   = 10   # 穩上給足，讓使用者有選擇空間
-    QUOTA_TARGET = 10   # 目標志願適中
-    QUOTA_REACH  = 10   # 衝刺少一點
-    QUOTA_HARD   = 10   # 挑戰（未達門檻）只給最相關的 2 筆
+    QUOTA_SAFE   = 8   # 穩上給足，讓使用者有選擇空間
+    QUOTA_TARGET = 6   # 目標志願適中
+    QUOTA_REACH  = 4   # 衝刺少一點
+    QUOTA_HARD   = 2   # 挑戰（未達門檻）只給最相關的 2 筆
 
     MIN_GAP_HARD = -5  # gap < -5 直接排除，太遠沒意義
 
