@@ -144,8 +144,10 @@ def _normalize_major_types(m: dict) -> dict:
 
 
 def load_majors() -> list:
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    _path = os.path.join(_dir, "majors.json")
     try:
-        with open("majors.json", "r", encoding="utf-8") as f:
+        with open(_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         # ✅ 修復：讀入後立即做型別正規化
         data = [_normalize_major_types(m) for m in data]
@@ -348,15 +350,14 @@ def calculate_combined_pr(scores: dict) -> int:
 
 def compute_admission_probability(gap: int, passed_threshold: bool, quota: int = 50) -> int:
     if not passed_threshold:
-        base = max(0, 5 + gap * 3)
-        return min(base, 15)
-    if gap >= 3:    return 95
-    if gap >= 2:    return 88
-    if gap >= 1:    return 78
-    if gap == 0:    return 62
-    if gap == -1:   return 45
-    if gap == -2:   return 28
-    return max(5, 15 + gap * 5)
+        # 未達最低門檻，機會極低
+        return max(0, min(15, 5 + gap * 2))
+    if gap >= 2:   return 97
+    if gap == 1:   return 85
+    if gap == 0:   return 70
+    if gap == -1:  return 40
+    if gap == -2:  return 20
+    return max(5, 15 + gap * 3)
 
 
 def score_relevance(m_entry: dict, profile: dict) -> float:
@@ -413,7 +414,6 @@ def match_majors(scores: dict, profile: dict = None) -> list:
     分層配額（回傳上限）：
       穩上  → 最多 QUOTA_SAFE  筆
       目標  → 最多 QUOTA_TARGET 筆
-      衝刺  → 最多 QUOTA_REACH  筆
       挑戰  → 最多 QUOTA_HARD   筆
     同一層內，依「使用者偏好相關性」降冪，再依 gap 降冪。
     """
@@ -422,13 +422,12 @@ def match_majors(scores: dict, profile: dict = None) -> list:
 
     QUOTA_SAFE   = 8   # 穩上給足，讓使用者有選擇空間
     QUOTA_TARGET = 6   # 目標志願適中
-    QUOTA_REACH  = 4   # 衝刺少一點
-    QUOTA_HARD   = 2   # 挑戰（未達門檻）只給最相關的 2 筆
+    QUOTA_HARD   = 4   # 挑戰（含未達門檻 & gap 負值）
 
     MIN_GAP_HARD = -5  # gap < -5 直接排除，太遠沒意義
 
     buckets: dict[str, list] = {
-        "穩上": [], "目標": [], "衝刺": [], "挑戰": []
+        "穩上": [], "目標": [], "挑戰": []
     }
 
     for m in majors_db:
@@ -481,12 +480,12 @@ def match_majors(scores: dict, profile: dict = None) -> list:
 
         if not passed_threshold:
             safety = "挑戰"
-        elif gap >= 2:
+        elif gap >= 1:
             safety = "穩上"
-        elif gap >= -1:
+        elif gap == 0:
             safety = "目標"
-        else:
-            safety = "衝刺"
+        else:  # gap <= -1，已達門檻但低於去年錄取線
+            safety = "挑戰"
 
         subject_detail = {}
         for subj, mult in multipliers.items():
@@ -550,7 +549,6 @@ def match_majors(scores: dict, profile: dict = None) -> list:
     result = (
         buckets["穩上"][:QUOTA_SAFE]
         + buckets["目標"][:QUOTA_TARGET]
-        + buckets["衝刺"][:QUOTA_REACH]
         + buckets["挑戰"][:QUOTA_HARD]
     )
     return result
@@ -559,12 +557,12 @@ def match_majors(scores: dict, profile: dict = None) -> list:
 def sort_by_school_pref(matches: list, pref: str) -> list:
     """
     在已分層的 matches 裡，對每一層內部套用學校偏好排序。
-    保留穩上 > 目標 > 衝刺 > 挑戰的層級順序，只在同層內調整位置。
+    保留穩上 > 目標 > 挑戰的層級順序，只在同層內調整位置。
     """
     if pref == "any":
         return matches
 
-    tier_order = {"穩上": 0, "目標": 1, "衝刺": 2, "挑戰": 3}
+    tier_order = {"穩上": 0, "目標": 1, "挑戰": 2}
 
     def sort_key(m: dict) -> tuple:
         tier = tier_order.get(m["safety"], 9)
@@ -608,117 +606,150 @@ def md_to_html(text: str) -> str:
 # ============================================================
 
 def generate_advice(profile: dict, matches: list) -> str:
-    cache_key = make_cache_key("advice_v2", profile.get("scores"), [m["major"] for m in matches[:5]])
+    """
+    純靜態分析：依落點數據 + 時事背景產生 HTML，不呼叫任何外部 API。
+    """
+    cache_key = make_cache_key("advice_v3", profile.get("scores"), [m["major"] for m in matches[:5]])
     cached = cache_get(cache_key)
-    if cached: return cached
+    if cached:
+        return cached
 
-    context = (
-        retrieve_memory(str(profile.get("interests", "")), top_k=2, tag="consultation")
-        + "\n"
-        + retrieve_memory("產業趨勢", tag="knowledge")
-    )
-    abroad = profile.get("出國意願", "n")
-    abroad_section = (
-        "**5. 出國升學策略（美國/英國/日本/新加坡）**：推薦研究所、TOEFL/GRE門檻"
-        if abroad == "y"
-        else "5. 出國升學：此同學目前無意願，略過。"
-    )
+    name    = profile.get("name", "同學")
+    scores  = profile.get("scores", {})
+    abroad  = profile.get("出國意願", "n")
 
-    compact = []
-    for m in matches[:5]:
-        entry = {
-            "校系":       f"{m['school']} {m['major']}",
-            "安全分類":   m["safety"],
-            "門檻通過":   m["is_preferred"],
-            "決勝科目差距": m["gap"],
-            "AI預測錄取率": f"{m.get('admission_prob', 0)}%",
-            "錄取名額":   m.get("quota", "未知"),
-            "年薪中位":   m.get("salary_median_raw", "—"),
-            "AI衝擊":     m.get("ai_impact", "未知"),
-            "產業標籤":   m.get("industry_tags", []),
-            "歷年門檻趨勢": m.get("past_thresholds", {}),
-        }
+    # ── 1. 志願推薦（前4名）──
+    top4 = matches[:4]
+
+    SAFETY_LABEL = {"穩上": "🟢 穩上", "目標": "🟡 目標", "挑戰": "🔴 挑戰"}
+    PROB_DESC = {
+        97: "接近確定上榜",
+        85: "很有把握",
+        70: "有競爭力，仍需留意",
+        40: "低於去年錄取線，需衡量時勢",
+    }
+
+    def prob_desc(p: int) -> str:
+        for k in sorted(PROB_DESC, reverse=True):
+            if p >= k:
+                return PROB_DESC[k]
+        return "機會偏低，建議作為備選"
+
+    def trend_note(past: dict, gap: int) -> str:
+        """根據歷年趨勢判斷今年預測方向"""
+        if not past:
+            return ""
+        years = sorted(past.keys())
+        if len(years) < 2:
+            return ""
+        last_yr = years[-1]
+        prev_yr = years[-2]
+        # 比較最近兩年任一科目平均
+        def avg_cutoff(thr: dict) -> float:
+            vals = [v for v in thr.values() if isinstance(v, (int, float))]
+            return sum(vals) / len(vals) if vals else 0
+        delta = avg_cutoff(past[last_yr]) - avg_cutoff(past[prev_yr])
+        if delta > 0.3:
+            return "近年錄取門檻<strong>上升</strong>，競爭加劇，今年門檻預計持平或微升。"
+        elif delta < -0.3:
+            return "近年錄取門檻<strong>下滑</strong>，今年分數線可能略降，對你有利。"
+        else:
+            return "近年錄取門檻<strong>穩定</strong>，今年預測與去年相近。"
+
+    recs_html = ""
+    for i, m in enumerate(top4, 1):
+        label  = SAFETY_LABEL.get(m["safety"], m["safety"])
+        prob   = m.get("admission_prob", 0)
+        pdesc  = prob_desc(prob)
+        tr     = trend_note(m.get("past_thresholds", {}), m["gap"])
+        tags   = "、".join(m.get("industry_tags", [])[:3]) or "—"
+        salary = m.get("salary_median_raw", "—")
+        ai_imp = m.get("ai_impact", "未知")
+        gap_str = f"+{m['gap']}" if m["gap"] >= 0 else str(m["gap"])
+        fail_str = ""
         if m.get("failed_thresholds"):
-            entry["⚠️未達門檻科目"] = m["failed_thresholds"]
-        compact.append(entry)
+            fail_str = "；".join(
+                f"{subj} 差 {m['gap'] if m['gap'] < 0 else ''}{abs(scores.get(subj,0) - req)} 分達門檻"
+                for subj, req in m["failed_thresholds"].items()
+            )
+            fail_str = f'<br><span style="color:#c0392b">⚠️ 未達最低門檻：{fail_str}</span>'
 
-    scores_str = json.dumps(profile.get("scores", {}), ensure_ascii=False)
-    prompt = f"""你是台灣頂尖升學顧問（15年實戰，資料分析師思維，務實直接，像聰明的學長姐而非業務員）。
-你手中有完整數據，請以「數據說話」的方式給出分析，避免空洞建議。
+        recs_html += f"""
+<div style="margin-bottom:12px;padding:10px 14px;border-left:4px solid {'#27ae60' if m['safety']=='穩上' else '#f39c12' if m['safety']=='目標' else '#e74c3c'};background:#fafafa;border-radius:4px">
+  <strong>{i}. {m['school']} {m['major']}</strong>　{label}　錄取率 <strong>{prob}%</strong>（{pdesc}）<br>
+  決勝科目差距：{gap_str} 分　產業：{tags}　年薪中位：{salary}　AI影響：{ai_imp}{fail_str}
+  {'<br><small style="color:#555">' + tr + '</small>' if tr else ''}
+</div>"""
 
-═══════════════════════
-學生資料
-═══════════════════════
-- 稱呼：{profile.get('name', '同學')}
-- 學測成績（15級分制）：{scores_str}
-- 擅長科目：{profile.get('strengths', '未填')}
-- 興趣領域：{profile.get('interests', '未填')}
-- 個人特質：{profile.get('personality', '未填')}
-- 出國意願：{'有' if abroad == 'y' else '無'}
+    # ── 2. 時事環境背景摘要（篩出與學生科系相關的趨勢）──
+    interests = profile.get("interests", "").lower()
+    all_tags  = set()
+    for m in matches[:6]:
+        all_tags.update(t.lower() for t in m.get("industry_tags", []))
 
-═══════════════════════
-落點數據（前5名，含歷年趨勢）
-═══════════════════════
-{json.dumps(compact, ensure_ascii=False, indent=2)}
+    relevant_trends = []
+    for t in EXAM_CONTEXT_2025["key_trends"]:
+        keywords = ["ai", "資工", "電機", "資管", "醫", "半導體", "商管", "考生", "數學", "英文"]
+        if any(kw in t.lower() for kw in keywords) or any(tag in t.lower() for tag in all_tags):
+            relevant_trends.append(t)
+    if not relevant_trends:
+        relevant_trends = EXAM_CONTEXT_2025["key_trends"][:3]
 
-═══════════════════════
-115學年度考試環境背景
-═══════════════════════
-{EXAM_CONTEXT_STR}
+    trends_html = "".join(f"<li>{t}</li>" for t in relevant_trends[:4])
 
-═══════════════════════
-諮詢記憶背景
-═══════════════════════
-{context}
+    # ── 3. 出國升學 ──
+    abroad_html = ""
+    if abroad == "y":
+        abroad_html = """<h4>🌏 出國升學補充</h4>
+<p>若考慮境外研究所，建議優先評估：美國 CS/EE（TOEFL 100+、GRE 320+）、
+新加坡 NUS/NTU（英文要求高但獎學金機會多）、日本帝大（學費低但需日文基礎）。
+推薦先完成國內申請後再備考 TOEFL。</p>"""
 
-═══════════════════════
-請輸出以下分析（條列式，重點加粗，總字數不超過700字）
-═══════════════════════
+    # ── 4. 產業出路評比 ──
+    hot = EXAM_CONTEXT_2025["hot_industries"]
+    declining = EXAM_CONTEXT_2025["declining_fields"]
+    industry_notes = []
+    for m in top4:
+        for tag in m.get("industry_tags", []):
+            if any(h in tag for h in hot):
+                industry_notes.append(f"<strong>{m['major']}</strong> 的 {tag} 領域屬於熱門產業，就業前景佳。")
+                break
+            if any(d in tag for d in declining):
+                industry_notes.append(f"<strong>{m['major']}</strong> 涉及 {tag}，此領域近年承壓，請評估長期發展。")
+                break
+    industry_html = "".join(f"<li>{n}</li>" for n in industry_notes[:3]) if industry_notes else "<li>建議參考各校系就業統計數據再做決定。</li>"
 
-**1. 志願推薦序（最多4個）**
-- 每個志願標明：[穩上/目標/衝刺/挑戰] + AI預測錄取率 + 推薦原因 + 與學生特質契合度
-- 若為「挑戰」志願（未達門檻），須明確說明差多少、值不值得拼
+    # ── 5. 給這位同學的一句話 ──
+    safe_cnt = sum(1 for m in matches if m["safety"] == "穩上")
+    target_cnt = sum(1 for m in matches if m["safety"] == "目標")
+    challenge_cnt = sum(1 for m in matches if m["safety"] == "挑戰")
+    if safe_cnt >= 4:
+        closing = f"{name}，你的成績在資料庫中有 {safe_cnt} 個穩上志願，基本盤紮實，重點放在挑選最符合興趣的科系，別因保守而可惜了好分數。"
+    elif safe_cnt + target_cnt >= 3:
+        closing = f"{name}，穩上和目標加起來有 {safe_cnt+target_cnt} 個選項，選志願時建議 2 個穩上壓底、1 個目標衝、1 個挑戰試試，分散風險。"
+    else:
+        closing = f"{name}，挑戰志願比例較高（{challenge_cnt} 個），今年考生人數減少對你略為有利，但建議確保至少 1~2 個門檻全達的志願保底。"
 
-**2. 歷年趨勢解讀**
-- 根據111-113年數據，今年分數線預測會升還是降？給出明確判斷
+    html = f"""
+<h3>📊 落點分析報告｜{name}</h3>
 
-**3. 環境背景影響**
-- 今年數A偏難對這位學生有利還是不利？考生減少對錄取線的影響？
+<h4>🎯 志願推薦（前 {len(top4)} 名）</h4>
+{recs_html}
 
-**4. 薪資與產業出路**
-- 各推薦科系：起薪估算 / 產業前景 / AI時代風險
-- 哪個選擇的「性價比」最高？直說
+<h4>📈 115學年度考試環境與趨勢</h4>
+<ul>{trends_html}</ul>
 
-{abroad_section}
+<h4>💼 產業前景評估</h4>
+<ul>{industry_html}</ul>
 
-**6. 給這位同學的一句話**（要有針對性，不要廢話）
+{abroad_html}
+
+<h4>💬 給你的一句話</h4>
+<p>{closing}</p>
 """
 
-    if not GEMINI_AVAILABLE or not genai:
-        return (
-            "<p>⚠️ AI 分析模組未啟用。請至 Render Dashboard → Environment → "
-            "新增環境變數 <code>GEMINI_API_KEY</code>。</p>"
-            "<p>落點卡片數據仍可參考。</p>"
-        )
-
-    try:
-        model = genai.GenerativeModel(MODEL_NAME)
-        res = model.generate_content(
-            prompt,
-            generation_config={"max_output_tokens": 1400, "temperature": 0.65}
-        )
-        html = md_to_html(res.text)
-        cache_set(cache_key, html)
-        store_memory(
-            f"學生{profile.get('name', '')} 推薦：{[m['major'] for m in matches[:3]]}",
-            tag="consultation"
-        )
-        return html
-    except Exception as e:
-        error_msg = str(e)
-        if "API_KEY" in error_msg.upper() or "400" in error_msg:
-            return "<p>⚠️ Gemini API Key 無效，請確認 GEMINI_API_KEY 設定。</p>"
-        return f"<p>⚠️ AI 分析暫時失敗（{error_msg[:120]}），落點卡片仍可參考。</p>"
+    cache_set(cache_key, html)
+    return html
 
 # ============================================================
 # 多輪對話
@@ -814,12 +845,10 @@ def analyze():
             "total":     len(matches),
             "safe":      sum(1 for m in matches if m["safety"] == "穩上"),
             "target":    sum(1 for m in matches if m["safety"] == "目標"),
-            "reach":     sum(1 for m in matches if m["safety"] == "衝刺"),
             "challenge": sum(1 for m in matches if m["safety"] == "挑戰"),
             # 前端中文 key 相容
             "穩上":      sum(1 for m in matches if m["safety"] == "穩上"),
             "目標":      sum(1 for m in matches if m["safety"] == "目標"),
-            "衝刺":      sum(1 for m in matches if m["safety"] == "衝刺"),
             "挑戰":      sum(1 for m in matches if m["safety"] == "挑戰"),
         }
 
