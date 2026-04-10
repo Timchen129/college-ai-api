@@ -537,11 +537,9 @@ def match_majors(scores: dict, profile: dict = None) -> list:
 
         if not passed_threshold:
             safety = "挑戰"
-        elif gap >= 1:
-            safety = "穩上"
-        elif gap == 0:
-            safety = "目標"
-        else:  # gap <= -1，已達門檻但低於去年錄取線
+        elif gap >= 0:
+            safety = "穩健"
+        else:  # gap < 0，已達門檻但低於去年錄取線
             safety = "挑戰"
 
         subject_detail = {}
@@ -615,7 +613,7 @@ def sort_by_school_pref(matches: list, pref: str) -> list:
     if pref == "any":
         return matches
 
-    tier_order = {"穩上": 0, "目標": 1, "挑戰": 2}
+    tier_order = {"穩健": 0, "挑戰": 1}
 
     def sort_key(m: dict) -> tuple:
         tier = tier_order.get(m["safety"], 9)
@@ -674,7 +672,7 @@ def generate_advice(profile: dict, matches: list) -> str:
     # ── 1. 志願推薦（前4名）──
     top4 = matches[:4]
 
-    SAFETY_LABEL = {"穩上": "🟢 穩上", "目標": "🟡 目標", "挑戰": "🔴 挑戰"}
+    SAFETY_LABEL = {"穩健": "🟢 穩健", "挑戰": "🔴 挑戰"}
     PROB_DESC = {
         97: "接近確定上榜",
         85: "很有把握",
@@ -728,7 +726,7 @@ def generate_advice(profile: dict, matches: list) -> str:
             fail_str = f'<br><span style="color:#c0392b">⚠️ 未達最低門檻：{fail_str}</span>'
 
         recs_html += f"""
-<div style="margin-bottom:12px;padding:10px 14px;border-left:4px solid {'#27ae60' if m['safety']=='穩上' else '#f39c12' if m['safety']=='目標' else '#e74c3c'};background:#fafafa;border-radius:4px">
+<div style="margin-bottom:12px;padding:10px 14px;border-left:4px solid {'#27ae60' if m['safety']=='穩健' else '#e74c3c'};background:#fafafa;border-radius:4px">
   <strong>{i}. {m['school']} {m['major']}</strong>　{label}　錄取率 <strong>{prob}%</strong>（{pdesc}）<br>
   決勝科目差距：{gap_str} 分　產業：{tags}　年薪中位：{salary}　AI影響：{ai_imp}{fail_str}
   {'<br><small style="color:#555">' + tr + '</small>' if tr else ''}
@@ -773,13 +771,12 @@ def generate_advice(profile: dict, matches: list) -> str:
     industry_html = "".join(f"<li>{n}</li>" for n in industry_notes[:3]) if industry_notes else "<li>建議參考各校系就業統計數據再做決定。</li>"
 
     # ── 5. 給這位同學的一句話 ──
-    safe_cnt = sum(1 for m in matches if m["safety"] == "穩上")
-    target_cnt = sum(1 for m in matches if m["safety"] == "目標")
+    safe_cnt = sum(1 for m in matches if m["safety"] == "穩健")
     challenge_cnt = sum(1 for m in matches if m["safety"] == "挑戰")
     if safe_cnt >= 4:
-        closing = f"{name}，你的成績在資料庫中有 {safe_cnt} 個穩上志願，基本盤紮實，重點放在挑選最符合興趣的科系，別因保守而可惜了好分數。"
-    elif safe_cnt + target_cnt >= 3:
-        closing = f"{name}，穩上和目標加起來有 {safe_cnt+target_cnt} 個選項，選志願時建議 2 個穩上壓底、1 個目標衝、1 個挑戰試試，分散風險。"
+        closing = f"{name}，你的成績在資料庫中有 {safe_cnt} 個穩健志願，基本盤紮實，重點放在挑選最符合興趣的科系，別因保守而可惜了好分數。"
+    elif safe_cnt >= 2:
+        closing = f"{name}，穩健志願有 {safe_cnt} 個，建議 2 個穩健壓底、1-2 個挑戰試試，分散風險。"
     else:
         closing = f"{name}，挑戰志願比例較高（{challenge_cnt} 個），今年考生人數減少對你略為有利，但建議確保至少 1~2 個門檻全達的志願保底。"
 
@@ -896,12 +893,10 @@ def analyze():
 
         summary = {
             "total":     len(matches),
-            "safe":      sum(1 for m in matches if m["safety"] == "穩上"),
-            "target":    sum(1 for m in matches if m["safety"] == "目標"),
+            "safe":      sum(1 for m in matches if m["safety"] == "穩健"),
             "challenge": sum(1 for m in matches if m["safety"] == "挑戰"),
             # 前端中文 key 相容
-            "穩上":      sum(1 for m in matches if m["safety"] == "穩上"),
-            "目標":      sum(1 for m in matches if m["safety"] == "目標"),
+            "穩健":      sum(1 for m in matches if m["safety"] == "穩健"),
             "挑戰":      sum(1 for m in matches if m["safety"] == "挑戰"),
         }
 
