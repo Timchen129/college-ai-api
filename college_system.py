@@ -360,6 +360,69 @@ def compute_admission_probability(gap: int, passed_threshold: bool, quota: int =
     return max(5, 15 + gap * 3)
 
 
+def generate_ai_comment(m: dict, gap: int, passed_threshold: bool) -> str:
+    """根據落點資料、時事背景，產生一句精簡的 AI 評語（30~50字）"""
+    ai_impact = m.get("ai_impact", "未知")
+    tags  = m.get("industry_tags", [])
+    career = m.get("career", [])
+    hot = EXAM_CONTEXT_2025["hot_industries"]
+    declining = EXAM_CONTEXT_2025["declining_fields"]
+
+    # 趨勢判斷
+    past = m.get("past_thresholds", {})
+    years = sorted(past.keys())
+    trend_note = ""
+    if len(years) >= 2:
+        def avg(thr):
+            v = [x for x in thr.values() if isinstance(x, (int,float))]
+            return sum(v)/len(v) if v else 0
+        delta = avg(past[years[-1]]) - avg(past[years[-2]])
+        if delta > 0.3:   trend_note = "門檻近年上升，競爭加劇"
+        elif delta < -0.3: trend_note = "門檻近年下滑，今年略有利"
+        else:              trend_note = "門檻近年穩定"
+
+    # 錄取層
+    if gap >= 2:
+        safety_note = "落點穩健"
+    elif gap == 1:
+        safety_note = "分差有把握"
+    elif gap == 0:
+        safety_note = "與去年錄取線相當"
+    elif gap == -1:
+        safety_note = "略低於去年錄取線，需評估"
+    else:
+        safety_note = f"低於錄取線 {abs(gap)} 分，屬挑戰志願"
+
+    if not passed_threshold:
+        safety_note = "尚未達到最低門檻，屬高難度挑戰"
+
+    # 產業前景
+    hot_match = any(any(h.split('/')[0] in tag for h in hot) for tag in tags)
+    dn_match  = any(any(d in tag for d in declining) for tag in tags)
+    if hot_match:
+        industry_note = "屬熱門成長產業，就業前景佳"
+    elif dn_match:
+        industry_note = "所屬領域近年承壓，需留意就業趨勢"
+    else:
+        industry_note = "產業穩定"
+
+    # AI 影響
+    ai_note = ""
+    if ai_impact in ("高度受益", "受益"):
+        ai_note = "AI 時代高度加分"
+    elif ai_impact in ("輔助工具化",):
+        ai_note = "AI 為輔助工具，核心技能不受威脅"
+    elif ai_impact in ("部分衝擊",):
+        ai_note = "AI 有部分替代風險"
+
+    parts = [safety_note]
+    if trend_note: parts.append(trend_note)
+    if industry_note: parts.append(industry_note)
+    if ai_note: parts.append(ai_note)
+    return "；".join(parts[:3]) + "。"
+
+
+
 def score_relevance(m_entry: dict, profile: dict) -> float:
     """
     計算科系與使用者偏好的相關性分數（0~1）。
@@ -420,15 +483,9 @@ def match_majors(scores: dict, profile: dict = None) -> list:
     if profile is None:
         profile = {}
 
-    QUOTA_SAFE   = 8   # 穩上給足，讓使用者有選擇空間
-    QUOTA_TARGET = 6   # 目標志願適中
-    QUOTA_HARD   = 4   # 挑戰（含未達門檻 & gap 負值）
-
     MIN_GAP_HARD = -5  # gap < -5 直接排除，太遠沒意義
 
-    buckets: dict[str, list] = {
-        "穩上": [], "目標": [], "挑戰": []
-    }
+    all_entries: list = []
 
     for m in majors_db:
         multipliers: dict = m.get("multipliers", {})
@@ -538,20 +595,16 @@ def match_majors(scores: dict, profile: dict = None) -> list:
             "relevance_score":      round(relevance, 3),
             "school_is_national":   "國立" in m["school"],
             "school_region":        school_region(m["school"]),
+            # ── 新增欄位 ──
+            "status":               safety,
+            "threshold":            thresholds,
+            "ai_comment":           generate_ai_comment(m, gap, passed_threshold),
         }
-        buckets[safety].append(entry)
+        all_entries.append(entry)
 
-    # ── 各層內部排序：興趣相關性降冪，同等相關再依 gap 降冪 ──
-    for safety_tier, bucket in buckets.items():
-        bucket.sort(key=lambda x: (-x["relevance_score"], -x["gap"]))
-
-    # ── 依配額截斷各層，再合併 ──
-    result = (
-        buckets["穩上"][:QUOTA_SAFE]
-        + buckets["目標"][:QUOTA_TARGET]
-        + buckets["挑戰"][:QUOTA_HARD]
-    )
-    return result
+    # ── 全量排序：錄取機率 DESC，同機率依 gap DESC（分差接近度）──
+    all_entries.sort(key=lambda x: (-x["admission_prob"], -x["gap"]))
+    return all_entries
 
 
 def sort_by_school_pref(matches: list, pref: str) -> list:
@@ -609,7 +662,7 @@ def generate_advice(profile: dict, matches: list) -> str:
     """
     純靜態分析：依落點數據 + 時事背景產生 HTML，不呼叫任何外部 API。
     """
-    cache_key = make_cache_key("advice_v3", profile.get("scores"), [m["major"] for m in matches[:30]])
+    cache_key = make_cache_key("advice_v3", profile.get("scores"), [m["major"] for m in matches[:5]])
     cached = cache_get(cache_key)
     if cached:
         return cached
