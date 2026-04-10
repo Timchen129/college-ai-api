@@ -499,6 +499,424 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   .summary-row{grid-template-columns:1fr 1fr}
   .hero-actions{flex-direction:column}
 }
+
+/* ═══════════════════════════════════
+   INSPIRATIONAL PHOTO BANNERS
+═══════════════════════════════════ */
+.inspire-strip{
+  max-width:1100px;margin:0 auto;
+  padding:0 2rem 3rem;
+  display:grid;grid-template-columns:1fr 1fr;gap:18px;
+}
+.inspire-card{
+  border-radius:20px;overflow:hidden;position:relative;
+  aspect-ratio:16/7;cursor:pointer;
+  box-shadow:0 4px 24px rgba(0,0,0,.10),0 16px 48px rgba(0,0,0,.07);
+  transition:transform .3s var(--ease-spring),box-shadow .3s;
+}
+.inspire-card:hover{transform:translateY(-5px) scale(1.01);box-shadow:0 8px 36px rgba(0,0,0,.14),0 24px 60px rgba(0,0,0,.10)}
+.inspire-card svg{position:absolute;inset:0;width:100%;height:100%}
+.inspire-overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:1.8rem 2rem;
+  background:linear-gradient(to top,rgba(0,0,0,.55) 0%,transparent 55%);
+}
+.inspire-tag{
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(255,255,255,.7);
+  margin-bottom:.5rem;display:flex;align-items:center;gap:6px;
+}
+.inspire-tag::before{content:'';width:18px;height:1px;background:rgba(255,255,255,.5)}
+.inspire-title{font-family:var(--serif);font-size:1.6rem;color:#fff;line-height:1.2;margin-bottom:.35rem}
+.inspire-sub{font-size:12.5px;color:rgba(255,255,255,.75);line-height:1.5;max-width:340px}
+
+/* ═══════════════════════════════════
+   SECTION HEADERS — no more //
+═══════════════════════════════════ */
+.section-head{display:flex;flex-direction:column;gap:.3rem;margin-bottom:2.5rem}
+.section-kicker{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  color:var(--terra);text-transform:uppercase;
+}
+.section-kicker-line{width:24px;height:1.5px;background:var(--terra)}
+.section-h{font-family:var(--serif);font-size:clamp(1.7rem,2.8vw,2.5rem);line-height:1.15;letter-spacing:-.01em}
+.section-h em{font-style:italic;color:var(--terra)}
+.section-p{color:var(--ink2);font-size:14.5px;line-height:1.8;max-width:520px;margin-top:.4rem}
+
+/* ═══════════════════════════════════
+   RESULTS PANEL — Category Tabs
+═══════════════════════════════════ */
+.cat-tabs{
+  display:flex;gap:6px;flex-wrap:wrap;
+  margin-bottom:1rem;
+  padding:5px;background:var(--cream3);
+  border-radius:14px;border:1px solid var(--border);
+}
+.cat-tab{
+  flex:1;min-width:70px;
+  padding:7px 10px;border-radius:10px;border:none;
+  background:transparent;cursor:pointer;
+  font-family:var(--font);font-size:11.5px;
+  color:var(--ink3);transition:all .22s;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.cat-tab:hover{background:var(--cream2);color:var(--ink2)}
+.cat-tab.active{background:var(--cream2);color:var(--ink);
+  box-shadow:0 1px 4px rgba(0,0,0,.10);font-weight:500}
+.cat-tab-num{
+  font-family:var(--serif);font-size:1.3rem;line-height:1;
+}
+.cat-tab-num.sage{color:var(--sage)}.cat-tab-num.slate{color:var(--slate)}
+.cat-tab-num.clay{color:var(--clay)}.cat-tab-num.plum{color:var(--plum)}
+.cat-tab-num.ink3{color:var(--ink3)}
+.cat-tab-label{font-size:10px;font-family:var(--mono);color:inherit;opacity:.8}
+
+.show-more-row{
+  display:flex;align-items:center;gap:10px;
+  margin:10px 0;
+}
+.show-more-btn{
+  flex:1;padding:9px 16px;
+  background:var(--cream3);border:1.5px dashed var(--border2);
+  border-radius:10px;cursor:pointer;
+  font-family:var(--font);font-size:13px;color:var(--ink2);
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.show-more-btn:hover{background:var(--cream2);border-color:var(--terra);color:var(--terra)}
+.show-more-count{
+  font-family:var(--mono);font-size:11px;
+  color:var(--ink3);white-space:nowrap;
+}
+
+/* ═══════════════════════════════════
+   COMPACT MATCH CARD (hover-expand)
+═══════════════════════════════════ */
+.match-card-compact{
+  border:1px solid var(--border);border-radius:var(--r2);
+  background:var(--cream2);overflow:hidden;
+  transition:transform .28s var(--ease-spring),
+             box-shadow .28s var(--ease-spring),
+             border-color .2s;
+  cursor:pointer;
+  box-shadow:0 1px 3px rgba(0,0,0,.04),0 3px 10px rgba(0,0,0,.04);
+  animation:cardPop .4s var(--ease-spring) both;
+}
+.match-card-compact:hover,
+.match-card-compact.pinned{
+  box-shadow:0 4px 18px rgba(0,0,0,.09),0 16px 40px rgba(0,0,0,.07);
+  transform:translateY(-2px);border-color:var(--border2);
+}
+.match-card-compact.pref-hl{border-left:3px solid var(--terra)}
+.match-card-compact.challenge-card{filter:saturate(.75)}
+.match-card-compact.challenge-card:hover{filter:saturate(1)}
+
+/* Compact card collapsed row */
+.mcc-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:.75rem 1.1rem;
+  user-select:none;
+}
+.mcc-badge{padding:2px 9px;border-radius:100px;font-size:10.5px;font-weight:500;font-family:var(--mono);flex-shrink:0}
+.mcc-name{font-family:var(--serif);font-size:.98rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mcc-school{font-size:11px;color:var(--ink3);font-family:var(--mono);flex-shrink:0;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mcc-gap{font-family:var(--mono);font-size:11px;flex-shrink:0;min-width:52px;text-align:right}
+.mcc-gap.pos{color:var(--sage)}.mcc-gap.neg{color:var(--clay)}.mcc-gap.zero{color:var(--slate)}
+.mcc-prob-pill{
+  font-family:var(--mono);font-size:10px;font-weight:600;
+  padding:2px 7px;border-radius:100px;flex-shrink:0;
+}
+.mcc-arrow{
+  font-size:12px;color:var(--ink3);flex-shrink:0;
+  transition:transform .25s var(--ease-spring);
+}
+.match-card-compact.expanded .mcc-arrow{transform:rotate(180deg)}
+
+/* Compact card expand panel */
+.mcc-expand{
+  max-height:0;overflow:hidden;
+  transition:max-height .4s var(--ease-spring);
+}
+.match-card-compact.expanded .mcc-expand{max-height:800px}
+.match-card-compact:not(.pinned) .mcc-expand{pointer-events:none}
+.match-card-compact.expanded:not(.pinned) .mcc-expand{pointer-events:auto}
+.mcc-expand-inner{
+  padding:.2rem 1.1rem 1rem;
+  border-top:1px solid var(--border);
+  animation:fadeIn .3s ease both;
+}
+.mcc-pin-hint{
+  font-size:10px;color:var(--ink3);font-family:var(--mono);
+  text-align:center;margin-top:6px;
+  opacity:.7;
+}
+.mcc-pin-hint.pinned{color:var(--terra)}
+
+/* ═══════════════════════════════════
+   MAJOR EXPLORER (comparison rebuilt)
+═══════════════════════════════════ */
+#compare-section{background:var(--cream);padding:5rem 2rem}
+.explore-wrap{max-width:1100px;margin:0 auto}
+
+.explore-filters{
+  display:flex;gap:8px;flex-wrap:wrap;
+  margin-bottom:1.5rem;
+}
+.explore-filter-btn{
+  padding:7px 16px;border-radius:100px;
+  border:1.5px solid var(--border2);
+  background:transparent;color:var(--ink2);
+  font-size:12.5px;cursor:pointer;
+  transition:all .2s;font-family:var(--font);
+  display:flex;align-items:center;gap:6px;
+}
+.explore-filter-btn:hover{border-color:var(--terra);color:var(--terra)}
+.explore-filter-btn.active{
+  background:var(--terra);color:#fff;
+  border-color:var(--terra);
+}
+.explore-filter-icon{font-size:15px}
+
+.explore-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+.explore-card{
+  background:var(--cream2);border:1px solid var(--border);
+  border-radius:var(--r2);overflow:hidden;
+  transition:transform .25s var(--ease-spring),box-shadow .25s;
+  cursor:pointer;
+}
+.explore-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 6px 24px rgba(0,0,0,.09),0 20px 48px rgba(0,0,0,.07)
+}
+
+/* Card colour stripe by group */
+.explore-card[data-group="理工"] .ec-stripe{background:linear-gradient(90deg,var(--slate),#7a9fc0)}
+.explore-card[data-group="醫藥"] .ec-stripe{background:linear-gradient(90deg,var(--sage),#8abea4)}
+.explore-card[data-group="商管"] .ec-stripe{background:linear-gradient(90deg,var(--clay),#c8906a)}
+.explore-card[data-group="文法"] .ec-stripe{background:linear-gradient(90deg,var(--plum),#a88ab0)}
+.explore-card[data-group="設計"] .ec-stripe{background:linear-gradient(90deg,var(--gold),#d0a848)}
+
+.ec-stripe{height:4px;width:100%}
+.ec-body{padding:1.1rem 1.25rem 1.05rem}
+.ec-group-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-family:var(--mono);
+  padding:2px 8px;border-radius:4px;margin-bottom:.6rem;
+}
+.ec-name{font-family:var(--serif);font-size:1.05rem;margin-bottom:.2rem;line-height:1.25}
+.ec-school{font-size:11px;color:var(--ink3);margin-bottom:.8rem}
+.ec-salary-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.7rem;
+}
+.ec-salary{font-family:var(--mono);font-size:1.1rem;font-weight:600;color:var(--terra)}
+.ec-salary-sub{font-size:10px;color:var(--ink3);font-family:var(--mono)}
+.ec-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.8rem}
+.ec-stat{
+  display:flex;align-items:center;gap:4px;
+  font-size:10.5px;font-family:var(--mono);color:var(--ink3);
+}
+.ec-ai-row{display:flex;align-items:center;gap:6px;margin-bottom:.75rem}
+.ec-ai-bar-wrap{flex:1;height:5px;background:var(--surface);border-radius:3px;overflow:hidden}
+.ec-ai-bar{height:100%;border-radius:3px;transition:width .8s var(--ease-spring)}
+.ec-trend-row{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;
+}
+.ec-careers{display:flex;gap:4px;flex-wrap:wrap;margin-top:.6rem}
+.ec-career-tag{
+  padding:2px 8px;border-radius:4px;font-size:10px;
+  font-family:var(--mono);background:var(--slateL);
+  color:var(--slate);border:1px solid rgba(109,138,170,.15);
+}
+
+/* Explore show more */
+.explore-show-more{
+  margin-top:1.2rem;text-align:center;
+}
+.explore-show-more-btn{
+  padding:11px 32px;border-radius:100px;
+  border:1.5px solid var(--border2);background:transparent;
+  font-family:var(--font);font-size:13.5px;color:var(--ink2);
+  cursor:pointer;transition:all .22s;display:inline-flex;align-items:center;gap:8px;
+}
+.explore-show-more-btn:hover{border-color:var(--terra);color:var(--terra);background:var(--terraL)}
+
+/* ═══════════════════════════════════
+   TIMELINE — DETAILED DRAWER
+═══════════════════════════════════ */
+.tl-detail-drawer{
+  position:fixed;top:0;right:0;bottom:0;width:540px;
+  background:var(--cream2);z-index:500;
+  box-shadow:-8px 0 48px rgba(0,0,0,.14);
+  transform:translateX(100%);
+  transition:transform .38s var(--ease-spring);
+  overflow-y:auto;display:flex;flex-direction:column;
+}
+.tl-detail-drawer.open{transform:translateX(0)}
+.tl-drawer-backdrop{
+  position:fixed;inset:0;z-index:499;
+  background:rgba(0,0,0,.3);backdrop-filter:blur(2px);
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.tl-drawer-backdrop.show{opacity:1;pointer-events:auto}
+.tl-drawer-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.4rem 1.8rem;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--cream2);z-index:1;
+}
+.tl-drawer-title{font-family:var(--serif);font-size:1.25rem}
+.tl-drawer-close{
+  width:32px;height:32px;border-radius:50%;border:none;
+  background:var(--cream3);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s,transform .2s;
+}
+.tl-drawer-close:hover{background:var(--surface);transform:rotate(90deg)}
+.tl-drawer-body{padding:1.6rem 1.8rem;flex:1}
+.tl-phase-section{margin-bottom:2rem}
+.tl-phase-header{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:1.2rem;padding-bottom:.7rem;
+  border-bottom:1.5px solid var(--border);
+}
+.tl-phase-num{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:.9rem;
+  background:var(--terra);color:#fff;flex-shrink:0;
+}
+.tl-phase-name{font-family:var(--serif);font-size:1.05rem}
+.tl-event{
+  display:flex;gap:14px;padding-bottom:1.4rem;
+  position:relative;
+}
+.tl-event:not(:last-child)::before{
+  content:'';position:absolute;left:17px;top:38px;
+  width:1px;bottom:0;background:var(--border);
+}
+.tl-dot{
+  width:34px;height:34px;flex-shrink:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;background:var(--cream3);
+  border:1.5px solid var(--border);z-index:1;
+}
+.tl-dot.current{background:var(--terra);border-color:var(--terra);font-size:16px}
+.tl-event-body{flex:1;padding-top:6px}
+.tl-event-date{font-size:11.5px;color:var(--terra);font-family:var(--mono);margin-bottom:3px;font-weight:500}
+.tl-event-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.tl-event-desc{font-size:13px;color:var(--ink2);line-height:1.65;margin-bottom:.5rem}
+.tl-event-tips{display:flex;flex-direction:column;gap:5px;margin-bottom:.5rem}
+.tl-event-tip{
+  display:flex;align-items:flex-start;gap:6px;
+  padding:6px 10px;border-radius:7px;
+  font-size:12px;line-height:1.55;
+}
+.tl-event-tip.amber{background:rgba(200,152,48,.1);color:var(--clay)}
+.tl-event-tip.sage{background:var(--sageL);color:#2e5e3a}
+.tl-event-tip.slate{background:var(--slateL);color:#2a4a6e}
+.tl-event-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:.4rem}
+.tl-event-link{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:100px;
+  font-size:11.5px;font-family:var(--mono);
+  background:var(--cream3);color:var(--ink2);
+  border:1px solid var(--border2);text-decoration:none;
+  transition:all .2s;
+}
+.tl-event-link:hover{background:var(--terra);color:#fff;border-color:var(--terra)}
+
+/* Timeline card - click to open drawer */
+.tl-item-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:.5rem;padding:5px 12px;
+  border-radius:100px;border:1px solid var(--border2);
+  background:transparent;cursor:pointer;
+  font-size:11.5px;color:var(--terra);font-family:var(--mono);
+  transition:all .2s;
+}
+.tl-item-btn:hover{background:var(--terra);color:#fff;border-color:var(--terra)}
+
+/* Compact timeline card */
+.ttab-new{
+  flex:1;padding:.9rem 1.2rem;border:none;background:transparent;
+  font-family:var(--font);cursor:pointer;color:var(--ink2);
+  transition:all .2s;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;gap:4px;
+}
+.ttab-new:last-child{border-right:none}
+.ttab-new.active{background:var(--cream2);color:var(--ink)}
+.ttab-track-name{font-family:var(--serif);font-size:1rem}
+.ttab-track-meta{display:flex;align-items:center;gap:6px}
+
+/* Progress timeline horizontal bar */
+.track-progress{
+  display:flex;align-items:center;gap:0;
+  margin-bottom:2rem;background:var(--cream3);
+  border-radius:var(--r);border:1px solid var(--border);
+  overflow:hidden;
+}
+.tp-step{
+  flex:1;padding:.7rem 1rem;text-align:center;
+  position:relative;font-size:11.5px;
+  border-right:1px solid var(--border);
+  cursor:pointer;transition:background .2s;
+}
+.tp-step:last-child{border-right:none}
+.tp-step:hover{background:var(--cream2)}
+.tp-step.done{background:rgba(107,158,122,.08);color:var(--sage)}
+.tp-step.active{background:rgba(194,78,40,.07);color:var(--terra);font-weight:600}
+.tp-step.future{color:var(--ink3)}
+.tp-dot{
+  width:8px;height:8px;border-radius:50%;
+  margin:0 auto 4px;
+}
+.tp-step.done .tp-dot{background:var(--sage)}
+.tp-step.active .tp-dot{background:var(--terra);animation:pulse 2s infinite}
+.tp-step.future .tp-dot{background:var(--surface)}
+.tp-step-name{font-size:11px;font-family:var(--mono)}
+.tp-step-date{font-size:9.5px;opacity:.7}
+
+/* Analyzer section label polish */
+.results-section-label{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--ink2);
+  font-family:var(--mono);letter-spacing:.04em;
+  margin-bottom:6px;
+}
+.results-section-label::before{
+  content:'';width:3px;height:14px;
+  background:var(--terra);border-radius:2px;flex-shrink:0;
+}
+
+/* Prefs note style */
+.prefs-note{
+  margin-top:12px;padding:12px 14px;
+  background:var(--cream3);border-radius:var(--r);
+  border-left:3px solid var(--sage);
+}
+.prefs-note-title{
+  font-size:11px;font-weight:600;color:var(--sage);
+  margin-bottom:5px;display:flex;align-items:center;gap:5px;
+}
+.prefs-note-body{font-size:12px;color:var(--ink2);line-height:1.65}
+
+/* Responsive additions */
+@media(max-width:860px){
+  .inspire-strip{grid-template-columns:1fr}
+  .explore-grid{grid-template-columns:repeat(2,1fr)}
+  .tl-detail-drawer{width:100%;top:60px}
+}
+@media(max-width:500px){
+  .explore-grid{grid-template-columns:1fr}
+  .cat-tabs{gap:4px}
+  .cat-tab{min-width:60px;padding:6px 8px}
+}
+
 </style>
 </head>
 <body>
@@ -767,12 +1185,169 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   </div>
 </div>
 
+
+<!-- ── INSPIRATIONAL PHOTO BANNERS ── -->
+<div class="inspire-strip reveal">
+
+  <!-- Card 1: Morning study atmosphere -->
+  <div class="inspire-card">
+    <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fde8d0"/>
+          <stop offset="60%" stop-color="#faf0e6"/>
+          <stop offset="100%" stop-color="#f5e8dc"/>
+        </linearGradient>
+        <linearGradient id="desk1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#d4a882"/>
+          <stop offset="100%" stop-color="#b8906a"/>
+        </linearGradient>
+        <radialGradient id="sun1" cx="75%" cy="20%" r="35%">
+          <stop offset="0%" stop-color="rgba(255,200,100,0.4)"/>
+          <stop offset="100%" stop-color="rgba(255,200,100,0)"/>
+        </radialGradient>
+        <filter id="blur1"><feGaussianBlur stdDeviation="3"/></filter>
+      </defs>
+      <!-- Sky background -->
+      <rect width="640" height="280" fill="url(#sky1)"/>
+      <!-- Sun glow -->
+      <rect width="640" height="280" fill="url(#sun1)"/>
+      <!-- Window frame -->
+      <rect x="360" y="20" width="240" height="160" rx="6" fill="rgba(255,255,255,.35)" stroke="rgba(255,255,255,.6)" stroke-width="2"/>
+      <line x1="480" y1="20" x2="480" y2="180" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
+      <line x1="360" y1="100" x2="600" y2="100" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
+      <!-- Outside view through window -->
+      <ellipse cx="490" cy="65" rx="60" ry="40" fill="rgba(107,158,122,.25)" filter="url(#blur1)"/>
+      <ellipse cx="430" cy="80" rx="30" ry="20" fill="rgba(107,158,122,.2)" filter="url(#blur1)"/>
+      <!-- Desk surface -->
+      <rect x="0" y="195" width="640" height="85" fill="url(#desk1)"/>
+      <rect x="0" y="192" width="640" height="6" rx="3" fill="#c09070"/>
+      <!-- Books stack -->
+      <rect x="40" y="145" width="14" height="52" rx="2" fill="#c87048"/>
+      <rect x="55" y="152" width="14" height="45" rx="2" fill="#6b9e7a"/>
+      <rect x="70" y="158" width="14" height="39" rx="2" fill="#7a8fa0"/>
+      <rect x="85" y="148" width="14" height="49" rx="2" fill="#8b6a9a"/>
+      <rect x="100" y="163" width="14" height="34" rx="2" fill="#c89830"/>
+      <!-- Open notebook -->
+      <rect x="130" y="166" width="160" height="30" rx="4" fill="#fffef8" stroke="rgba(0,0,0,.08)" stroke-width="1"/>
+      <line x1="210" y1="170" x2="210" y2="192" stroke="rgba(0,0,0,.08)" stroke-width="1"/>
+      <rect x="138" y="173" width="60" height="2" rx="1" fill="rgba(0,0,0,.12)"/>
+      <rect x="138" y="179" width="50" height="2" rx="1" fill="rgba(0,0,0,.10)"/>
+      <rect x="138" y="185" width="55" height="2" rx="1" fill="rgba(0,0,0,.08)"/>
+      <rect x="218" y="173" width="62" height="2" rx="1" fill="rgba(194,78,40,.3)"/>
+      <rect x="218" y="179" width="50" height="2" rx="1" fill="rgba(0,0,0,.08)"/>
+      <rect x="218" y="185" width="58" height="2" rx="1" fill="rgba(0,0,0,.08)"/>
+      <!-- Coffee cup -->
+      <rect x="310" y="170" width="30" height="24" rx="4" fill="#5c3a1e"/>
+      <rect x="313" y="173" width="24" height="18" rx="2" fill="#8b5a2a"/>
+      <ellipse cx="325" cy="173" rx="15" ry="4" fill="#6b4020"/>
+      <path d="M340 178 Q350 183 340 188" fill="none" stroke="#5c3a1e" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Steam -->
+      <path d="M320 168 Q322 163 320 158" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M326 167 Q328 161 326 156" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Lamp -->
+      <line x1="200" y1="80" x2="200" y2="168" stroke="#d4a882" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="200" cy="75" rx="35" ry="18" fill="#f0d8a0" stroke="#d4a882" stroke-width="1.5"/>
+      <ellipse cx="200" cy="75" rx="30" ry="14" fill="rgba(255,220,100,.6)"/>
+      <!-- Warm light glow -->
+      <ellipse cx="200" cy="160" rx="80" ry="15" fill="rgba(255,200,80,.12)" filter="url(#blur1)"/>
+      <!-- Small plant -->
+      <rect x="560" y="168" width="18" height="26" rx="3" fill="#8b6040" opacity=".8"/>
+      <ellipse cx="569" cy="163" rx="22" ry="18" fill="#5a8a64"/>
+      <ellipse cx="555" cy="168" rx="14" ry="10" fill="#6b9e7a"/>
+      <ellipse cx="583" cy="166" rx="13" ry="9" fill="#4a7a54"/>
+    </svg>
+    <div class="inspire-overlay">
+      <div class="inspire-tag">勵志故事</div>
+      <div class="inspire-title">每個清晨，都是新的機會</div>
+      <div class="inspire-sub">分數只是起點，選對方向，才是決勝關鍵。</div>
+    </div>
+  </div>
+
+  <!-- Card 2: University campus bright day -->
+  <div class="inspire-card">
+    <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="campus-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c8e0f4"/>
+          <stop offset="100%" stop-color="#e8f4ff"/>
+        </linearGradient>
+        <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#8abe7a"/>
+          <stop offset="100%" stop-color="#6aaa5a"/>
+        </linearGradient>
+        <radialGradient id="sun2" cx="80%" cy="15%" r="30%">
+          <stop offset="0%" stop-color="rgba(255,230,160,.55)"/>
+          <stop offset="100%" stop-color="rgba(255,230,160,0)"/>
+        </radialGradient>
+        <filter id="shadow2"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,.15)"/></filter>
+      </defs>
+      <!-- Sky -->
+      <rect width="640" height="280" fill="url(#campus-sky)"/>
+      <rect width="640" height="280" fill="url(#sun2)"/>
+      <!-- Clouds -->
+      <ellipse cx="120" cy="60" rx="55" ry="22" fill="rgba(255,255,255,.85)"/>
+      <ellipse cx="155" cy="52" rx="40" ry="20" fill="rgba(255,255,255,.9)"/>
+      <ellipse cx="80" cy="62" rx="36" ry="18" fill="rgba(255,255,255,.8)"/>
+      <ellipse cx="480" cy="80" rx="48" ry="20" fill="rgba(255,255,255,.75)"/>
+      <ellipse cx="510" cy="72" rx="35" ry="17" fill="rgba(255,255,255,.8)"/>
+      <!-- Ground -->
+      <rect x="0" y="200" width="640" height="80" fill="url(#grass)"/>
+      <rect x="0" y="198" width="640" height="5" rx="2" fill="#7ab86a"/>
+      <!-- Path -->
+      <path d="M300 280 L280 200 L360 200 L340 280 Z" fill="rgba(230,210,180,.8)"/>
+      <!-- Main building -->
+      <rect x="200" y="80" width="240" height="125" rx="3" fill="#f0e8d8" filter="url(#shadow2)"/>
+      <!-- Columns -->
+      <rect x="215" y="95" width="12" height="110" rx="2" fill="#e0d0b8"/>
+      <rect x="237" y="95" width="12" height="110" rx="2" fill="#e0d0b8"/>
+      <rect x="380" y="95" width="12" height="110" rx="2" fill="#e0d0b8"/>
+      <rect x="403" y="95" width="12" height="110" rx="2" fill="#e0d0b8"/>
+      <!-- Windows -->
+      <rect x="252" y="100" width="32" height="40" rx="3" fill="rgba(100,160,220,.4)" stroke="rgba(200,190,170,.6)" stroke-width="1"/>
+      <rect x="298" y="100" width="32" height="40" rx="3" fill="rgba(100,160,220,.35)" stroke="rgba(200,190,170,.6)" stroke-width="1"/>
+      <rect x="344" y="100" width="32" height="40" rx="3" fill="rgba(100,160,220,.4)" stroke="rgba(200,190,170,.6)" stroke-width="1"/>
+      <!-- Door -->
+      <rect x="296" y="155" width="48" height="50" rx="3" fill="#c8a878" stroke="rgba(200,190,170,.6)" stroke-width="1"/>
+      <rect x="317" y="168" width="5" height="5" rx="2" fill="#8b6040"/>
+      <!-- Roof triangle -->
+      <polygon points="200,80 320,35 440,80" fill="#e8d8c0"/>
+      <line x1="200" y1="80" x2="440" y2="80" stroke="#d4c4a8" stroke-width="2"/>
+      <!-- Flag / dome detail -->
+      <line x1="320" y1="35" x2="320" y2="18" stroke="#b8a080" stroke-width="2"/>
+      <rect x="320" y="18" width="18" height="11" fill="#c24e28"/>
+      <!-- Trees -->
+      <rect x="115" y="165" width="8" height="38" rx="2" fill="#8b6040"/>
+      <ellipse cx="119" cy="152" rx="25" ry="28" fill="#5a8a48"/>
+      <ellipse cx="105" cy="162" rx="18" ry="20" fill="#6a9e58"/>
+      <ellipse cx="133" cy="160" rx="18" ry="22" fill="#4a7a38"/>
+      <rect x="490" y="168" width="8" height="35" rx="2" fill="#8b6040"/>
+      <ellipse cx="494" cy="156" rx="24" ry="26" fill="#5a8a48"/>
+      <ellipse cx="478" cy="165" rx="16" ry="18" fill="#6a9e58"/>
+      <ellipse cx="510" cy="163" rx="17" ry="20" fill="#4a7a38"/>
+      <!-- People silhouettes -->
+      <ellipse cx="290" cy="198" rx="5" ry="6" fill="#7a6050"/>
+      <rect x="287" y="204" width="6" height="12" rx="2" fill="#6b9e7a"/>
+      <ellipse cx="345" cy="197" rx="5" ry="6" fill="#7a6050"/>
+      <rect x="342" y="203" width="6" height="12" rx="2" fill="#c24e28"/>
+    </svg>
+    <div class="inspire-overlay">
+      <div class="inspire-tag">你的未來</div>
+      <div class="inspire-title">理想校園，等你親自踏上</div>
+      <div class="inspire-sub">用數據找對方向，讓努力落在對的地方。</div>
+    </div>
+  </div>
+
+</div>
+
 <!-- ── ANALYZER ── -->
 <div id="analyzer-wrap">
 <div class="analyzer-inner">
-  <div class="eyebrow">落點分析工具</div>
-  <h2 class="sec-title">輸入分數，AI 幫你算</h2>
-  <p class="sec-sub">填入學測各科成績，立即獲得落點卡片、AI 預測錄取率、歷年趨勢與個人化升學報告</p>
+  <div class="section-head" style="margin-bottom:1.8rem">
+    <div class="section-kicker"><span class="section-kicker-line"></span>落點分析工具</div>
+    <h2 class="section-h">輸入分數，<em>AI 幫你算</em></h2>
+    <p class="section-p">填入學測各科成績，立即獲得落點卡片、AI 預測錄取率、歷年趨勢與個人化升學報告。</p>
+  </div>
 
   <div class="analyzer-grid">
     <!-- INPUT PANEL -->
@@ -875,9 +1450,9 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
               <option value="national">國立大學優先</option>
             </select>
           </div>
-          <div style="margin-top:12px;padding:10px 12px;background:var(--cream3);border-radius:var(--r);border-left:2px solid var(--sage)">
-            <div style="font-size:11px;font-family:var(--mono);color:var(--ink3);margin-bottom:4px">// 顯示邏輯說明</div>
-            <div style="font-size:12px;color:var(--ink2);line-height:1.65">
+          <div class="prefs-note">
+            <div class="prefs-note-title">📋 顯示邏輯說明</div>
+            <div class="prefs-note-body">
               所有科系都顯示，包含未達門檻的「挑戰志願」（淡化呈現）。<br>
               <span style="color:var(--sage);font-weight:500">穩上</span>（+2↑）·
               <span style="color:var(--slate);font-weight:500">目標</span>（-1~+1）·
@@ -945,33 +1520,41 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 
         <!-- Results content -->
         <div id="results-content" style="display:none">
-          <div class="summary-row">
-            <div class="sum-card sage-card">
-              <span class="sum-emoji">🎯</span>
-              <div class="sum-num sage" id="r-safe">0</div>
-              <div class="sum-label">穩上 ≥+2</div>
-            </div>
-            <div class="sum-card slate-card">
-              <span class="sum-emoji">📊</span>
-              <div class="sum-num slate" id="r-target">0</div>
-              <div class="sum-label">目標 -1~+1</div>
-            </div>
-            <div class="sum-card clay-card">
-              <span class="sum-emoji">⚡</span>
-              <div class="sum-num clay" id="r-reach">0</div>
-              <div class="sum-label">衝刺 -2~-4</div>
-            </div>
-            <div class="sum-card plum-card">
-              <span class="sum-emoji">🌟</span>
-              <div class="sum-num plum" id="r-challenge">0</div>
-              <div class="sum-label">挑戰 未達門檻</div>
-            </div>
+          <!-- Category Tabs -->
+          <div class="cat-tabs" id="cat-tabs">
+            <button class="cat-tab active" data-cat="all" onclick="switchCat('all',this)">
+              <span class="cat-tab-num ink3" id="r-total">0</span>
+              <span class="cat-tab-label">全部</span>
+            </button>
+            <button class="cat-tab" data-cat="safe" onclick="switchCat('safe',this)">
+              <span class="cat-tab-num sage" id="r-safe">0</span>
+              <span class="cat-tab-label">穩上 ≥+2</span>
+            </button>
+            <button class="cat-tab" data-cat="target" onclick="switchCat('target',this)">
+              <span class="cat-tab-num slate" id="r-target">0</span>
+              <span class="cat-tab-label">目標 ±1</span>
+            </button>
+            <button class="cat-tab" data-cat="reach" onclick="switchCat('reach',this)">
+              <span class="cat-tab-num clay" id="r-reach">0</span>
+              <span class="cat-tab-label">衝刺 -4~-2</span>
+            </button>
+            <button class="cat-tab" data-cat="challenge" onclick="switchCat('challenge',this)">
+              <span class="cat-tab-num plum" id="r-challenge">0</span>
+              <span class="cat-tab-label">挑戰 未達門檻</span>
+            </button>
           </div>
           <div class="match-meta-row">
-            <div class="match-meta-text" id="match-meta">// 載入中…</div>
+            <div class="results-section-label" id="match-meta">載入中…</div>
             <button class="match-sort-btn" onclick="toggleSort()">⇅ 排序</button>
           </div>
           <div class="match-list" id="match-list"></div>
+          <!-- Show more button -->
+          <div class="show-more-row" id="show-more-row" style="display:none">
+            <button class="show-more-btn" onclick="showMoreCards()" id="show-more-btn">
+              <span>▼</span> 顯示更多符合科系
+            </button>
+            <span class="show-more-count" id="show-more-count"></span>
+          </div>
           <hr class="divider">
           <div class="ai-box">
             <div class="ai-box-hd"><div class="ai-icon">✦</div>AI 升學顧問分析報告</div>
@@ -995,37 +1578,287 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 
 <div class="section-divider"></div>
 
-<!-- COMPARISON TABLE -->
-<section class="section reveal" id="compare-section">
-  <div class="eyebrow">科系比較</div>
-  <h2 class="sec-title">選系前先看這張表</h2>
-  <p class="sec-sub">整合就業率、年薪中位、AI 衝擊度，幫你做出有依據的決定</p>
-  <div class="comp-section">
-    <div class="comp-hd"><span style="font-size:16px">🔥</span><span class="comp-hd-title">熱門科系 × 年薪中位 × 產業趨勢</span></div>
-    <div style="overflow-x:auto">
-    <table class="comp-table">
-      <thead><tr><th>科系 / 學校</th><th>年薪中位</th><th>AI 衝擊</th><th>就業穩定</th><th>趨勢</th></tr></thead>
-      <tbody>
-        <tr><td><div class="dept-name">資訊工程學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">160 萬</span></td><td><span class="ai-tag pos">💚 受益</span></td><td><span class="trend-up">98%</span></td><td><span class="trend-up">↑ 強勢</span></td></tr>
-        <tr><td><div class="dept-name">電機工程學系</div><div class="dept-school">國立成功大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">150 萬</span></td><td><span class="ai-tag pos">💚 受益</span></td><td><span class="trend-up">97%</span></td><td><span class="trend-up">↑ 強勢</span></td></tr>
-        <tr><td><div class="dept-name">醫學系</div><div class="dept-school">國立成功大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">250 萬+</span></td><td><span class="ai-tag neu">🟡 輔助化</span></td><td><span class="trend-up">99%</span></td><td><span class="trend-up">↑ 穩健</span></td></tr>
-        <tr><td><div class="dept-name">財務金融學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">100 萬</span></td><td><span class="ai-tag neu">🟡 部分</span></td><td><span class="trend-up">88%</span></td><td><span class="trend-neu">→ 穩定</span></td></tr>
-        <tr><td><div class="dept-name">護理學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">85 萬</span></td><td><span class="ai-tag pos">💚 低影響</span></td><td><span class="trend-up">98%</span></td><td><span class="trend-up">↑ 缺工</span></td></tr>
-        <tr><td><div class="dept-name">外文學系</div><div class="dept-school">國立臺灣大學</div></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--terra)">55 萬</span></td><td><span class="ai-tag neg">🔴 高度衝擊</span></td><td><span class="trend-dn">75%</span></td><td><span class="trend-dn">↓ 承壓</span></td></tr>
-      </tbody>
-    </table>
-    </div>
+<!-- ── MAJOR EXPLORER ── -->
+<section id="compare-section">
+<div class="explore-wrap reveal">
+  <div class="section-head">
+    <div class="section-kicker"><span class="section-kicker-line"></span>科系全覽</div>
+    <h2 class="section-h">選系前，先看<em>真實的數字</em></h2>
+    <p class="section-p">整合年薪中位數、AI 衝擊指數、就業穩定度與產業趨勢，讓你用數據決策，不只靠感覺。</p>
   </div>
-  <p style="font-size:11px;color:var(--ink3);margin-top:.75rem;font-family:var(--mono)">* 年薪中位估算，以大學甄選委員會公告為準。</p>
+
+  <!-- Filter buttons -->
+  <div class="explore-filters">
+    <button class="explore-filter-btn active" data-filter="all" onclick="filterExplore('all',this)">
+      <span class="explore-filter-icon">🌐</span>全部科系
+    </button>
+    <button class="explore-filter-btn" data-filter="理工" onclick="filterExplore('理工',this)">
+      <span class="explore-filter-icon">⚙️</span>理工科技
+    </button>
+    <button class="explore-filter-btn" data-filter="醫藥" onclick="filterExplore('醫藥',this)">
+      <span class="explore-filter-icon">⚕️</span>醫藥健康
+    </button>
+    <button class="explore-filter-btn" data-filter="商管" onclick="filterExplore('商管',this)">
+      <span class="explore-filter-icon">💼</span>商管財金
+    </button>
+    <button class="explore-filter-btn" data-filter="文法" onclick="filterExplore('文法',this)">
+      <span class="explore-filter-icon">📖</span>文法社會
+    </button>
+    <button class="explore-filter-btn" data-filter="設計" onclick="filterExplore('設計',this)">
+      <span class="explore-filter-icon">🎨</span>設計藝術
+    </button>
+  </div>
+
+  <!-- Cards grid -->
+  <div class="explore-grid" id="explore-grid">
+
+    <!-- 資訊工程 -->
+    <div class="explore-card" data-group="理工">
+      <div class="ec-stripe"></div>
+      <div class="ec-body">
+        <div class="ec-group-badge" style="background:var(--slateL);color:var(--slate)">⚙️ 理工科技</div>
+        <div class="ec-name">資訊工程學系</div>
+        <div class="ec-school">國立臺灣大學</div>
+        <div class="ec-salary-row">
+          <span class="ec-salary">160 萬/年</span>
+          <span class="ec-salary-sub">年薪中位</span>
+        </div>
+        <div class="ec-stats">
+          <span class="ec-stat">📊 就業率 <b>98%</b></span>
+          <span class="ec-stat">👥 錄取 <b>50人</b></span>
+        </div>
+        <div class="ec-ai-row">
+          <span style="font-size:10px;color:var(--ink3);width:52px;flex-shrink:0;font-family:var(--mono)">AI 受益</span>
+          <div class="ec-ai-bar-wrap"><div class="ec-ai-bar" style="width:92%;background:var(--sage)"></div></div>
+          <span class="ai-tag pos" style="font-size:10px;padding:1px 6px">💚 強勢</span>
+        </div>
+        <div class="ec-trend-row">
+          <span class="trend-up">↑ 需求持續擴增</span>
+          <span style="font-size:10px;color:var(--ink3);margin-left:auto">門檻 15 · 15</span>
+        </div>
+        <div class="ec-careers">
+          <span class="ec-career-tag">軟體工程師</span>
+          <span class="ec-career-tag">AI研究員</span>
+          <span class="ec-career-tag">資料科學</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 電機工程 -->
+    <div class="explore-card" data-group="理工">
+      <div class="ec-stripe"></div>
+      <div class="ec-body">
+        <div class="ec-group-badge" style="background:var(--slateL);color:var(--slate)">⚙️ 理工科技</div>
+        <div class="ec-name">電機工程學系</div>
+        <div class="ec-school">國立成功大學</div>
+        <div class="ec-salary-row">
+          <span class="ec-salary">150 萬/年</span>
+          <span class="ec-salary-sub">年薪中位</span>
+        </div>
+        <div class="ec-stats">
+          <span class="ec-stat">📊 就業率 <b>97%</b></span>
+          <span class="ec-stat">👥 錄取 <b>90人</b></span>
+        </div>
+        <div class="ec-ai-row">
+          <span style="font-size:10px;color:var(--ink3);width:52px;flex-shrink:0;font-family:var(--mono)">AI 受益</span>
+          <div class="ec-ai-bar-wrap"><div class="ec-ai-bar" style="width:88%;background:var(--sage)"></div></div>
+          <span class="ai-tag pos" style="font-size:10px;padding:1px 6px">💚 強勢</span>
+        </div>
+        <div class="ec-trend-row">
+          <span class="trend-up">↑ 半導體持續缺工</span>
+          <span style="font-size:10px;color:var(--ink3);margin-left:auto">門檻 14 · 14</span>
+        </div>
+        <div class="ec-careers">
+          <span class="ec-career-tag">IC設計</span>
+          <span class="ec-career-tag">晶片工程師</span>
+          <span class="ec-career-tag">嵌入式系統</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 醫學系 -->
+    <div class="explore-card" data-group="醫藥">
+      <div class="ec-stripe"></div>
+      <div class="ec-body">
+        <div class="ec-group-badge" style="background:var(--sageL);color:var(--sage)">⚕️ 醫藥健康</div>
+        <div class="ec-name">醫學系</div>
+        <div class="ec-school">國立成功大學</div>
+        <div class="ec-salary-row">
+          <span class="ec-salary">250 萬+/年</span>
+          <span class="ec-salary-sub">年薪中位</span>
+        </div>
+        <div class="ec-stats">
+          <span class="ec-stat">📊 就業率 <b>99%</b></span>
+          <span class="ec-stat">👥 錄取 <b>50人</b></span>
+        </div>
+        <div class="ec-ai-row">
+          <span style="font-size:10px;color:var(--ink3);width:52px;flex-shrink:0;font-family:var(--mono)">AI 輔助</span>
+          <div class="ec-ai-bar-wrap"><div class="ec-ai-bar" style="width:55%;background:var(--slate)"></div></div>
+          <span class="ai-tag neu" style="font-size:10px;padding:1px 6px">🟡 輔助化</span>
+        </div>
+        <div class="ec-trend-row">
+          <span class="trend-up">↑ 永遠需要醫師</span>
+          <span style="font-size:10px;color:var(--ink3);margin-left:auto">門檻 15 · 15</span>
+        </div>
+        <div class="ec-careers">
+          <span class="ec-career-tag">臨床醫師</span>
+          <span class="ec-career-tag">外科</span>
+          <span class="ec-career-tag">醫學研究</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 護理學系 -->
+    <div class="explore-card" data-group="醫藥">
+      <div class="ec-stripe"></div>
+      <div class="ec-body">
+        <div class="ec-group-badge" style="background:var(--sageL);color:var(--sage)">⚕️ 醫藥健康</div>
+        <div class="ec-name">護理學系</div>
+        <div class="ec-school">國立臺灣大學</div>
+        <div class="ec-salary-row">
+          <span class="ec-salary">85 萬/年</span>
+          <span class="ec-salary-sub">年薪中位</span>
+        </div>
+        <div class="ec-stats">
+          <span class="ec-stat">📊 就業率 <b>98%</b></span>
+          <span class="ec-stat">👥 錄取 <b>80人</b></span>
+        </div>
+        <div class="ec-ai-row">
+          <span style="font-size:10px;color:var(--ink3);width:52px;flex-shrink:0;font-family:var(--mono)">AI 低衝</span>
+          <div class="ec-ai-bar-wrap"><div class="ec-ai-bar" style="width:20%;background:var(--sage)"></div></div>
+          <span class="ai-tag pos" style="font-size:10px;padding:1px 6px">💚 低影響</span>
+        </div>
+        <div class="ec-trend-row">
+          <span class="trend-up">↑ 月薪突破 7 萬</span>
+          <span style="font-size:10px;color:var(--ink3);margin-left:auto">門檻 11 · 11</span>
+        </div>
+        <div class="ec-careers">
+          <span class="ec-career-tag">臨床護理師</span>
+          <span class="ec-career-tag">護理管理</span>
+          <span class="ec-career-tag">居家照護</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 財務金融 -->
+    <div class="explore-card" data-group="商管">
+      <div class="ec-stripe"></div>
+      <div class="ec-body">
+        <div class="ec-group-badge" style="background:var(--clayL);color:var(--clay)">💼 商管財金</div>
+        <div class="ec-name">財務金融學系</div>
+        <div class="ec-school">國立臺灣大學</div>
+        <div class="ec-salary-row">
+          <span class="ec-salary">100 萬/年</span>
+          <span class="ec-salary-sub">年薪中位</span>
+        </div>
+        <div class="ec-stats">
+          <span class="ec-stat">📊 就業率 <b>88%</b></span>
+          <span class="ec-stat">👥 錄取 <b>100人</b></span>
+        </div>
+        <div class="ec-ai-row">
+          <span style="font-size:10px;color:var(--ink3);width:52px;flex-shrink:0;font-family:var(--mono)">AI 衝擊</span>
+          <div class="ec-ai-bar-wrap"><div class="ec-ai-bar" style="width:48%;background:var(--slate)"></div></div>
+          <span class="ai-tag neu" style="font-size:10px;padding:1px 6px">🟡 部分</span>
+        </div>
+        <div class="ec-trend-row">
+          <span class="trend-neu">→ 穩定但競爭激烈</span>
+          <span style="font-size:10px;color:var(--ink3);margin-left:auto">門檻 13 · 13</span>
+        </div>
+        <div class="ec-careers">
+          <span class="ec-career-tag">投資銀行</span>
+          <span class="ec-career-tag">FinTech</span>
+          <span class="ec-career-tag">資產管理</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 外文學系 -->
+    <div class="explore-card" data-group="文法">
+      <div class="ec-stripe"></div>
+      <div class="ec-body">
+        <div class="ec-group-badge" style="background:var(--plumL);color:var(--plum)">📖 文法社會</div>
+        <div class="ec-name">外文學系</div>
+        <div class="ec-school">國立臺灣大學</div>
+        <div class="ec-salary-row">
+          <span class="ec-salary">55 萬/年</span>
+          <span class="ec-salary-sub">年薪中位</span>
+        </div>
+        <div class="ec-stats">
+          <span class="ec-stat">📊 就業率 <b>75%</b></span>
+          <span class="ec-stat">👥 錄取 <b>60人</b></span>
+        </div>
+        <div class="ec-ai-row">
+          <span style="font-size:10px;color:var(--ink3);width:52px;flex-shrink:0;font-family:var(--mono)">AI 高衝</span>
+          <div class="ec-ai-bar-wrap"><div class="ec-ai-bar" style="width:82%;background:var(--clay)"></div></div>
+          <span class="ai-tag neg" style="font-size:10px;padding:1px 6px">🔴 高衝擊</span>
+        </div>
+        <div class="ec-trend-row">
+          <span class="trend-dn">↓ 翻譯需求被 AI 取代</span>
+          <span style="font-size:10px;color:var(--ink3);margin-left:auto">門檻 12 · 11</span>
+        </div>
+        <div class="ec-careers">
+          <span class="ec-career-tag">外交人員</span>
+          <span class="ec-career-tag">跨國企業</span>
+          <span class="ec-career-tag">文化創意</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工業設計 -->
+    <div class="explore-card" data-group="設計" style="display:none">
+      <div class="ec-stripe"></div>
+      <div class="ec-body">
+        <div class="ec-group-badge" style="background:var(--goldL);color:var(--gold)">🎨 設計藝術</div>
+        <div class="ec-name">工業設計學系</div>
+        <div class="ec-school">國立成功大學</div>
+        <div class="ec-salary-row">
+          <span class="ec-salary">75 萬/年</span>
+          <span class="ec-salary-sub">年薪中位</span>
+        </div>
+        <div class="ec-stats">
+          <span class="ec-stat">📊 就業率 <b>82%</b></span>
+          <span class="ec-stat">👥 錄取 <b>45人</b></span>
+        </div>
+        <div class="ec-ai-row">
+          <span style="font-size:10px;color:var(--ink3);width:52px;flex-shrink:0;font-family:var(--mono)">AI 工具</span>
+          <div class="ec-ai-bar-wrap"><div class="ec-ai-bar" style="width:40%;background:var(--slate)"></div></div>
+          <span class="ai-tag neu" style="font-size:10px;padding:1px 6px">🟡 工具化</span>
+        </div>
+        <div class="ec-trend-row">
+          <span class="trend-up">↑ UX設計需求增加</span>
+          <span style="font-size:10px;color:var(--ink3);margin-left:auto">門檻 11 · 10</span>
+        </div>
+        <div class="ec-careers">
+          <span class="ec-career-tag">UX設計師</span>
+          <span class="ec-career-tag">產品設計</span>
+          <span class="ec-career-tag">品牌設計</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /explore-grid -->
+
+  <div class="explore-show-more">
+    <button class="explore-show-more-btn" onclick="toggleExploreAll(this)">
+      <span id="explore-more-icon">▼</span>
+      <span id="explore-more-text">展開更多科系資料</span>
+    </button>
+  </div>
+  <p style="font-size:11px;color:var(--ink3);margin-top:1.2rem;text-align:center;font-family:var(--mono)">
+    年薪中位估算，以大學甄選委員會與主計總處調查為準。
+  </p>
+</div>
 </section>
 
 <div class="section-divider"></div>
 
 <!-- FEATURES -->
 <section class="section reveal" id="features-section">
-  <div class="eyebrow">為什麼不一樣</div>
-  <h2 class="sec-title">不只查分數，<em style="font-style:italic;color:var(--terra)">更看趨勢</em></h2>
-  <p class="sec-sub">整合歷年數據、AI 預測錄取率、產業標籤，讓你做出有根據的選擇</p>
+  <div class="section-head">
+    <div class="section-kicker"><span class="section-kicker-line"></span>為什麼不一樣</div>
+    <h2 class="section-h">不只查分數，<em>更看趨勢</em></h2>
+    <p class="section-p">整合歷年數據、AI 預測錄取率、產業標籤，讓你做出有根據的選擇。</p>
+  </div>
   <div class="features-grid">
     <div class="feat-card"><div class="feat-num">01</div><div class="feat-tag">📊 歷史數據</div><h3>三年趨勢分析</h3><p>整合 111–113 年歷年門檻數據，判斷今年分數線走勢，讓你的落點預測更準確。</p></div>
     <div class="feat-card"><div class="feat-num">02</div><div class="feat-tag">🤖 AI 預測</div><h3>AI 預測錄取率</h3><p>根據分差、錄取名額與今年考試背景，為每個科系計算個人化錄取機率。</p></div>
@@ -1038,12 +1871,14 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 
 <div class="section-divider"></div>
 
-<!-- TIMELINE -->
+<!-- ── TIMELINE ── -->
 <div class="timeline-section reveal" id="deadlines-section">
 <div class="timeline-inner">
-  <div class="eyebrow">重要時程</div>
-  <h2 class="sec-title">申請時程整合</h2>
-  <p class="sec-sub" style="margin-bottom:2rem">三大申請管道的完整時程，展開每個階段查看詳細說明</p>
+  <div class="section-head">
+    <div class="section-kicker"><span class="section-kicker-line"></span>重要時程</div>
+    <h2 class="section-h">申請時程，<em>一站掌握</em></h2>
+    <p class="section-p">三大申請管道完整時程。點選「詳細說明 →」可查看每個階段的具體步驟、備考要點與相關網站連結。</p>
+  </div>
   <div class="timeline-tabs">
     <button class="ttab active" onclick="switchTrack('star',this)"><span class="ttab-icon">⭐</span><div><div class="ttab-name">繁星推薦</div><span class="ttab-status ts-wait">已完成</span></div></button>
     <button class="ttab" onclick="switchTrack('apply',this)"><span class="ttab-icon">📋</span><div><div class="ttab-name">個人申請</div><span class="ttab-status ts-active">進行中</span></div></button>
@@ -1052,8 +1887,8 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   <div class="tpanel active" id="track-star">
     <div class="tl-group"><div class="tl-group-hd" onclick="toggleGroup(this)"><div class="tl-group-hd-left"><span class="tl-phase-badge">PHASE 1</span><span class="tl-group-title">成績公布與繁星資格確認</span></div><div class="tl-toggle">▾</div></div>
     <div class="tl-group-body open"><div class="timeline-list">
-      <div class="tl-item"><div class="tl-dot">📝</div><div class="tl-body"><div class="tl-date">2025年1月17–19日</div><div class="tl-title">115 學測考試</div><div class="tl-desc">國文、英文、數學A/B、自然、社會。數B 和社會為選考。</div></div></div>
-      <div class="tl-item"><div class="tl-dot">📊</div><div class="tl-body"><div class="tl-date">2025年2月25日</div><div class="tl-title">學測成績公布</div><div class="tl-desc">確認成績後立即用本系統分析落點。</div><div class="tl-tip">⚡ 成績公布後立即分析</div></div></div>
+      <div class="tl-item"><div class="tl-dot">📝</div><div class="tl-body"><div class="tl-date">2025年1月17–19日</div><div class="tl-title">115 學測考試</div><div class="tl-desc">國文、英文、數學A/B、自然、社會。數B 和社會為選考。</div><button class="tl-item-btn" onclick="openDrawer('exam-intro')">詳細說明 →</button></div></div>
+      <div class="tl-item"><div class="tl-dot">📊</div><div class="tl-body"><div class="tl-date">2025年2月25日</div><div class="tl-title">學測成績公布</div><div class="tl-desc">確認成績後立即用本系統分析落點。</div><div class="tl-tip">⚡ 成績公布後立即分析</div><button class="tl-item-btn" onclick="openDrawer('score-release')">詳細說明 →</button></div></div>
     </div></div></div>
     <div class="tl-group"><div class="tl-group-hd" onclick="toggleGroup(this)"><div class="tl-group-hd-left"><span class="tl-phase-badge">PHASE 2</span><span class="tl-group-title">繁星推薦志願登記</span></div><div class="tl-toggle">▾</div></div>
     <div class="tl-group-body open"><div class="timeline-list">
@@ -1064,7 +1899,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   <div class="tpanel" id="track-apply">
     <div class="tl-group"><div class="tl-group-hd" onclick="toggleGroup(this)"><div class="tl-group-hd-left"><span class="tl-phase-badge">PHASE 1</span><span class="tl-group-title">一階篩選</span></div><div class="tl-toggle">▾</div></div>
     <div class="tl-group-body open"><div class="timeline-list">
-      <div class="tl-item"><div class="tl-dot">🔍</div><div class="tl-body"><div class="tl-date">2025年3月31日</div><div class="tl-title">個人申請一階放榜</div><div class="tl-desc">通過者取得二階甄試資格。</div><div class="tl-tip">📌 最多申請 6 個科系志願</div></div></div>
+      <div class="tl-item"><div class="tl-dot">🔍</div><div class="tl-body"><div class="tl-date">2025年3月31日</div><div class="tl-title">個人申請一階放榜</div><div class="tl-desc">通過者取得二階甄試資格。</div><div class="tl-tip">📌 最多申請 6 個科系志願</div><button class="tl-item-btn" onclick="openDrawer('apply-1st')">詳細說明 →</button></div></div>
     </div></div></div>
     <div class="tl-group"><div class="tl-group-hd" onclick="toggleGroup(this)"><div class="tl-group-hd-left"><span class="tl-phase-badge">PHASE 2</span><span class="tl-group-title">備審資料上傳</span></div><div class="tl-toggle">▾</div></div>
     <div class="tl-group-body open"><div class="timeline-list">
@@ -1133,6 +1968,115 @@ let selStr = [], selInt = [];
 let sortAsc = false;
 let lastMatches = [];
 let lastSchoolPrefVal = null;
+let currentCat = 'all';
+const INITIAL_SHOW = 12;
+
+/* ── Drawer data ── */
+const DRAWER_DATA = {
+  'exam-intro': {
+    title: '115 學測考試 完整說明',
+    sections:[{
+      num:1,name:'考試科目',
+      events:[{
+        dot:'📝',current:false,
+        date:'2025年1月17–19日',
+        title:'115 學年度學科能力測驗',
+        desc:'考試科目：國文、英文、數學A（理工）、數學B（社會商）、自然、社會。數學B 和社會為選考科目，未報名不需作答。',
+        tips:[
+          {type:'amber',text:'⚠ 報名時就決定選考科目，考試當天不可更改。'},
+          {type:'sage',text:'✓ 每科滿分 15 級分，未到考為零級分，不計入總分。'},
+        ],
+        links:[
+          {href:'https://www.ceec.edu.tw',label:'大考中心官網'},
+          {href:'https://www.ceec.edu.tw/modules/exam/ceec-exam.aspx',label:'考試簡章下載'},
+        ]
+      }]
+    }]
+  },
+  'score-release': {
+    title: '學測成績公布 完整說明',
+    sections:[{
+      num:1,name:'成績查詢',
+      events:[{
+        dot:'📊',current:true,
+        date:'2025年2月25日',
+        title:'學測成績正式公布',
+        desc:'成績公布後可至大考中心官網查詢個人成績。同日各大學一階篩選倍率也會陸續公告，建議立即使用本系統進行落點分析。',
+        tips:[
+          {type:'sage',text:'✓ 本系統在成績公布後立即可使用，輸入分數即可分析。'},
+          {type:'amber',text:'⚠ 注意各科系一階倍率差異，同分段的競爭者眾。'},
+          {type:'slate',text:'📋 建議同時準備 3 層志願：穩上 2 個、目標 3 個、衝刺 1 個。'},
+        ],
+        links:[
+          {href:'https://www.ceec.edu.tw',label:'大考中心查詢成績'},
+          {href:'https://www.caac.ccu.edu.tw',label:'大學甄選委員會'},
+          {href:'https://www.uac.edu.tw',label:'大學入學考試中心'},
+        ]
+      }]
+    }]
+  },
+  'apply-1st': {
+    title: '個人申請一階放榜 完整說明',
+    sections:[{
+      num:1,name:'一階篩選機制',
+      events:[{
+        dot:'🔍',current:true,
+        date:'2025年3月31日',
+        title:'個人申請一階放榜',
+        desc:'各校系以學測成績為標準，依各科目倍率計算後進行篩選。通過一階者取得二階甄試（面試＋術科）資格。',
+        tips:[
+          {type:'amber',text:'⚠ 每位考生最多申請 6 個校系志願。'},
+          {type:'sage',text:'✓ 一階只看學測成績，不看備審，確保分數符合倍率要求。'},
+          {type:'slate',text:'📋 通過一階後需繳交報名費，確認後再繳費。'},
+        ],
+        links:[
+          {href:'https://www.caac.ccu.edu.tw',label:'大學甄選委員會'},
+          {href:'https://www.caac.ccu.edu.tw/enroll115/index.php',label:'個人申請報名系統'},
+          {href:'https://www.caac.ccu.edu.tw/admission/115/result.php',label:'一階放榜查詢'},
+        ]
+      },{
+        dot:'📤',current:false,
+        date:'2025年4月30日起（各校不同）',
+        title:'備審資料上傳',
+        desc:'通過一階篩選的考生，需在各校規定期限內上傳備審資料。包含學習歷程、自傳、讀書計畫、作品集（設計類）等。',
+        tips:[
+          {type:'amber',text:'⚠ 各校截止時間不同，最早可能在4月底，請逐校確認。'},
+          {type:'sage',text:'✓ 學習歷程檔案在大學端平台可查閱，無需額外上傳。'},
+          {type:'slate',text:'📋 每份備審的100字精要摘要很重要，影響教授閱讀意願。'},
+        ],
+        links:[
+          {href:'https://www.caac.ccu.edu.tw',label:'備審資料上傳說明'},
+          {href:'https://www.lis.ntnu.edu.tw/',label:'學習歷程中央資料庫'},
+        ]
+      },{
+        dot:'🎤',current:false,
+        date:'2025年5月14日–5月31日',
+        title:'二階甄試（面試＋術科）',
+        desc:'各校系自行安排面試日期，可能同一天有多校面試，需妥善規劃行程。部分科系需準備術科考試（音樂、美術、體育等）。',
+        tips:[
+          {type:'sage',text:'✓ 面試一般15–30分鐘，準備自我介紹、學習動機、未來規劃。'},
+          {type:'amber',text:'⚠ 確認各校面試地點，部分需前往外縣市，提早規劃交通住宿。'},
+        ],
+        links:[
+          {href:'https://www.caac.ccu.edu.tw',label:'各校甄試資訊查詢'},
+        ]
+      },{
+        dot:'🏆',current:false,
+        date:'2025年6月4日–6月5日',
+        title:'放榜與志願選填',
+        desc:'放榜後在規定期限內，於大學甄選委員會系統填寫最終就讀志願。每位考生只能就讀一個校系，需審慎選擇。',
+        tips:[
+          {type:'amber',text:'⚠ 放榜後 24 小時內確認是否報到，逾期視為放棄。'},
+          {type:'slate',text:'📋 若多校同時錄取，只能選一，慎重考慮！'},
+        ],
+        links:[
+          {href:'https://www.caac.ccu.edu.tw',label:'放榜結果查詢'},
+          {href:'https://www.caac.ccu.edu.tw/enroll115/apply/result.php',label:'志願選填系統'},
+        ]
+      }]
+    }]
+  }
+};
 
 const subColors = {chi:'#8b5cf6',eng:'#2460e0',matA:'#bf4a22',sci:'#2e7a50',matB:'#b8720c',soc:'#ec4899'};
 const subNames  = {chi:'國文',eng:'英文',matA:'數甲',sci:'自然',matB:'數乙',soc:'社會'};
@@ -1320,19 +2264,29 @@ function buildHistory(past){
   return `<div class="mc-history">歷年門檻：${items}</div>`;
 }
 
-/* ── Render match cards ── */
-function renderMatchCards(matches,schoolPrefVal){
-  lastMatches=matches; lastSchoolPrefVal=schoolPrefVal;
+/* ── Render match cards (compact + hover-expand, category tabs) ── */
+function renderMatchCards(matches, schoolPrefVal){
+  lastMatches=matches; lastSchoolPrefVal=schoolPrefVal; showingAll=false;
   const ml=document.getElementById('match-list');
   ml.innerHTML='';
+
   const TOP=['國立臺灣大學','國立清華大學','國立交通大學','國立陽明交通大學','國立成功大學'];
-  const withPref=matches.slice(0,15).map(m=>({
+  const CAT_MAP={'穩上':'safe','目標':'target','衝刺':'reach','挑戰':'challenge'};
+
+  // Filter by category tab
+  let filtered = matches;
+  if(currentCat !== 'all'){
+    filtered = matches.filter(m=> CAT_MAP[m.safety]===currentCat);
+  }
+
+  // School pref tagging + sort
+  const withPref = filtered.map(m=>({
     ...m,
-    _pref:schoolPrefVal!==null&&(
-      (schoolPrefVal==='top3'&&TOP.includes(m.school))||
-      (schoolPrefVal==='north'&&m.school_region==='north')||
-      (schoolPrefVal==='south'&&m.school_region==='south')||
-      (schoolPrefVal==='national'&&m.school_is_national)
+    _pref: schoolPrefVal!==null && (
+      (schoolPrefVal==='top3'     && TOP.includes(m.school)) ||
+      (schoolPrefVal==='north'    && m.school_region==='north') ||
+      (schoolPrefVal==='south'    && m.school_region==='south') ||
+      (schoolPrefVal==='national' && m.school_is_national)
     )
   }));
   const sorted=[...withPref].sort((a,b)=>sortAsc?a.gap-b.gap:b.gap-a.gap);
@@ -1340,62 +2294,98 @@ function renderMatchCards(matches,schoolPrefVal){
   const otherList=sorted.filter(m=>!m._pref);
   const final=[...prefList,...otherList];
 
-  if(schoolPrefVal&&prefList.length>0){
+  // Show first INITIAL_SHOW, rest hidden
+  const visible = showingAll ? final : final.slice(0, INITIAL_SHOW);
+  const hidden  = showingAll ? [] : final.slice(INITIAL_SHOW);
+
+  if(schoolPrefVal && prefList.length>0){
     const hd=document.createElement('div');
-    hd.style.cssText='font-size:10px;color:var(--terra);font-family:var(--mono);padding:2px 0 6px;letter-spacing:.06em';
-    hd.textContent=`★ 符合偏好（${prefList.length} 筆）`;
+    hd.style.cssText='font-size:10px;color:var(--terra);font-family:var(--mono);padding:2px 0 6px;letter-spacing:.06em;display:flex;align-items:center;gap:6px';
+    hd.innerHTML=`<span style="width:3px;height:12px;background:var(--terra);border-radius:2px;display:inline-block;flex-shrink:0"></span>★ 符合偏好（${prefList.length} 筆）`;
     ml.appendChild(hd);
   }
 
-  final.forEach((m,idx)=>{
+  visible.forEach((m, idx)=>{
     const isChallenge=m.safety==='挑戰';
-    const sc={穩上:'safe',目標:'target',衝刺:'reach',挑戰:'challenge'}[m.safety]||'reach';
-    if(idx===prefList.length&&prefList.length>0){
+    const sc=CAT_MAP[m.safety]||'reach';
+    const gapSign=m.gap>=0?'+':'';
+    const gapCls=m.gap>0?'pos':m.gap<0?'neg':'zero';
+
+    if(idx===prefList.length && prefList.length>0 && final.indexOf(m)===prefList.length){
       const sep=document.createElement('div');
-      sep.style.cssText='font-size:10px;color:var(--ink3);font-family:var(--mono);padding:6px 0 4px;letter-spacing:.06em;border-top:1px dashed var(--border);margin-top:4px';
-      sep.textContent=`其他科系（${otherList.length} 筆）`;
+      sep.style.cssText='font-size:10px;color:var(--ink3);font-family:var(--mono);padding:6px 0 4px;letter-spacing:.06em;border-top:1px dashed var(--border);margin-top:2px;display:flex;align-items:center;gap:6px';
+      sep.innerHTML=`<span style="flex:1;height:1px;background:var(--border)"></span>其他科系（${otherList.length} 筆）<span style="flex:1;height:1px;background:var(--border)"></span>`;
       ml.appendChild(sep);
     }
+
+    // Build chips
     const chips=[];
     if(m._pref) chips.push(`<span class="chip chip-pref">★ 偏好</span>`);
-    if(isChallenge) chips.push(`<span class="chip chip-challenge">挑戰志願</span>`);
-    else if(!m.is_preferred) chips.push(`<span class="chip chip-related">相關推薦</span>`);
+    if(isChallenge) chips.push(`<span class="chip chip-challenge">挑戰</span>`);
+    else if(!m.is_preferred) chips.push(`<span class="chip chip-related">相關</span>`);
+
+    const pct=Math.round(m.admission_prob||0);
+    const probCls=pct>=75?'high':pct>=50?'mid':pct>=25?'low':'vlow';
+    const probColor={high:'var(--sage)',mid:'var(--slate)',low:'var(--clay)',vlow:'var(--plum)'}[probCls];
     const indTags=(m.industry_tags||[]).map(t=>`<span class="ind-tag">${t}</span>`).join('');
     const salStr=(m.salary_median_raw&&m.salary_median_raw!=='—')?m.salary_median_raw:'—';
+
     const card=document.createElement('div');
-    card.className=`match-card${m._pref?' pref-hl':''}${isChallenge?' challenge-card':''}`;
-    card.style.animationDelay=`${idx*.065}s`;
+    card.className=`match-card-compact${m._pref?' pref-hl':''}${isChallenge?' challenge-card':''}`;
+    card.style.animationDelay=`${idx*.05}s`;
+
     card.innerHTML=`
-      <div class="mc-top">
-        <div class="mc-left">
-          <div class="mc-name-row"><span class="mc-name">${m.major}</span>${chips.join('')}</div>
-          <div class="mc-school">${m.school}</div>
-          ${indTags?`<div class="industry-tags" style="margin-top:4px">${indTags}</div>`:''}
-        </div>
-        <div class="mc-right">
-          <span class="badge ${sc}">${m.safety}</span>
-          <span style="font-family:var(--mono);font-size:10px;color:var(--ink3)">決勝差 ${m.gap>=0?'+':''}${m.gap}</span>
-          ${m.quota?`<span style="font-family:var(--mono);font-size:9px;color:var(--ink3)">名額 ${m.quota}</span>`:''}
+      <!-- Collapsed summary bar -->
+      <div class="mcc-bar">
+        <span class="mcc-badge badge ${sc}">${m.safety}</span>
+        <span class="mcc-name">${m.major} ${chips.join('')}</span>
+        <span class="mcc-school">${m.school}</span>
+        <span class="mcc-gap ${gapCls}">決勝${gapSign}${m.gap}</span>
+        <span class="mcc-prob-pill" style="background:${probColor}22;color:${probColor};border:1px solid ${probColor}44">
+          ${pct}%
+        </span>
+        <span class="mcc-arrow">▾</span>
+      </div>
+      <!-- Expandable detail -->
+      <div class="mcc-expand">
+        <div class="mcc-expand-inner">
+          ${indTags?`<div class="industry-tags" style="margin-top:0;margin-bottom:7px">${indTags}</div>`:''}
+          ${buildProbRing(m.admission_prob||0)}
+          ${buildSafetyBand(m)}
+          ${buildHistory(m.past_thresholds||{})}
+          <div class="mc-stats" style="margin-top:7px">
+            <div class="mc-stat">💰 ${salStr}</div>
+            ${m.group?`<div class="mc-stat">🏫 ${m.group}</div>`:''}
+            ${m.employment_rate?`<div class="mc-stat">📊 就業率 ${m.employment_rate}%</div>`:''}
+            ${m.ai_impact&&m.ai_impact!=='未知'?`<div class="mc-stat">🤖 ${m.ai_impact}</div>`:''}
+          </div>
+          ${(m.career||[]).length?`<div class="career-tags">${(m.career||[]).map(c=>`<span class="ctag">${c}</span>`).join('')}</div>`:''}
+          ${m.notes?`<div style="font-size:11px;color:var(--ink3);margin-top:6px">💡 ${m.notes}</div>`:''}
+          ${isChallenge&&m.failed_thresholds&&Object.keys(m.failed_thresholds||{}).length?`<div class="challenge-warn">⚠ 未達門檻：${Object.entries(m.failed_thresholds).map(([s,r])=>`${s} 需 ${r} 級`).join('、')}</div>`:''}
+          <div class="mcc-pin-hint">滑鼠移入展開 · 點擊固定</div>
         </div>
       </div>
-      ${buildProbRing(m.admission_prob||0)}
-      ${buildSafetyBand(m)}
-      ${buildHistory(m.past_thresholds||{})}
-      <div class="mc-stats">
-        <div class="mc-stat">💰 ${salStr}</div>
-        ${m.group?`<div class="mc-stat">🏫 ${m.group}</div>`:''}
-        ${m.employment_rate?`<div class="mc-stat">📊 就業率 ${m.employment_rate}%</div>`:''}
-        ${m.ai_impact&&m.ai_impact!=='未知'?`<div class="mc-stat">🤖 ${m.ai_impact}</div>`:''}
-      </div>
-      ${(m.career||[]).length?`<div class="career-tags">${(m.career||[]).map(c=>`<span class="ctag">${c}</span>`).join('')}</div>`:''}
-      ${m.notes?`<div style="font-size:11px;color:var(--ink3);margin-top:6px">💡 ${m.notes}</div>`:''}
-      ${isChallenge&&m.failed_thresholds&&Object.keys(m.failed_thresholds).length?`<div class="challenge-warn">⚠ 未達門檻：${Object.entries(m.failed_thresholds).map(([s,r])=>`${s} 需 ${r} 級`).join('、')}</div>`:''}
     `;
+
+    attachCardInteractions(card);
     ml.appendChild(card);
   });
 
-  if(!matches.length){
-    ml.innerHTML='<div style="padding:1.5rem;text-align:center;color:var(--ink3);font-size:13px">目前分數條件下無符合科系，請確認選考科目是否正確（數學A/B、自然、社會）</div>';
+  // Show-more button
+  const smRow=document.getElementById('show-more-row');
+  if(hidden.length>0){
+    smRow.style.display='flex';
+    document.getElementById('show-more-btn').innerHTML=`<span>▼</span> 顯示更多符合科系`;
+    document.getElementById('show-more-count').textContent=`還有 ${hidden.length} 筆`;
+  } else {
+    smRow.style.display='none';
+  }
+
+  if(!final.length){
+    ml.innerHTML=`<div style="padding:1.5rem;text-align:center;color:var(--ink3);font-size:13px">
+      ${currentCat!=='all'?'此類別下無符合科系，請切換其他分頁 →':'目前分數條件下無符合科系，請確認選考科目是否正確（數學A/B、自然、社會）'}
+    </div>`;
+    smRow.style.display='none';
   }
 }
 
@@ -1470,6 +2460,7 @@ async function runAnalysis(e){
     document.getElementById('btn-spinner').style.display='none';
 
     const s=data.summary||{};
+    document.getElementById('r-total').textContent=data.matches?.length||0;
     // Animate count up for summary numbers
     ['r-safe','r-target','r-reach','r-challenge'].forEach((id,i)=>{
       const el=document.getElementById(id);
@@ -1530,9 +2521,146 @@ async function sendChat(){
   msgs.scrollTop=msgs.scrollHeight;
 }
 
+
+/* ── Drawer functions ── */
+function openDrawer(key){
+  const data = DRAWER_DATA[key];
+  if(!data) return;
+  document.getElementById('drawer-title').textContent = data.title;
+  const body = document.getElementById('drawer-body');
+  let html = '';
+  (data.sections||[]).forEach(sec=>{
+    html += `<div class="tl-phase-section">
+      <div class="tl-phase-header">
+        <div class="tl-phase-num">${sec.num}</div>
+        <div class="tl-phase-name">${sec.name}</div>
+      </div>`;
+    (sec.events||[]).forEach(ev=>{
+      const tipHtml = (ev.tips||[]).map(t=>`<div class="tl-event-tip ${t.type}">${t.text}</div>`).join('');
+      const linkHtml = (ev.links||[]).map(l=>`<a class="tl-event-link" href="${l.href}" target="_blank" rel="noopener">↗ ${l.label}</a>`).join('');
+      html += `<div class="tl-event">
+        <div class="tl-dot${ev.current?' current':''}">
+          ${ev.current?'📍':ev.dot}
+        </div>
+        <div class="tl-event-body">
+          <div class="tl-event-date">${ev.date}</div>
+          <div class="tl-event-title">${ev.title}</div>
+          <div class="tl-event-desc">${ev.desc}</div>
+          <div class="tl-event-tips">${tipHtml}</div>
+          <div class="tl-event-links">${linkHtml}</div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+  document.getElementById('tl-drawer').classList.add('open');
+  document.getElementById('drawer-backdrop').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDrawer(){
+  document.getElementById('tl-drawer').classList.remove('open');
+  document.getElementById('drawer-backdrop').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+/* ── Category tab switch ── */
+function switchCat(cat, btn){
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(lastMatches.length) renderMatchCards(lastMatches, lastSchoolPrefVal);
+}
+
+/* ── Show more cards ── */
+let showingAll = false;
+function showMoreCards(){
+  showingAll = true;
+  document.getElementById('show-more-row').style.display = 'none';
+  if(lastMatches.length) renderMatchCards(lastMatches, lastSchoolPrefVal);
+}
+
+/* ── Explorer filter ── */
+function filterExplore(group, btn){
+  document.querySelectorAll('.explore-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.explore-card').forEach(card=>{
+    const cg = card.dataset.group;
+    const show = group==='all' || cg===group;
+    card.style.display = show ? '' : 'none';
+  });
+}
+
+let exploreExpanded = false;
+function toggleExploreAll(btn){
+  exploreExpanded = !exploreExpanded;
+  document.querySelectorAll('.explore-card').forEach((card,i)=>{
+    if(i>=6){
+      card.style.display = exploreExpanded ? '' : 'none';
+    }
+  });
+  document.getElementById('explore-more-icon').textContent = exploreExpanded ? '▲' : '▼';
+  document.getElementById('explore-more-text').textContent = exploreExpanded ? '收起科系資料' : '展開更多科系資料';
+}
+
+/* ── Auto-collapse results when leaving analyzer ── */
+const analyzerObs = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting){
+      // Collapse all expanded compact cards
+      document.querySelectorAll('.match-card-compact.expanded:not(.pinned)').forEach(c=>{
+        c.classList.remove('expanded');
+      });
+    }
+  });
+},{threshold:0.02});
+document.getElementById && document.getElementById('analyzer-wrap') &&
+  analyzerObs.observe(document.getElementById('analyzer-wrap'));
+
+/* ── Compact card hover/pin logic ── */
+function attachCardInteractions(card){
+  let hoverTimer;
+  card.addEventListener('mouseenter',()=>{
+    if(card.classList.contains('pinned')) return;
+    hoverTimer = setTimeout(()=>card.classList.add('expanded'),160);
+  });
+  card.addEventListener('mouseleave',()=>{
+    clearTimeout(hoverTimer);
+    if(!card.classList.contains('pinned')) card.classList.remove('expanded');
+  });
+  card.addEventListener('click',()=>{
+    const wasPinned = card.classList.contains('pinned');
+    if(!wasPinned){
+      card.classList.add('pinned','expanded');
+      card.querySelector('.mcc-pin-hint').textContent = '已固定展開，再次點擊收起';
+      card.querySelector('.mcc-pin-hint').classList.add('pinned');
+    } else {
+      card.classList.remove('pinned','expanded');
+      card.querySelector('.mcc-pin-hint').textContent = '滑鼠移入展開 · 點擊固定';
+      card.querySelector('.mcc-pin-hint').classList.remove('pinned');
+    }
+  });
+}
+
+
 // Init
 renderScoreViz();
 updateTotal();
 </script>
+
+<!-- ── TIMELINE DETAIL DRAWER ── -->
+<div class="tl-drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+<div class="tl-detail-drawer" id="tl-drawer">
+  <div class="tl-drawer-hd">
+    <div class="tl-drawer-title" id="drawer-title">詳細說明</div>
+    <button class="tl-drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="tl-drawer-body" id="drawer-body">
+    <!-- Content injected by JS -->
+  </div>
+</div>
+
 </body>
 </html>
+ 
