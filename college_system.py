@@ -609,7 +609,7 @@ def generate_advice(profile: dict, matches: list) -> str:
     """
     純靜態分析：依落點數據 + 時事背景產生 HTML，不呼叫任何外部 API。
     """
-    cache_key = make_cache_key("advice_v3", profile.get("scores"), [m["major"] for m in matches[:5]])
+    cache_key = make_cache_key("advice_v3", profile.get("scores"), [m["major"] for m in matches[:30]])
     cached = cache_get(cache_key)
     if cached:
         return cached
