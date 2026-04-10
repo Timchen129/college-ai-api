@@ -28,6 +28,223 @@
   --ease-spring:cubic-bezier(.16,1,.3,1);
 }
 
+
+/* ═══ GRADIENT TITLE ═══ */
+.grad-title{
+  background: linear-gradient(135deg, var(--terra) 0%, #e87c3e 35%, var(--sage) 70%, var(--slate) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.grad-title-warm{
+  background: linear-gradient(120deg, #c24e28 0%, #e8924a 50%, #c89830 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.grad-title-cool{
+  background: linear-gradient(120deg, var(--slate) 0%, #4a8fc0 50%, var(--sage) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══ SEARCH BOX IN FILTER BAR ═══ */
+.results-filter-bar{
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 10px;
+}
+.search-box-wrap{
+  flex: 1; min-width: 160px; max-width: 260px;
+  position: relative;
+}
+.search-box-wrap::before{
+  content: '🔍'; position: absolute; left: 10px; top: 50%;
+  transform: translateY(-50%); font-size: 12px; pointer-events: none;
+  color: var(--ink3);
+}
+.results-search{
+  width: 100%; background: var(--cream2);
+  border: 1.5px solid var(--border2); color: var(--ink);
+  border-radius: 100px; padding: 6px 12px 6px 30px;
+  font-family: var(--font); font-size: 12px; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.results-search:focus{ border-color: var(--terra); box-shadow: 0 0 0 3px var(--terraL); }
+.results-search::placeholder{ color: var(--ink3); }
+
+/* ═══ CATEGORY FILTER TABS ═══ */
+.cat-tabs{ display: flex; gap: 4px; flex-wrap: wrap; }
+.cat-tab{
+  padding: 5px 13px; border-radius: 100px;
+  border: 1.5px solid var(--border2); background: transparent;
+  color: var(--ink2); font-size: 11.5px; cursor: pointer;
+  transition: all .2s; font-family: var(--font);
+}
+.cat-tab:hover{ border-color: var(--terra); color: var(--terra); }
+.cat-tab.active{ background: var(--terraL); border-color: rgba(194,78,40,.35); color: var(--terra); font-weight: 500; }
+.cat-tab.safe-tab.active{ background: var(--sageL); border-color: rgba(107,158,122,.35); color: var(--sage); }
+.cat-tab.target-tab.active{ background: var(--slateL); border-color: rgba(109,138,170,.35); color: var(--slate); }
+.cat-tab.challenge-tab.active{ background: var(--plumL); border-color: rgba(139,106,154,.35); color: var(--plum); }
+
+/* ═══ COMPACT CARD HOVER EXPAND ═══ */
+.mcc-expand{
+  max-height: 0; overflow: hidden;
+  transition: max-height .38s cubic-bezier(.16,1,.3,1), opacity .28s ease;
+  opacity: 0;
+}
+.match-card-compact:hover .mcc-expand,
+.match-card-compact.pinned .mcc-expand{
+  max-height: 640px; opacity: 1;
+}
+.match-card-compact{ transition: transform .25s var(--ease-spring), box-shadow .25s; }
+.match-card-compact:hover{ transform: translateY(-3px); box-shadow: 0 6px 24px rgba(0,0,0,.1); }
+.mcc-pin-hint{
+  font-size: 10px; color: var(--ink3); font-family: var(--mono);
+  text-align: right; margin-top: 6px; padding-top: 4px;
+  border-top: 1px dashed var(--border); transition: color .2s;
+}
+.mcc-pin-hint.pinned{ color: var(--terra); }
+.mcc-arrow{ transition: transform .3s var(--ease-spring); }
+.match-card-compact.pinned .mcc-arrow,
+.match-card-compact:hover .mcc-arrow{ transform: rotate(180deg); }
+
+/* Auto-collapse countdown pip */
+.collapse-notice{
+  font-size: 10px; color: var(--ink3); font-family: var(--mono);
+  text-align: center; padding: 4px; animation: blink 1s ease infinite;
+}
+
+/* ═══ SHOW MORE ROW ═══ */
+.show-more-row{
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 8px 0; margin-top: 4px;
+}
+.show-more-btn{
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 24px; border-radius: 100px;
+  background: var(--cream2); border: 1.5px solid var(--border2);
+  color: var(--ink2); font-family: var(--font); font-size: 13px;
+  cursor: pointer; transition: all .22s;
+}
+.show-more-btn:hover{ border-color: var(--terra); color: var(--terra); background: var(--terraL); }
+.show-more-count{ font-size: 10.5px; color: var(--ink3); font-family: var(--mono); }
+
+/* ═══ TIMELINE MODAL ═══ */
+.tl-modal-overlay{
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s ease;
+}
+.tl-modal-overlay.open{ opacity: 1; pointer-events: all; }
+.tl-modal{
+  background: var(--cream2); border-radius: var(--r3);
+  width: min(92vw, 780px); max-height: 85vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 80px rgba(0,0,0,.3);
+  transform: scale(.93) translateY(20px);
+  transition: transform .35s var(--ease-spring);
+}
+.tl-modal-overlay.open .tl-modal{ transform: scale(1) translateY(0); }
+.tl-modal-hd{
+  padding: 1.2rem 1.6rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--cream3); border-radius: var(--r3) var(--r3) 0 0;
+}
+.tl-modal-title{
+  font-family: var(--serif); font-size: 1.3rem;
+  background: linear-gradient(120deg, var(--terra), #e87c3e);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.tl-modal-close{
+  width: 32px; height: 32px; border-radius: 50%; background: var(--surface);
+  border: none; cursor: pointer; font-size: 14px; display: flex;
+  align-items: center; justify-content: center; transition: background .2s; color: var(--ink);
+}
+.tl-modal-close:hover{ background: var(--surface2); }
+.tl-modal-body{ flex: 1; overflow-y: auto; padding: 1.4rem 1.6rem; }
+.tl-modal-track-tabs{
+  display: flex; gap: 6px; margin-bottom: 1.4rem; flex-wrap: wrap;
+}
+.tl-mtab{
+  padding: 7px 16px; border-radius: 100px; border: 1.5px solid var(--border2);
+  background: transparent; font-family: var(--font); font-size: 12.5px;
+  cursor: pointer; color: var(--ink2); transition: all .2s;
+}
+.tl-mtab.active{ background: var(--terraL); border-color: rgba(194,78,40,.35); color: var(--terra); font-weight: 500; }
+.tl-mpanel{ display: none; } .tl-mpanel.active{ display: block; }
+
+/* Visual timeline in modal */
+.vtl-item{
+  display: flex; gap: 14px; position: relative;
+  padding-bottom: 1.4rem;
+}
+.vtl-item:not(:last-child)::before{
+  content: ''; position: absolute; left: 19px; top: 42px;
+  width: 2px; bottom: 0;
+  background: linear-gradient(to bottom, var(--terra), transparent);
+}
+.vtl-dot{
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; z-index: 1; border: 2px solid var(--border);
+  background: var(--cream2); transition: transform .2s, box-shadow .2s;
+}
+.vtl-item:hover .vtl-dot{
+  transform: scale(1.12);
+  box-shadow: 0 0 0 4px var(--terraL);
+}
+.vtl-dot.current{ background: var(--terra); border-color: var(--terra); }
+.vtl-body{ flex: 1; padding-top: 8px; }
+.vtl-date{ font-size: 11px; color: var(--terra); font-family: var(--mono); margin-bottom: 2px; }
+.vtl-title{ font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.vtl-desc{ font-size: 12.5px; color: var(--ink2); line-height: 1.6; }
+.vtl-tip{
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; border-radius: 6px; padding: 3px 8px;
+  margin-top: 5px; margin-right: 5px; font-family: var(--mono);
+}
+.vtl-tip.sage{ background: var(--sageL); color: var(--sage); }
+.vtl-tip.amber{ background: var(--goldL); color: var(--clay); }
+.vtl-tip.slate{ background: var(--slateL); color: var(--slate); }
+.vtl-links{ display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.vtl-link{
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--slate); text-decoration: none;
+  background: var(--slateL); border: 1px solid rgba(109,138,170,.2);
+  border-radius: 100px; padding: 3px 10px; font-family: var(--mono);
+  transition: all .2s;
+}
+.vtl-link:hover{ background: var(--slate); color: #fff; }
+
+/* Timeline section open-modal button */
+.tl-open-btn{
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; border-radius: 100px;
+  background: var(--terra); color: #fff;
+  border: none; font-family: var(--font); font-size: 13px;
+  cursor: pointer; transition: all .22s; margin-top: 1rem;
+}
+.tl-open-btn:hover{ background: var(--terra2); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(194,78,40,.3); }
+
+/* ai_comment strip on card */
+.mcc-ai-comment{
+  font-size: 10px; color: var(--ink3); font-family: var(--mono);
+  padding: 4px 8px; background: var(--cream3); border-radius: 4px;
+  margin-top: 5px; border-left: 2px solid var(--terra);
+  line-height: 1.5;
+}
+
+/* hero gradient refinement */
+.hero-grad-badge{
+  display: inline-block;
+  background: linear-gradient(120deg, var(--terra) 0%, #e87c3e 50%, var(--gold) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  font-style: normal;
+}
+
 /* ═══ Reset ═══ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;font-size:15px}
@@ -485,12 +702,12 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   display:flex;align-items:stretch;
   position:relative;cursor:pointer;
   transition:transform .32s var(--ease-spring),box-shadow .32s;
-  box-shadow:0 3px 16px rgba(0,0,0,.1);
-  flex:1;min-height:200px;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+  flex:1;min-height:160px;
 }
-.feature-banner:hover{transform:translateY(-5px) scale(1.005);box-shadow:0 12px 40px rgba(0,0,0,.18)}
+.feature-banner:hover{transform:translateY(-4px) scale(1.003);box-shadow:0 10px 32px rgba(0,0,0,.16)}
 .fb-photo-layer{
-  flex-shrink:0;width:260px;min-height:200px;
+  flex-shrink:0;width:200px;min-height:160px;
   position:relative;overflow:hidden;
 }
 .fb-photo-layer img{
@@ -501,41 +718,54 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 }
 .fb-chart-anim{width:100%;height:100%;position:relative;z-index:1}
 .fb-content{
-  flex:1;padding:1.8rem 2rem;
+  flex:1;padding:1.3rem 1.6rem;
   display:flex;flex-direction:column;justify-content:center;
   gap:0;
 }
 .fb-kicker{
   font-family:var(--mono);font-size:10px;letter-spacing:.1em;
-  text-transform:uppercase;margin-bottom:.55rem;opacity:.65;
+  text-transform:uppercase;margin-bottom:.4rem;
+  font-weight:600;opacity:1;
 }
 .fb-title{
-  font-family:var(--serif);font-size:1.55rem;margin-bottom:.55rem;
-  line-height:1.2;
+  font-family:var(--serif);font-size:1.25rem;margin-bottom:.4rem;
+  line-height:1.2;font-weight:700;
 }
-.fb-desc{font-size:13px;line-height:1.7;opacity:.72;margin-bottom:.9rem}
-.fb-news-links{display:flex;flex-direction:column;gap:5px}
+.fb-desc{font-size:12.5px;line-height:1.65;margin-bottom:.75rem;opacity:1}
+.fb-news-links{display:flex;flex-direction:column;gap:4px}
 .fb-news-link{
   display:inline-flex;align-items:center;gap:5px;
-  font-size:11px;font-family:var(--mono);
-  padding:4px 10px;border-radius:100px;
+  font-size:10.5px;font-family:var(--mono);
+  padding:3px 9px;border-radius:100px;
   text-decoration:none;
   border:1px solid;
   transition:all .2s;width:fit-content;
 }
-/* Banner color themes */
-.fb-dark{background:linear-gradient(135deg,#1c2e40 0%,#0f1e2c 100%);color:#fff}
-.fb-dark .fb-news-link{color:rgba(255,255,255,.65);border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
-.fb-dark .fb-news-link:hover{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.35)}
-.fb-terra{background:linear-gradient(135deg,#4a1a08 0%,#2e0f04 100%);color:#f5d8c8}
-.fb-terra .fb-news-link{color:rgba(245,216,200,.6);border-color:rgba(194,78,40,.3);background:rgba(194,78,40,.1)}
-.fb-terra .fb-news-link:hover{background:rgba(194,78,40,.25);color:#fde8d8;border-color:rgba(194,78,40,.5)}
-.fb-sage{background:linear-gradient(135deg,#1a3322 0%,#0d2015 100%);color:#d0eeda}
-.fb-sage .fb-news-link{color:rgba(107,158,122,.8);border-color:rgba(107,158,122,.25);background:rgba(107,158,122,.1)}
-.fb-sage .fb-news-link:hover{background:rgba(107,158,122,.2);color:#b0ddc0;border-color:rgba(107,158,122,.45)}
-.fb-slate{background:linear-gradient(135deg,#152035 0%,#0a1528 100%);color:#c8d8f0}
-.fb-slate .fb-news-link{color:rgba(109,138,170,.8);border-color:rgba(109,138,170,.25);background:rgba(109,138,170,.1)}
-.fb-slate .fb-news-link:hover{background:rgba(109,138,170,.2);color:#b8ccee;border-color:rgba(109,138,170,.45)}
+/* Banner color themes — high contrast text */
+.fb-dark{background:linear-gradient(135deg,#1c2e40 0%,#0f1e2c 100%)}
+.fb-dark .fb-kicker{color:#a8d4f5}
+.fb-dark .fb-title{color:#ffffff}
+.fb-dark .fb-desc{color:rgba(255,255,255,.88)}
+.fb-dark .fb-news-link{color:#a8d4f5;border-color:rgba(168,212,245,.28);background:rgba(168,212,245,.08)}
+.fb-dark .fb-news-link:hover{background:rgba(168,212,245,.18);color:#fff;border-color:rgba(168,212,245,.5)}
+.fb-terra{background:linear-gradient(135deg,#4a1a08 0%,#2e0f04 100%)}
+.fb-terra .fb-kicker{color:#ffb894}
+.fb-terra .fb-title{color:#fff5f0}
+.fb-terra .fb-desc{color:rgba(255,230,220,.92)}
+.fb-terra .fb-news-link{color:#ffb894;border-color:rgba(255,184,148,.28);background:rgba(255,184,148,.1)}
+.fb-terra .fb-news-link:hover{background:rgba(255,184,148,.22);color:#fff;border-color:rgba(255,184,148,.5)}
+.fb-sage{background:linear-gradient(135deg,#1a3322 0%,#0d2015 100%)}
+.fb-sage .fb-kicker{color:#88dda8}
+.fb-sage .fb-title{color:#f0fff4}
+.fb-sage .fb-desc{color:rgba(220,255,235,.92)}
+.fb-sage .fb-news-link{color:#88dda8;border-color:rgba(136,221,168,.28);background:rgba(136,221,168,.1)}
+.fb-sage .fb-news-link:hover{background:rgba(136,221,168,.2);color:#f0fff4;border-color:rgba(136,221,168,.5)}
+.fb-slate{background:linear-gradient(135deg,#152035 0%,#0a1528 100%)}
+.fb-slate .fb-kicker{color:#8ec8f8}
+.fb-slate .fb-title{color:#f0f7ff}
+.fb-slate .fb-desc{color:rgba(220,238,255,.92)}
+.fb-slate .fb-news-link{color:#8ec8f8;border-color:rgba(142,200,248,.28);background:rgba(142,200,248,.1)}
+.fb-slate .fb-news-link:hover{background:rgba(142,200,248,.2);color:#f0f7ff;border-color:rgba(142,200,248,.5)}
 
 /* Industry pill glow variants for dark bg */
 .ind-pill-glow{
@@ -994,6 +1224,64 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   .explore-grid{grid-template-columns:repeat(2,1fr)}
   .tl-detail-drawer{width:100%;top:60px}
 }
+
+/* ══ PERFECT SCORE CELEBRATION ══ */
+@keyframes celebPop{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes celebFadeOut{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-30px)}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+@keyframes celebBounce{0%,100%{transform:translateY(0) scale(1)}30%{transform:translateY(-18px) scale(1.05)}60%{transform:translateY(-8px) scale(1.02)}}
+@keyframes rainbowGlow{0%{box-shadow:0 0 30px rgba(194,78,40,.5),0 0 60px rgba(200,152,48,.3)}33%{box-shadow:0 0 30px rgba(107,158,122,.5),0 0 60px rgba(109,138,170,.3)}66%{box-shadow:0 0 30px rgba(139,106,154,.5),0 0 60px rgba(194,78,40,.3)}100%{box-shadow:0 0 30px rgba(200,152,48,.5),0 0 60px rgba(107,158,122,.3)}}
+
+#perfect-overlay{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(28,23,18,0);
+  pointer-events:none;
+  transition:background .4s ease;
+}
+#perfect-overlay.active{
+  pointer-events:auto;
+  background:rgba(28,23,18,.55);
+  backdrop-filter:blur(6px);
+}
+.perfect-card{
+  background:var(--cream2);
+  border-radius:28px;
+  padding:2.8rem 3rem;
+  text-align:center;
+  max-width:400px;width:90%;
+  box-shadow:0 24px 80px rgba(0,0,0,.3);
+  animation:celebPop .55s var(--ease-spring) both, rainbowGlow 2s ease-in-out infinite .6s;
+  border:2px solid rgba(200,152,48,.3);
+  position:relative;overflow:hidden;
+}
+.perfect-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(200,152,48,.06) 0%,rgba(194,78,40,.04) 50%,rgba(107,158,122,.06) 100%);
+  pointer-events:none;
+}
+.perfect-mascot{font-size:5rem;display:block;animation:celebBounce 1.2s ease-in-out infinite .4s;line-height:1;margin-bottom:.8rem}
+.perfect-title{font-family:var(--serif);font-size:2rem;color:var(--terra);margin-bottom:.5rem;line-height:1.15}
+.perfect-sub{font-size:14px;color:var(--ink2);line-height:1.7;margin-bottom:1.4rem}
+.perfect-scores{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:1.6rem}
+.perfect-score-pill{
+  background:var(--terraL);border:1px solid rgba(194,78,40,.25);
+  color:var(--terra);font-family:var(--mono);font-size:12px;font-weight:600;
+  padding:4px 10px;border-radius:100px;
+}
+.perfect-btn{
+  background:var(--terra);color:#fff;border:none;
+  padding:12px 32px;border-radius:100px;
+  font-family:var(--font);font-size:14px;font-weight:500;
+  cursor:pointer;transition:all .2s;
+}
+.perfect-btn:hover{background:var(--terra2);transform:translateY(-2px);box-shadow:0 6px 20px rgba(194,78,40,.35)}
+.confetti-piece{
+  position:fixed;top:-20px;pointer-events:none;z-index:10000;
+  width:8px;height:12px;border-radius:2px;
+  animation:confettiFall var(--dur) var(--ease) var(--delay) both;
+}
+
 /* ══ APPLE-STYLE ENHANCEMENTS ══ */
 
 /* Smooth transitions on interactive elements */
@@ -1062,12 +1350,39 @@ input[type=range]:active::-webkit-slider-thumb{
 /* Responsive tweaks for new banners */
 @media(max-width:860px){
   .feature-banner{flex-direction:column;min-height:auto}
-  .fb-photo-layer{width:100%;min-height:160px}
+  .fb-photo-layer{width:100%;min-height:140px}
   .fb-content{padding:1.4rem 1.6rem}
 }
 @media(max-width:500px){
   .fb-title{font-size:1.25rem}
   .fb-desc{font-size:12px}
+}
+
+
+/* ═══ INSPO BANNER ═══ */
+.inspo-banner-wrap{ padding: 0 2rem 2rem; max-width: 1100px; margin: 0 auto; }
+.inspo-banner{
+  border-radius: var(--r2); overflow: hidden;
+  background: var(--cream3); border: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.inspo-inner{ display: flex; height: 140px; overflow: hidden; }
+.inspo-photo{ flex: 1; }
+.inspo-photo svg{ width: 100%; height: 100%; display: block; }
+.inspo-photo{ transition: flex .4s var(--ease-spring); cursor: pointer; }
+.inspo-photo:hover{ flex: 1.6; }
+.inspo-quote{
+  padding: .9rem 1.4rem; display: flex; align-items: center;
+  justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+}
+.inspo-q-text{
+  font-family: var(--serif); font-size: .95rem; color: var(--ink2);
+  font-style: italic; flex: 1;
+}
+.inspo-q-meta{
+  font-family: var(--mono); font-size: 10.5px; color: var(--ink3);
+  white-space: nowrap;
 }
 
 </style>
@@ -1445,6 +1760,67 @@ input[type=range]:active::-webkit-slider-thumb{
 
 </div>
 <!-- ── ANALYZER ── -->
+<!-- ── INSPIRATIONAL PHOTO BANNER ── -->
+<div class="inspo-banner-wrap">
+  <div class="inspo-banner">
+    <div class="inspo-inner">
+      <div class="inspo-photo inspo-a">
+        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="ig1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#1a2e48;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#c24e28;stop-opacity:1"/>
+            </linearGradient>
+          </defs>
+          <rect width="200" height="140" fill="url(#ig1)"/>
+          <circle cx="100" cy="55" r="28" fill="rgba(255,255,255,.08)"/>
+          <circle cx="100" cy="55" r="18" fill="rgba(255,255,255,.12)"/>
+          <text x="100" y="61" text-anchor="middle" font-size="18" fill="rgba(255,255,255,.9)">🎓</text>
+          <text x="100" y="90" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.6)" font-family="serif">選對方向</text>
+          <text x="100" y="105" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">DATA-DRIVEN CHOICE</text>
+          <!-- decorative lines -->
+          <line x1="20" y1="120" x2="80" y2="120" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+          <line x1="120" y1="120" x2="180" y2="120" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="inspo-photo inspo-b">
+        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="ig2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#1a3322;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#6b9e7a;stop-opacity:1"/>
+            </linearGradient>
+          </defs>
+          <rect width="200" height="140" fill="url(#ig2)"/>
+          <text x="100" y="55" text-anchor="middle" font-size="28" fill="rgba(255,255,255,.8)">📊</text>
+          <text x="100" y="82" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.7)" font-family="serif">全量科系比對</text>
+          <rect x="30" y="95" width="140" height="4" rx="2" fill="rgba(255,255,255,.1)"/>
+          <rect x="30" y="95" width="95" height="4" rx="2" fill="rgba(107,158,122,.7)"/>
+          <text x="30" y="115" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">PROBABILITY ENGINE</text>
+        </svg>
+      </div>
+      <div class="inspo-photo inspo-c">
+        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="ig3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#2d1a48;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#8b6a9a;stop-opacity:1"/>
+            </linearGradient>
+          </defs>
+          <rect width="200" height="140" fill="url(#ig3)"/>
+          <text x="100" y="55" text-anchor="middle" font-size="28" fill="rgba(255,255,255,.8)">🚀</text>
+          <text x="100" y="82" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.7)" font-family="serif">智慧導航志願</text>
+          <text x="100" y="100" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">AI-POWERED MATCHING</text>
+        </svg>
+      </div>
+    </div>
+    <div class="inspo-quote">
+      <div class="inspo-q-text">「不靠感覺，用數據選對方向。全量科系比對，找出最適合你的選擇。」</div>
+      <div class="inspo-q-meta">升志 ScoreWise · 115 學年度版</div>
+    </div>
+  </div>
+</div>
+
 <div id="analyzer-wrap">
 <div class="analyzer-inner">
   <div class="section-head" style="margin-bottom:1.8rem">
@@ -1560,8 +1936,7 @@ input[type=range]:active::-webkit-slider-thumb{
               所有科系都顯示，包含未達門檻的「挑戰志願」（淡化呈現）。<br>
               <span style="color:var(--sage);font-weight:500">穩上</span>（+2↑）·
               <span style="color:var(--slate);font-weight:500">目標</span>（-1~+1）·
-              <span style="color:var(--clay);font-weight:500">衝刺</span>（-2~-4）·
-              <span style="color:var(--plum);font-weight:500">挑戰</span>（未達門檻）
+              <span style="color:var(--plum);font-weight:500">挑戰</span>（≤-2，含未達門檻）
             </div>
           </div>
         </div>
@@ -1638,13 +2013,9 @@ input[type=range]:active::-webkit-slider-thumb{
               <span class="cat-tab-num slate" id="r-target">0</span>
               <span class="cat-tab-label">目標 ±1</span>
             </button>
-            <button class="cat-tab" data-cat="reach" onclick="switchCat('reach',this)">
-              <span class="cat-tab-num clay" id="r-reach">0</span>
-              <span class="cat-tab-label">衝刺 -4~-2</span>
-            </button>
             <button class="cat-tab" data-cat="challenge" onclick="switchCat('challenge',this)">
               <span class="cat-tab-num plum" id="r-challenge">0</span>
-              <span class="cat-tab-label">挑戰 未達門檻</span>
+              <span class="cat-tab-label">挑戰 ≤-2</span>
             </button>
           </div>
           <div class="match-meta-row">
@@ -1946,7 +2317,7 @@ input[type=range]:active::-webkit-slider-thumb{
 <section class="section reveal" id="features-section">
   <div class="section-head">
     <div class="section-kicker"><span class="section-kicker-line"></span>為什麼不一樣</div>
-    <h2 class="section-h">不只查分數，<em>更看趨勢</em></h2>
+    <h2 class="section-h">不只查分數，<em class="grad-title-warm">更看趨勢</em></h2>
     <p class="section-p">整合歷年數據、AI 預測錄取率、產業標籤，讓你做出有根據的選擇。</p>
   </div>
   <div class="features-grid">
@@ -1966,8 +2337,9 @@ input[type=range]:active::-webkit-slider-thumb{
 <div class="timeline-inner">
   <div class="section-head">
     <div class="section-kicker"><span class="section-kicker-line"></span>重要時程</div>
-    <h2 class="section-h">申請時程，<em>一站掌握</em></h2>
-    <p class="section-p">三大申請管道完整時程。點選「詳細說明 →」可查看每個階段的具體步驟、備考要點與相關網站連結。</p>
+    <h2 class="section-h">申請時程，<em class="grad-title-cool">一站掌握</em></h2>
+    <p class="section-p">三大申請管道完整時程。點選下方「查看完整時程」可在精美彈窗中瀏覽每個階段的具體步驟、備考要點與注意事項。</p>
+    <button class="tl-open-btn" onclick="openTlModal()">📅 查看完整時程</button>
   </div>
   <div class="timeline-tabs">
     <button class="ttab active" onclick="switchTrack('star',this)"><span class="ttab-icon">⭐</span><div><div class="ttab-name">繁星推薦</div><span class="ttab-status ts-wait">已完成</span></div></button>
@@ -2326,8 +2698,32 @@ function setAbroad(v){
 function toggleSort(){
   sortAsc=!sortAsc;
   const btn = document.querySelector('.match-sort-btn');
-  if(btn) btn.innerHTML = sortAsc ? '⇅ 升冪排序' : '⇅ 降冪排序';
+  if(btn) btn.innerHTML = sortAsc ? '⇅ 升冪' : '⇅ 降冪';
   if(lastMatches.length) renderMatchCards(lastMatches,lastSchoolPrefVal);
+}
+
+/* ── Category tab filter ── */
+function setCat(cat, btn){
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(lastMatches.length) renderMatchCards(lastMatches, lastSchoolPrefVal);
+}
+
+/* ── Keyword search ── */
+let _searchQuery = '';
+function onSearchInput(val){
+  _searchQuery = val.toLowerCase().trim();
+  if(lastMatches.length) renderMatchCards(lastMatches, lastSchoolPrefVal);
+}
+
+/* ── Show more cards ── */
+let showingAll = false;
+function showMoreCards(){
+  showingAll = true;
+  const smRow = document.getElementById('show-more-row');
+  if(smRow) smRow.style.display = 'none';
+  if(lastMatches.length) renderMatchCards(lastMatches, lastSchoolPrefVal);
 }
 
 /* ── Prob ring ── */
@@ -2382,7 +2778,7 @@ function buildSafetyBand(m){
       <div class="sb-bot"><span class="sb-you">你 <b style="color:${fillColor}">${student}</b></span><span class="sb-cut">線 ${cutoff}</span>${gapBadge}</div>
     </div>`;
   }).join('');
-  return `<div class="safety-band"><div class="sb-title">// 各科安全區間 ｜=錄取線 ⭐=決勝</div>${rows}</div>`;
+  return `<div class="safety-band"><div class="sb-title">各科安全區間 ｜=錄取線 ⭐=決勝科目</div>${rows}</div>`;
 }
 
 /* ── History mini ── */
@@ -2395,19 +2791,30 @@ function buildHistory(past){
   return `<div class="mc-history">歷年門檻：${items}</div>`;
 }
 
-/* ── Render match cards (compact + hover-expand, category tabs) ── */
+/* ── Render match cards (compact + hover-expand, category tabs, search) ── */
 function renderMatchCards(matches, schoolPrefVal){
-  lastMatches=matches; lastSchoolPrefVal=schoolPrefVal; showingAll=false;
+  lastMatches=matches; lastSchoolPrefVal=schoolPrefVal;
+  // Don't reset showingAll here — only reset when a new analysis runs
   const ml=document.getElementById('match-list');
   ml.innerHTML='';
 
   const TOP=['國立臺灣大學','國立清華大學','國立交通大學','國立陽明交通大學','國立成功大學'];
-  const CAT_MAP={'穩上':'safe','目標':'target','衝刺':'reach','挑戰':'challenge'};
+  const CAT_MAP={'穩上':'safe','目標':'target','衝刺':'challenge','挑戰':'challenge'};
 
-  // Filter by category tab
+  // ── Filter 1: category tab ──
   let filtered = matches;
   if(currentCat !== 'all'){
     filtered = matches.filter(m=> CAT_MAP[m.safety]===currentCat);
+  }
+
+  // ── Filter 2: keyword search (school OR major) ──
+  if(_searchQuery){
+    filtered = filtered.filter(m=>
+      (m.school||'').toLowerCase().includes(_searchQuery) ||
+      (m.major||'').toLowerCase().includes(_searchQuery) ||
+      (m.group||'').toLowerCase().includes(_searchQuery) ||
+      (m.industry_tags||[]).some(t=>t.toLowerCase().includes(_searchQuery))
+    );
   }
 
   // School pref tagging + sort
@@ -2420,7 +2827,7 @@ function renderMatchCards(matches, schoolPrefVal){
       (schoolPrefVal==='national' && m.school_is_national)
     )
   }));
-  const sorted=[...withPref].sort((a,b)=>sortAsc?a.gap-b.gap:b.gap-a.gap);
+  const sorted=[...withPref].sort((a,b)=>sortAsc?(a.admission_prob||0)-(b.admission_prob||0):(b.admission_prob||0)-(a.admission_prob||0));
   const prefList=sorted.filter(m=>m._pref);
   const otherList=sorted.filter(m=>!m._pref);
   const final=[...prefList,...otherList];
@@ -2437,7 +2844,7 @@ function renderMatchCards(matches, schoolPrefVal){
   }
 
   visible.forEach((m, idx)=>{
-    const isChallenge=m.safety==='挑戰';
+    const isChallenge=(m.safety==='挑戰'||m.safety==='衝刺');
     const sc=CAT_MAP[m.safety]||'reach';
     const gapSign=m.gap>=0?'+':'';
     const gapCls=m.gap>0?'pos':m.gap<0?'neg':'zero';
@@ -2468,7 +2875,7 @@ function renderMatchCards(matches, schoolPrefVal){
     card.innerHTML=`
       <!-- Collapsed summary bar -->
       <div class="mcc-bar">
-        <span class="mcc-badge badge ${sc}">${m.safety}</span>
+        <span class="mcc-badge badge ${isChallenge?'challenge':sc}">${isChallenge?'挑戰':m.safety}</span>
         <span class="mcc-name">${m.major} ${chips.join('')}</span>
         <span class="mcc-school">${m.school}</span>
         <span class="mcc-gap ${gapCls}">決勝${gapSign}${m.gap}</span>
@@ -2493,7 +2900,8 @@ function renderMatchCards(matches, schoolPrefVal){
           ${(m.career||[]).length?`<div class="career-tags">${(m.career||[]).map(c=>`<span class="ctag">${c}</span>`).join('')}</div>`:''}
           ${m.notes?`<div style="font-size:11px;color:var(--ink3);margin-top:6px">💡 ${m.notes}</div>`:''}
           ${isChallenge&&m.failed_thresholds&&Object.keys(m.failed_thresholds||{}).length?`<div class="challenge-warn">⚠ 未達門檻：${Object.entries(m.failed_thresholds).map(([s,r])=>`${s} 需 ${r} 級`).join('、')}</div>`:''}
-          <div class="mcc-pin-hint">點擊展開詳細資訊</div>
+          ${m.ai_comment?`<div class="mcc-ai-comment">🤖 ${m.ai_comment}</div>`:''}
+          <div class="mcc-pin-hint">點擊固定展開</div>
         </div>
       </div>
     `;
@@ -2585,9 +2993,9 @@ async function runAnalysis(e){
     const s=data.summary||{};
     document.getElementById('r-total').textContent=data.matches?.length||0;
     // Animate count up for summary numbers
-    ['r-safe','r-target','r-reach','r-challenge'].forEach((id,i)=>{
+    ['r-safe','r-target','r-challenge'].forEach((id,i)=>{
       const el=document.getElementById(id);
-      const val=[s.safe,s.target,s.reach||s.challenge||0,s.challenge||0][i]||0;
+      const val=[s.safe,s.target,(s.reach||0)+(s.challenge||0)][i]||0;
       el.style.animation='none'; void el.offsetWidth;
       el.style.animation='countUp .5s ease both';
       el.style.animationDelay=`${i*.08}s`;
@@ -2596,8 +3004,9 @@ async function runAnalysis(e){
 
     const total=data.matches?.length||0;
     document.getElementById('match-meta').textContent=
-      `// ${total} 個科系（穩上 ${s.safe||0} · 目標 ${s.target||0} · 衝刺 ${(s.reach)||0} · 挑戰 ${s.challenge||0}）`;
+      `📊 ${total} 個科系（穩上 ${s.safe||0} · 目標 ${s.target||0} · 挑戰 ${(s.reach||0)+(s.challenge||0)}）`;
 
+    showingAll = false;
     renderMatchCards(data.matches||[],schoolPrefVal);
     document.getElementById('result-time').textContent=new Date().toLocaleTimeString('zh-TW');
     notify('✓ 落點分析完成 🎉');
@@ -2731,22 +3140,70 @@ const analyzerObs = new IntersectionObserver((entries)=>{
 document.getElementById && document.getElementById('analyzer-wrap') &&
   analyzerObs.observe(document.getElementById('analyzer-wrap'));
 
-/* ── Compact card hover/pin logic ── */
+/* ── Compact card hover/pin + 3s auto-collapse logic ── */
+let _collapseTimer = null;
+
 function attachCardInteractions(card){
-  // Click only to expand/collapse — no hover expand
-  card.addEventListener('click',()=>{
-    const wasPinned = card.classList.contains('expanded');
+  // Hover → expand (CSS handles it via :hover, but we also manage pinned)
+  // Click → toggle pinned (stays expanded even without hover)
+  card.addEventListener('click', (e)=>{
+    // Ignore clicks on links inside
+    if(e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+    const wasPinned = card.classList.contains('pinned');
     if(!wasPinned){
-      card.classList.add('expanded');
-      card.querySelector('.mcc-pin-hint').textContent = '點擊收起';
-      card.querySelector('.mcc-pin-hint').classList.add('pinned');
+      card.classList.add('pinned');
+      const hint = card.querySelector('.mcc-pin-hint');
+      if(hint){ hint.textContent = '🔒 已固定展開，點擊收起'; hint.classList.add('pinned'); }
     } else {
-      card.classList.remove('expanded');
-      card.querySelector('.mcc-pin-hint').textContent = '點擊展開詳細資訊';
-      card.querySelector('.mcc-pin-hint').classList.remove('pinned');
+      card.classList.remove('pinned');
+      const hint = card.querySelector('.mcc-pin-hint');
+      if(hint){ hint.textContent = '點擊固定展開'; hint.classList.remove('pinned'); }
     }
   });
 }
+
+/* 3s auto-collapse: when mouse leaves the results area */
+function setupAutoCollapse(){
+  const ml = document.getElementById('results-content');
+  if(!ml) return;
+  ml.addEventListener('mouseleave',()=>{
+    _collapseTimer = setTimeout(()=>{
+      document.querySelectorAll('.match-card-compact.pinned').forEach(c=>{
+        c.classList.remove('pinned');
+        const hint = c.querySelector('.mcc-pin-hint');
+        if(hint){ hint.textContent = '點擊固定展開'; hint.classList.remove('pinned'); }
+      });
+    }, 3000);
+  });
+  ml.addEventListener('mouseenter',()=>{
+    if(_collapseTimer){ clearTimeout(_collapseTimer); _collapseTimer = null; }
+  });
+}
+setupAutoCollapse();
+
+/* Timeline modal */
+function openTlModal(){
+  document.getElementById('tl-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeTlModal(e){
+  // Called directly from X button or by ESC key (no event arg)
+  // When called from overlay onclick, only close if clicking the dark backdrop itself
+  if(e && e.currentTarget && e.target !== e.currentTarget) return;
+  document.getElementById('tl-modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function switchTlModal(name, btn){
+  document.querySelectorAll('.tl-mpanel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tl-mtab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tlm-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+// ESC to close
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeTlModal(); });
+document.getElementById('tl-modal-overlay')?.addEventListener('click', e=>{
+  if(e.target === document.getElementById('tl-modal-overlay')) closeTlModal();
+});
 
 
 
@@ -2893,6 +3350,107 @@ function triggerScoreBarBounce(subjectId){
   }
 }
 
+
+/* ── Perfect Score Celebration ── */
+const ALL_SUBJECTS = ['chi','eng','matA','sci','matB','soc'];
+let celebrationShown = false;
+
+function checkPerfectScore(){
+  const vals = {
+    chi: +document.getElementById('s-chi').value,
+    eng: +document.getElementById('s-eng').value,
+    matA: +document.getElementById('s-matA').value,
+    sci: +document.getElementById('s-sci').value,
+    matB: +document.getElementById('s-matB').value,
+    soc: +document.getElementById('s-soc').value,
+  };
+  // Need at least 4 required subjects all at 15
+  const required = vals.chi===15 && vals.eng===15 && vals.matA===15 && vals.sci===15;
+  // Optional subjects: if entered must also be 15
+  const optOk = (vals.matB===0||vals.matB===15) && (vals.soc===0||vals.soc===15);
+  // At least one optional must be selected for full celebration
+  const hasOptional = vals.matB===15 || vals.soc===15;
+  if(required && optOk && hasOptional && !celebrationShown){
+    celebrationShown = true;
+    setTimeout(showPerfectCelebration, 400);
+  }
+  // Reset flag if any score drops below 15
+  if(!required) celebrationShown = false;
+}
+
+function showPerfectCelebration(){
+  const overlay = document.getElementById('perfect-overlay');
+  overlay.classList.add('active');
+  
+  // Generate score pills
+  const subNames = {chi:'國文 15',eng:'英文 15',matA:'數甲 15',sci:'自然 15',matB:'數乙 15',soc:'社會 15'};
+  const pills = document.getElementById('perfect-score-pills');
+  pills.innerHTML = '';
+  ALL_SUBJECTS.forEach(id=>{
+    const v = +document.getElementById('s-'+id).value;
+    if(v===15){
+      const pill = document.createElement('span');
+      pill.className='perfect-score-pill';
+      pill.textContent = subNames[id];
+      pills.appendChild(pill);
+    }
+  });
+  
+  // Launch confetti
+  launchConfetti();
+  
+  // Auto close after 8 seconds
+  setTimeout(closePerfect, 8000);
+}
+
+function closePerfect(){
+  const overlay = document.getElementById('perfect-overlay');
+  overlay.style.transition = 'opacity .4s ease, background .4s ease';
+  overlay.style.opacity = '0';
+  setTimeout(()=>{
+    overlay.classList.remove('active');
+    overlay.style.opacity = '';
+    // Scroll to analyzer
+    scrollToSec('#analyzer-wrap');
+  }, 400);
+}
+
+function launchConfetti(){
+  const COLORS = ['#c24e28','#6b9e7a','#c89830','#7a9fc0','#8b6a9a','#b87040'];
+  const SHAPES = ['▪','●','◆','★','▲'];
+  const count = 80;
+  for(let i=0;i<count;i++){
+    setTimeout(()=>{
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.cssText = `
+        left:${Math.random()*100}vw;
+        background:${COLORS[Math.floor(Math.random()*COLORS.length)]};
+        --dur:${2.5+Math.random()*2.5}s;
+        --delay:${Math.random()*1.2}s;
+        --ease:cubic-bezier(${.25+Math.random()*.5},${.1+Math.random()*.4},${.25+Math.random()*.5},1);
+        transform:rotate(${Math.random()*360}deg);
+        width:${6+Math.random()*8}px;
+        height:${8+Math.random()*14}px;
+        border-radius:${Math.random()>0.5?'50%':'2px'};
+        opacity:${.7+Math.random()*.3};
+      `;
+      document.body.appendChild(piece);
+      setTimeout(()=>piece.remove(), 5000);
+    }, i*30);
+  }
+}
+
+// Hook into updateSub and updateOptional to check
+const _origUpdateSub = updateSub;
+// Patch to add perfect score check after every update
+document.addEventListener('input', e=>{
+  if(e.target.matches('input[type=range]')){
+    // Small delay to let value update
+    setTimeout(checkPerfectScore, 100);
+  }
+});
+
 initMagnetic();
 
 // Init
@@ -2909,6 +3467,188 @@ updateTotal();
   </div>
   <div class="tl-drawer-body" id="drawer-body">
     <!-- Content injected by JS -->
+  </div>
+</div>
+
+
+<!-- ── PERFECT SCORE CELEBRATION ── -->
+<div id="perfect-overlay" onclick="closePerfect()">
+  <div class="perfect-card" onclick="event.stopPropagation()">
+    <span class="perfect-mascot">🎓</span>
+    <div class="perfect-title">滿級分！全科制霸！</div>
+    <div class="perfect-sub">國文·英文·數甲·自然·數乙·社會<br>六科全部 <strong style="color:var(--terra)">15 級分</strong>——你是全台頂尖！</div>
+    <div class="perfect-scores" id="perfect-score-pills"></div>
+    <button class="perfect-btn" onclick="closePerfect()">✦ 去分析我的志願</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     TIMELINE MODAL — 精美可互動時程視窗
+══════════════════════════════════════ -->
+<div class="tl-modal-overlay" id="tl-modal-overlay" id="tl-modal-overlay">
+  <div class="tl-modal" onclick="event.stopPropagation()">
+    <div class="tl-modal-hd">
+      <div class="tl-modal-title">📅 115學年度申請時程總覽</div>
+      <button class="tl-modal-close" onclick="closeTlModal()">✕</button>
+    </div>
+    <div class="tl-modal-body">
+      <div class="tl-modal-track-tabs">
+        <button class="tl-mtab active" onclick="switchTlModal('star',this)">⭐ 繁星推薦</button>
+        <button class="tl-mtab" onclick="switchTlModal('apply',this)">📋 個人申請</button>
+        <button class="tl-mtab" onclick="switchTlModal('exam',this)">📌 分科測驗</button>
+      </div>
+
+      <!-- 繁星推薦 -->
+      <div class="tl-mpanel active" id="tlm-star">
+        <div class="vtl-item">
+          <div class="vtl-dot">📝</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年1月17–19日</div>
+            <div class="vtl-title">115 學科能力測驗</div>
+            <div class="vtl-desc">國文、英文、數學A/B、自然、社會。數B 和社會為選考。每科15級分。</div>
+            <div><span class="vtl-tip amber">⚠ 報名時決定選考，考試當天不可更改</span></div>
+          </div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot">📊</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年2月25日</div>
+            <div class="vtl-title">學測成績公布</div>
+            <div class="vtl-desc">確認成績後立即使用本系統分析落點，把握最佳分析時機。</div>
+            <div><span class="vtl-tip sage">✓ 成績公布後立即可分析</span></div>
+          </div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot current">🎯</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年2月下旬</div>
+            <div class="vtl-title">繁星推薦志願登記</div>
+            <div class="vtl-desc">每校最多登記 1 個志願，依全國高中排名統一分發。</div>
+            <div><span class="vtl-tip amber">⚠ 繁星只能登記 1 個志願，慎選</span></div>
+          </div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot">✅</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年3月底</div>
+            <div class="vtl-title">繁星推薦放榜</div>
+            <div class="vtl-desc">未錄取者繼續參與個人申請入學管道，不影響後續機會。</div>
+            <div class="vtl-links">
+              <a class="vtl-link" href="https://www.caac.ccu.edu.tw" target="_blank">🔗 大學甄選委員會</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 個人申請 -->
+      <div class="tl-mpanel" id="tlm-apply">
+        <div class="vtl-item">
+          <div class="vtl-dot current">🔍</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年3月31日</div>
+            <div class="vtl-title">個人申請一階放榜</div>
+            <div class="vtl-desc">各校系依學測成績倍率篩選，通過者取得二階甄試資格。</div>
+            <div>
+              <span class="vtl-tip amber">⚠ 最多申請 6 個校系</span>
+              <span class="vtl-tip sage">✓ 一階只看學測成績</span>
+            </div>
+            <div class="vtl-links">
+              <a class="vtl-link" href="https://www.caac.ccu.edu.tw/enroll115/index.php" target="_blank">🔗 個人申請報名系統</a>
+            </div>
+          </div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot">📤</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年4月30日起（各校不同）</div>
+            <div class="vtl-title">備審資料上傳</div>
+            <div class="vtl-desc">學習歷程、自傳、讀書計畫（設計類需作品集）。各校截止時間不同，請逐校確認。</div>
+            <div>
+              <span class="vtl-tip slate">📋 100字精要摘要影響教授閱讀意願</span>
+            </div>
+            <div class="vtl-links">
+              <a class="vtl-link" href="https://www.lis.ntnu.edu.tw/" target="_blank">🔗 學習歷程中央資料庫</a>
+            </div>
+          </div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot">🎤</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年5月14日–31日</div>
+            <div class="vtl-title">各大學二階甄試（面試＋術科）</div>
+            <div class="vtl-desc">各校系自行安排面試日期，可能同一天有多校。部分科系需術科考試。</div>
+            <div>
+              <span class="vtl-tip sage">✓ 面試準備：自我介紹、學習動機、未來規劃</span>
+              <span class="vtl-tip amber">⚠ 確認各校面試地點，提早規劃交通</span>
+            </div>
+          </div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot">🏆</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年6月4日–5日</div>
+            <div class="vtl-title">個人申請放榜 → 志願選填</div>
+            <div class="vtl-desc">放榜後在規定期限內填寫最終就讀志願，每人只能就讀一個校系。</div>
+            <div>
+              <span class="vtl-tip amber">⚠ 放榜後 24 小時內確認是否報到</span>
+              <span class="vtl-tip slate">📋 多校同時錄取只能選一，審慎考量</span>
+            </div>
+            <div class="vtl-links">
+              <a class="vtl-link" href="https://www.caac.ccu.edu.tw" target="_blank">🔗 放榜結果查詢</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分科測驗 -->
+      <div class="tl-mpanel" id="tlm-exam">
+        <div class="vtl-item">
+          <div class="vtl-dot">✏️</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年6月3日–16日</div>
+            <div class="vtl-title">分科測驗報名</div>
+            <div class="vtl-desc">確認是否需要參加分科測驗，評估需求後再決定是否報名。</div>
+          </div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot">📚</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年7月11日–12日</div>
+            <div class="vtl-title">分科測驗考試</div>
+            <div class="vtl-desc">數學乙、物理、化學、生物、歷史、地理、公民等選考組合。</div>
+          </div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot current">📊</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年7月29日</div>
+            <div class="vtl-title">分科測驗成績放榜</div>
+            <div class="vtl-desc">成績公布後即可準備志願填寫，最多可填 100 個志願。</div>
+          </div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot">✏️</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年8月1日–4日</div>
+            <div class="vtl-title">分發入學志願選填</div>
+            <div class="vtl-desc">最多填 100 個志願，建議填好填滿比只填幾個安全。</div>
+            <div><span class="vtl-tip sage">💡 填好填滿比只填幾個安全</span></div>
+          </div>
+        </div>
+        <div class="vtl-item">
+          <div class="vtl-dot">🎉</div>
+          <div class="vtl-body">
+            <div class="vtl-date">2025年8月13日</div>
+            <div class="vtl-title">分發入學放榜</div>
+            <div class="vtl-desc">最後一個管道放榜，確認錄取後完成報到手續。</div>
+            <div class="vtl-links">
+              <a class="vtl-link" href="https://www.uac.edu.tw" target="_blank">🔗 大學入學考試中心</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tl-modal-body -->
   </div>
 </div>
 
