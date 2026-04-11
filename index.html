@@ -2940,9 +2940,29 @@ visible.forEach((m, idx)=>{
       <!-- Expandable detail -->
       <div class="mcc-expand">
         <div class="mcc-expand-inner">
+          ${multHtml ? `
+            <div style="margin-bottom:7px">
+              <div style="font-size:10px;color:var(--ink3);font-family:var(--mono);
+                          margin-bottom:4px;letter-spacing:.04em">計分倍率</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">${multHtml}</div>
+            </div>
+          ` : ''}
           ${indTags?`<div class="industry-tags" style="margin-top:0;margin-bottom:7px">${indTags}</div>`:''}
           ${buildProbRing(m.admission_prob||0)}
           ${buildSafetyBand(m)}
+
+          ${(() => {
+            const entries = Object.entries(m.multipliers || {}).filter(([_, w]) => w > 0);
+            if (!entries.length) return '';
+            const pills = entries.map(([subj, w]) =>
+              `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);background:var(--slateL);color:var(--slate);border:1px solid rgba(109,138,170,.2)">${subj} <b style="color:var(--terra)">×${w}</b></span>`
+            ).join('');
+            return `<div style="margin:6px 0 7px">
+              <div style="font-size:10px;color:var(--ink3);font-family:var(--mono);margin-bottom:4px;letter-spacing:.04em">📐 計分倍率</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">${pills}</div>
+            </div>`;
+          })()}
+
           ${buildHistory(m.past_thresholds||{})}
           <div class="mc-stats" style="margin-top:7px">
             <div class="mc-stat">💰 ${salStr}</div>
