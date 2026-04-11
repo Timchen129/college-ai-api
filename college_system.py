@@ -548,11 +548,13 @@ def match_majors(scores: dict, profile: dict = None) -> list:
             continue
 
         if not passed_threshold:
-            safety = "挑戰"
+            safety = "困難"
         elif gap >= 0:
             safety = "穩健"
-        else:  # gap < 0，已達門檻但低於去年錄取線
-            safety = "挑戰"
+        elif gap == -1:
+            safety = "挑戰"   # 門檻全達，但決勝科目差 1 分，機率約 40%
+        else:                 # gap <= -2，門檻達但差距太大
+            safety = "困難"
 
         subject_detail = {}
         for subj, mult in multipliers.items():
@@ -625,7 +627,7 @@ def sort_by_school_pref(matches: list, pref: str) -> list:
     if pref == "any":
         return matches
 
-    tier_order = {"穩健": 0, "挑戰": 1}
+    tier_order = {"穩健": 0, "挑戰": 1, "困難": 2}
 
     def sort_key(m: dict) -> tuple:
         tier = tier_order.get(m["safety"], 9)
@@ -684,7 +686,7 @@ def generate_advice(profile: dict, matches: list) -> str:
     # ── 1. 志願推薦（前4名）──
     top4 = matches[:4]
 
-    SAFETY_LABEL = {"穩健": "🟢 穩健", "挑戰": "🔴 挑戰"}
+    SAFETY_LABEL = {"穩健": "🟢 穩健", "挑戰": "🟡 挑戰", "困難": "🔴 困難"}
     PROB_DESC = {
         97: "接近確定上榜",
         85: "很有把握",
@@ -783,14 +785,15 @@ def generate_advice(profile: dict, matches: list) -> str:
     industry_html = "".join(f"<li>{n}</li>" for n in industry_notes[:3]) if industry_notes else "<li>建議參考各校系就業統計數據再做決定。</li>"
 
     # ── 5. 給這位同學的一句話 ──
-    safe_cnt = sum(1 for m in matches if m["safety"] == "穩健")
+    safe_cnt      = sum(1 for m in matches if m["safety"] == "穩健")
     challenge_cnt = sum(1 for m in matches if m["safety"] == "挑戰")
+    hard_cnt      = sum(1 for m in matches if m["safety"] == "困難")
     if safe_cnt >= 4:
         closing = f"{name}，你的成績在資料庫中有 {safe_cnt} 個穩健志願，基本盤紮實，重點放在挑選最符合興趣的科系，別因保守而可惜了好分數。"
     elif safe_cnt >= 2:
-        closing = f"{name}，穩健志願有 {safe_cnt} 個，建議 2 個穩健壓底、1-2 個挑戰試試，分散風險。"
+        closing = f"{name}，穩健志願有 {safe_cnt} 個、挑戰 {challenge_cnt} 個，建議 2 個穩健壓底、1-2 個挑戰試試，分散風險。"
     else:
-        closing = f"{name}，挑戰志願比例較高（{challenge_cnt} 個），今年考生人數減少對你略為有利，但建議確保至少 1~2 個門檻全達的志願保底。"
+        closing = f"{name}，困難志願比例較高（{hard_cnt} 個），今年考生人數減少對你略為有利，但建議確保至少 1~2 個門檻全達的志願保底。"
 
     html = f"""
 <h3>📊 落點分析報告｜{name}</h3>
@@ -907,9 +910,11 @@ def analyze():
             "total":     len(matches),
             "safe":      sum(1 for m in matches if m["safety"] == "穩健"),
             "challenge": sum(1 for m in matches if m["safety"] == "挑戰"),
+            "hard":      sum(1 for m in matches if m["safety"] == "困難"),
             # 前端中文 key 相容
             "穩健":      sum(1 for m in matches if m["safety"] == "穩健"),
             "挑戰":      sum(1 for m in matches if m["safety"] == "挑戰"),
+            "困難":      sum(1 for m in matches if m["safety"] == "困難"),
         }
 
         ai_result = generate_advice(profile, matches)
