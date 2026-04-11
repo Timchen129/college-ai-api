@@ -86,7 +86,11 @@
 .cat-tab.safe-tab.active{ background: var(--sageL); border-color: rgba(107,158,122,.35); color: var(--sage); }
 .cat-tab.target-tab.active{ background: var(--slateL); border-color: rgba(109,138,170,.35); color: var(--slate); }
 .cat-tab.challenge-tab.active{ background: var(--plumL); border-color: rgba(139,106,154,.35); color: var(--plum); }
-
+.cat-tab.hard-tab.active{
+  background: var(--plumL);
+  border-color: rgba(139,106,154,.35);
+  color: var(--plum);
+}
 /* ═══ COMPACT CARD HOVER EXPAND ═══ */
 .mcc-expand{
   max-height: 0; overflow: hidden;
@@ -1969,8 +1973,12 @@ input[type=range]:active::-webkit-slider-thumb{
               <span class="cat-tab-label">穩健</span>
             </button>
             <button class="cat-tab challenge-tab" data-cat="challenge" onclick="switchCat('challenge',this)" style="flex:none;padding:5px 12px">
-              <span class="cat-tab-num plum" id="r-challenge" style="font-size:.95rem">0</span>
+              <span class="cat-tab-num clay" id="r-challenge" style="font-size:.95rem">0</span>
               <span class="cat-tab-label">挑戰</span>
+            </button>
+            <button class="cat-tab hard-tab" data-cat="hard" onclick="switchCat('hard',this)" style="flex:none;padding:5px 12px">
+              <span class="cat-tab-num plum" id="r-hard" style="font-size:.95rem">0</span>
+              <span class="cat-tab-label">困難</span>
             </button>
             <span style="flex:1;height:0"></span>
           </div>
@@ -2826,7 +2834,7 @@ function renderMatchCards(matches, schoolPrefVal){
   ml.innerHTML='';
 
   const TOP=['國立臺灣大學','國立清華大學','國立交通大學','國立陽明交通大學','國立成功大學'];
-  const CAT_MAP={'穩健':'safe','穩上':'safe','目標':'safe','挑戰':'challenge','衝刺':'challenge'};
+  const CAT_MAP = {'穩健':'safe','穩上':'safe','目標':'safe','挑戰':'challenge','困難':'hard','衝刺':'hard'};
 
   // ── Filter 1: safety category tab ──
   let filtered = matches;
@@ -2890,11 +2898,12 @@ function renderMatchCards(matches, schoolPrefVal){
     ml.appendChild(hd);
   }
 
-  visible.forEach((m, idx)=>{
-    const isChallenge=(m.safety==='挑戰'||m.safety==='衝刺');
-    const sc=isChallenge?'challenge':'safe';
-    const gapSign=m.gap>=0?'+':'';
-    const gapCls=m.gap>0?'pos':m.gap<0?'neg':'zero';
+  const isHard      = (m.safety==='困難');
+  const isChallenge = (m.safety==='挑戰');
+  const sc          = isHard ? 'challenge' : isChallenge ? 'target' : 'safe';
+  const badgeText   = isHard ? '困難' : isChallenge ? '挑戰' : '穩健';
+  const gapSign     = m.gap>=0?'+':'';
+  const gapCls      = m.gap>0?'pos':m.gap<0?'neg':'zero';
 
     if(idx===prefList.length && prefList.length>0 && final.indexOf(m)===prefList.length){
       const sep=document.createElement('div');
@@ -2916,13 +2925,13 @@ function renderMatchCards(matches, schoolPrefVal){
     const salStr=(m.salary_median_raw&&m.salary_median_raw!=='—')?m.salary_median_raw:'—';
 
     const card=document.createElement('div');
-    card.className=`match-card-compact${m._pref?' pref-hl':''}${isChallenge?' challenge-card':''}`;
+    card.className=`match-card-compact${m._pref?' pref-hl':''}${(isChallenge||isHard)?' challenge-card':''}`;
     card.style.animationDelay=`${idx*.05}s`;
 
     card.innerHTML=`
       <!-- Collapsed summary bar -->
       <div class="mcc-bar">
-        <span class="mcc-badge badge ${isChallenge?'challenge':'safe'}">${isChallenge?'挑戰':'穩健'}</span>
+        <span class="mcc-badge badge ${sc}">${badgeText}</span>
         <span class="mcc-name">${m.major} ${chips.join('')}</span>
         <span class="mcc-school">${m.school}</span>
         <span class="mcc-gap ${gapCls}">決勝${gapSign}${m.gap}</span>
@@ -3040,18 +3049,22 @@ async function runAnalysis(e){
     const s=data.summary||{};
     document.getElementById('r-total').textContent=data.matches?.length||0;
     // Animate count up for summary numbers
-    ['r-safe','r-challenge'].forEach((id,i)=>{
-      const el=document.getElementById(id);
-      const val=[s.safe||s['穩健']||0,(s.challenge||s['挑戰']||0)][i]||0;
-      el.style.animation='none'; void el.offsetWidth;
-      el.style.animation='countUp .5s ease both';
-      el.style.animationDelay=`${i*.08}s`;
-      setTimeout(()=>el.textContent=val,i*80);
+    [
+      ['r-safe',      s.safe      || s['穩健'] || 0],
+      ['r-challenge', s.challenge || s['挑戰'] || 0],
+      ['r-hard',      s.hard      || s['困難'] || 0],
+    ].forEach(([id, val], i) => {
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.style.animation = 'none'; void el.offsetWidth;
+      el.style.animation = 'countUp .5s ease both';
+      el.style.animationDelay = `${i * .08}s`;
+      setTimeout(() => el.textContent = val, i * 80);
     });
 
     const total=data.matches?.length||0;
-    document.getElementById('match-meta').textContent=
-      `📊 ${total} 個科系（穩健 ${s.safe||s['穩健']||0} · 挑戰 ${s.challenge||s['挑戰']||0}）`;
+    document.getElementById('match-meta').textContent =
+      `📊 ${total} 個科系（穩健 ${s.safe||s['穩健']||0} · 挑戰 ${s.challenge||s['挑戰']||0} · 困難 ${s.hard||s['困難']||0}）`;
 
     showingAll = false;
     currentGroup = 'all';
