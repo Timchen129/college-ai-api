@@ -872,7 +872,6 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   .timeline-tabs{flex-direction:column;border-radius:var(--r);gap:0}
   .ttab{border-right:none;border-bottom:1px solid var(--border)}
   .ttab:last-child{border-bottom:none}
-  .analyzer-two-col{grid-template-columns:1fr !important}  /* ← 加這行 */
 }
 @media(max-width:500px){
   .hero h1{font-size:2.3rem}
@@ -1885,8 +1884,135 @@ input[type=range]:active::-webkit-slider-thumb{
     
     <!-- 左側：輸入面板 -->
     <div class="panel">
-      ... （原本 analyzer-input-wrap 裡面的 panel 內容）
-    </div>
+      <div class="panel-hd">
+        <span class="panel-title">🎯 輸入你的學測成績</span>
+        <div class="tabs" style="margin:0;width:auto;gap:4px;background:transparent;padding:0">
+          <button class="tab active" onclick="switchTab('scores',this)">成績</button>
+          <button class="tab" onclick="switchTab('profile',this)">個人</button>
+          <button class="tab" onclick="switchTab('prefs',this)">偏好</button>
+        </div>
+      </div>
+      <div class="panel-body">
+
+        <!-- ── Tab: 成績 ── -->
+        <div id="tab-scores">
+          <div class="score-section-label">必考科目</div>
+          <div class="subject-grid">
+            <div class="sub-item">
+              <div class="sub-label">國文<span class="sub-val" id="v-chi">7</span></div>
+              <input type="range" id="s-chi" min="1" max="15" value="7" oninput="updateSub('chi',this.value)">
+            </div>
+            <div class="sub-item">
+              <div class="sub-label">英文<span class="sub-val" id="v-eng">7</span></div>
+              <input type="range" id="s-eng" min="1" max="15" value="7" oninput="updateSub('eng',this.value)">
+            </div>
+            <div class="sub-item">
+              <div class="sub-label">數學A<span class="sub-val" id="v-matA">7</span></div>
+              <input type="range" id="s-matA" min="1" max="15" value="7" oninput="updateSub('matA',this.value)">
+            </div>
+            <div class="sub-item">
+              <div class="sub-label">自然<span class="sub-val" id="v-sci">7</span></div>
+              <input type="range" id="s-sci" min="1" max="15" value="7" oninput="updateSub('sci',this.value)">
+            </div>
+          </div>
+
+          <div class="score-section-label">選考科目（拖到 0 代表未報考）</div>
+          <div class="subject-grid">
+            <div class="sub-item">
+              <div class="sub-label">數學B
+                <span id="matB-opt" class="sub-optional">未選考</span>
+                <span class="sub-val" id="v-matB" style="display:none">0</span>
+              </div>
+              <input type="range" id="s-matB" min="0" max="15" value="0" oninput="updateOptional('matB',this.value)">
+            </div>
+            <div class="sub-item">
+              <div class="sub-label">社會
+                <span id="soc-opt" class="sub-optional">未選考</span>
+                <span class="sub-val" id="v-soc" style="display:none">0</span>
+              </div>
+              <input type="range" id="s-soc" min="0" max="15" value="0" oninput="updateOptional('soc',this.value)">
+            </div>
+          </div>
+
+          <!-- 分數視覺化 -->
+          <div class="score-viz" id="scoreViz"></div>
+          <div class="total-strip">
+            <span class="total-label">加權估算</span>
+            <span class="total-num" id="total-score">—</span>
+          </div>
+          <div class="optional-note">數學B / 社會：拖到 0 = 未報考，不計入篩選</div>
+        </div>
+
+        <!-- ── Tab: 個人 ── -->
+        <div id="tab-profile" style="display:none">
+          <div class="fg"><label class="fl">姓名（選填）</label><input class="fi" id="name" type="text" placeholder="例：王小明"></div>
+          <div class="fg">
+            <label class="fl">學校偏好</label>
+            <select class="fs" id="school-pref">
+              <option value="any">不限</option>
+              <option value="top3">台清成（優先）</option>
+              <option value="national">國立大學優先</option>
+              <option value="north">北部為主</option>
+              <option value="south">南部為主</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">個性傾向</label>
+            <select class="fs" id="personality">
+              <option value="">不指定</option>
+              <option value="analytical">分析型（喜歡邏輯推理）</option>
+              <option value="creative">創意型（喜歡設計創作）</option>
+              <option value="social">社交型（喜歡與人互動）</option>
+              <option value="practical">實務型（喜歡動手操作）</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">出國意願</label>
+            <div class="tg-group">
+              <button class="tg-btn active" id="abroad-n" onclick="setAbroad('n')">不考慮</button>
+              <button class="tg-btn" id="abroad-y" onclick="setAbroad('y')">有意願出國</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Tab: 偏好 ── -->
+        <div id="tab-prefs" style="display:none">
+          <div class="fg">
+            <label class="fl">強項科目</label>
+            <div class="tg-group" id="str-tags">
+              <button class="tg-btn" onclick="toggleTag(this,'str')">數學</button>
+              <button class="tg-btn" onclick="toggleTag(this,'str')">英文</button>
+              <button class="tg-btn" onclick="toggleTag(this,'str')">物理</button>
+              <button class="tg-btn" onclick="toggleTag(this,'str')">化學</button>
+              <button class="tg-btn" onclick="toggleTag(this,'str')">生物</button>
+              <button class="tg-btn" onclick="toggleTag(this,'str')">國文</button>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">興趣領域</label>
+            <div class="tg-group">
+              <button class="tg-btn" onclick="toggleTag(this,'int')">AI / 資訊</button>
+              <button class="tg-btn" onclick="toggleTag(this,'int')">醫療健康</button>
+              <button class="tg-btn" onclick="toggleTag(this,'int')">商業金融</button>
+              <button class="tg-btn" onclick="toggleTag(this,'int')">藝術設計</button>
+              <button class="tg-btn" onclick="toggleTag(this,'int')">法律社會</button>
+              <button class="tg-btn" onclick="toggleTag(this,'int')">工程製造</button>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">補充說明（選填）</label>
+            <textarea class="fta" id="extra-note" placeholder="例：希望離家近、有興趣雙主修…"></textarea>
+          </div>
+        </div>
+
+        <!-- ── 分析按鈕 ── -->
+        <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis(event)">
+          <span id="btn-text">✦ 開始 AI 落點分析</span>
+          <div class="spinner" id="btn-spinner"></div>
+        </button>
+
+      </div><!-- /panel-body -->
+    </div><!-- /panel -->
 
     <!-- 右側：提示卡片 -->
     <div style="display:flex;flex-direction:column;gap:16px">
@@ -2055,7 +2181,7 @@ input[type=range]:active::-webkit-slider-thumb{
           <button id="collapse-btn" onclick="collapseMoreCards()"
             style="display:none;padding:9px 16px;border-radius:10px;border:1.5px solid var(--border2);
             background:var(--cream3);font-family:var(--font);font-size:13px;color:var(--ink3);
-            cursor:pointer;transition:all .2s;display:none;align-items:center;gap:6px;flex-shrink:0">
+            cursor:pointer;transition:all .2s;align-items:center;gap:6px;flex-shrink:0">
             ▲ 收起
           </button>
           <button class="show-more-btn" onclick="showMoreCards()" id="show-more-btn">
@@ -2507,7 +2633,7 @@ let lastSchoolPrefVal = null;
 let currentCat = 'all';
 const INITIAL_SHOW = 10;
 let showingAll = false;
-
+let _burstDebounce = {};
 let currentGroup = 'all'; // group filter state
 
 /* ── Drawer data ── */
@@ -2680,30 +2806,20 @@ function renderScoreViz(){
   viz.innerHTML=html;
 }
 
-function updateSub(id,v){
-  const el=document.getElementById('v-'+id);
-  el.textContent=v;
-  el.classList.remove('bump');
-  void el.offsetWidth; // reflow
-  el.classList.add('bump');
-  updateTotal(); renderScoreViz();
-  // Emit star burst on any subject reaching 15
-  if(+v===15) spawnStarBurst(document.getElementById('s-'+id));
-  let _burstDebounce = {};
-}
-function updateSub(id,v){
-  const el=document.getElementById('v-'+id);
-  el.textContent=v;
+function updateSub(id, v) {
+  const el = document.getElementById('v-' + id);
+  el.textContent = v;
   el.classList.remove('bump');
   void el.offsetWidth;
   el.classList.add('bump');
-  updateTotal(); renderScoreViz();
-  
-  if(+v===15){
+  updateTotal();
+  renderScoreViz();
+
+  if (+v === 15) {
     clearTimeout(_burstDebounce[id]);
-    _burstDebounce[id] = setTimeout(()=>{
-      spawnStarBurst(document.getElementById('s-'+id));
-    }, 300);  // 停止拖動 300ms 後才觸發
+    _burstDebounce[id] = setTimeout(() => {
+      spawnStarBurst(document.getElementById('s-' + id));
+    }, 300);
   }
 }
 
@@ -3747,7 +3863,6 @@ initMagnetic();
 renderScoreViz();
 updateTotal();
 </script>
-
 <!-- ── TIMELINE DETAIL DRAWER ── -->
 <div class="tl-drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
 <div class="tl-detail-drawer" id="tl-drawer">
