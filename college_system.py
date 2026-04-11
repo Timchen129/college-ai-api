@@ -655,7 +655,7 @@ def match_majors(scores: dict, profile: dict = None) -> list:
             safety = "困難"
         elif gap >= 0:
             safety = "穩健"
-        elif gap == -1:
+        elif gap >= -2:
             safety = "挑戰"   # 門檻全達，但決勝科目差 1 分，機率約 40%
         else:                 # gap <= -2，門檻達但差距太大
             safety = "困難"
