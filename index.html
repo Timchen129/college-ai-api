@@ -2897,7 +2897,7 @@ function renderMatchCards(matches, schoolPrefVal){
     hd.innerHTML=`<span style="width:3px;height:12px;background:var(--terra);border-radius:2px;display:inline-block;flex-shrink:0"></span>★ 符合偏好（${prefList.length} 筆）`;
     ml.appendChild(hd);
   }
-
+visible.forEach((m, idx)=>{
   const isHard      = (m.safety==='困難');
   const isChallenge = (m.safety==='挑戰');
   const sc          = isHard ? 'challenge' : isChallenge ? 'target' : 'safe';
