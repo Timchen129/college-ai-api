@@ -1926,12 +1926,32 @@ input[type=range]:active::-webkit-slider-thumb{
 
         <!-- Results content -->
         <div id="results-content" style="display:none">
-          <!-- Search + Category Tabs -->
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-            <div class="search-box-wrap" style="flex:1;min-width:140px;max-width:220px">
-              <input class="results-search" id="results-search" type="text" placeholder="搜尋科系或學校…" oninput="onSearchInput(this.value)">
+          <!-- ── MAJOR SEARCH（id="major-search"）── -->
+          <div id="major-search" style="margin-bottom:10px">
+            <div class="search-box-wrap" style="max-width:100%;margin-bottom:8px">
+              <input class="results-search" id="results-search" type="text"
+                    placeholder="搜尋科系名稱或學校…"
+                    oninput="onMajorSearchInput(this.value)">
             </div>
-            <span style="font-size:10px;color:var(--ink3);font-family:var(--mono)" id="search-hint"></span>
+            <!-- 類別快篩按鈕列 -->
+            <div style="display:flex;gap:5px;flex-wrap:wrap" id="major-cat-btns">
+              <button class="cat-tab active" data-mcat="all"
+                      onclick="switchMajorCat('all',this)"
+                      style="flex:none;padding:5px 14px;font-size:11.5px">全部</button>
+              <button class="cat-tab" data-mcat="理工"
+                      onclick="switchMajorCat('理工',this)"
+                      style="flex:none;padding:5px 14px;font-size:11.5px">⚙️ 理工</button>
+              <button class="cat-tab" data-mcat="商管"
+                      onclick="switchMajorCat('商管',this)"
+                      style="flex:none;padding:5px 14px;font-size:11.5px">💼 商管</button>
+              <button class="cat-tab" data-mcat="醫護"
+                      onclick="switchMajorCat('醫護',this)"
+                      style="flex:none;padding:5px 14px;font-size:11.5px">🏥 醫護</button>
+              <button class="cat-tab" data-mcat="文史"
+                      onclick="switchMajorCat('文史',this)"
+                      style="flex:none;padding:5px 14px;font-size:11.5px">📚 文史</button>
+            </div>
+            <span style="font-size:10px;color:var(--ink3);font-family:var(--mono);display:block;margin-top:4px" id="search-hint"></span>
           </div>
           <!-- Safety filter row -->
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
@@ -2658,9 +2678,43 @@ function toggleSort(){
 
 /* ── Keyword search ── */
 let _searchQuery = '';
+let _majorCatFilter = 'all'; // 新增：major-search 的類別篩選狀態
+
+// 原有的 results-search 輸入事件（保持相容，直接轉給 major search）
 function onSearchInput(val){
   _searchQuery = val.toLowerCase().trim();
-  if(lastMatches.length) renderMatchCards(lastMatches, lastSchoolPrefVal);
+  // 同步更新 major-search 輸入框的顯示（若兩框同時存在）
+  const msEl = document.getElementById('results-search');
+  if(msEl && msEl.value !== val) msEl.value = val;
+  _applyFilterAndRender();
+}
+
+// major-search 的輸入事件
+function onMajorSearchInput(val){
+  _searchQuery = val.toLowerCase().trim();
+  _applyFilterAndRender();
+}
+
+// major-search 的類別按鈕切換
+function switchMajorCat(cat, btn){
+  _majorCatFilter = cat;
+  document.querySelectorAll('[data-mcat]').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  _applyFilterAndRender();
+}
+
+// 統一套用所有篩選並重繪
+function _applyFilterAndRender(){
+  if(!lastMatches.length) return;
+  showingAll = false;       // 重設為只顯示前10筆
+  renderMatchCards(lastMatches, lastSchoolPrefVal);
+  // 更新 search-hint 提示文字
+  const hint = document.getElementById('search-hint');
+  if(hint && _searchQuery){
+    hint.textContent = `搜尋中：「${_searchQuery}」`;
+  } else if(hint){
+    hint.textContent = '';
+  }
 }
 
 /* ── Show more cards ── */
@@ -2669,7 +2723,29 @@ function showMoreCards(){
   showingAll = true;
   const smRow = document.getElementById('show-more-row');
   if(smRow) smRow.style.display = 'none';
-  if(lastMatches.length) renderMatchCards(lastMatches, lastSchoolPrefVal);
+  if(!lastMatches.length) return;
+
+  // 先渲染全部卡片
+  renderMatchCards(lastMatches, lastSchoolPrefVal);
+
+  // 找出新產生的卡片（索引 >= INITIAL_SHOW），做平滑淡入
+  const allCards = document.querySelectorAll('#match-list .match-card-compact');
+  allCards.forEach((card, i) => {
+    if(i >= INITIAL_SHOW){
+      // 先隱藏再以 CSS transition 滑入
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(14px)';
+      card.style.transition = 'none';
+      // 使用 rAF 確保瀏覽器先繪製初始狀態再做動畫
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          card.style.transition = `opacity .35s ease ${(i - INITIAL_SHOW) * 0.04}s, transform .35s cubic-bezier(.16,1,.3,1) ${(i - INITIAL_SHOW) * 0.04}s`;
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        });
+      });
+    }
+  });
 }
 
 /* ── Prob ring ── */
@@ -2758,6 +2834,18 @@ function renderMatchCards(matches, schoolPrefVal){
     filtered = filtered.filter(m=> {
       const g = (m.group||'').replace('文法','文史').replace('社會','文史');
       return g === currentGroup || (m.group||'').includes(currentGroup);
+    });
+  }
+
+  // ── Filter 2b: major-search 類別按鈕 ──
+  if(_majorCatFilter && _majorCatFilter !== 'all'){
+    filtered = filtered.filter(m => {
+      const g = (m.group || '');
+      // 「醫護」對應後端可能回傳「醫藥」或「醫護」
+      if(_majorCatFilter === '醫護') return g.includes('醫') || g.includes('護');
+      // 「文史」對應「文史」「文法」「社會」
+      if(_majorCatFilter === '文史') return g.includes('文') || g.includes('社');
+      return g.includes(_majorCatFilter);
     });
   }
 
