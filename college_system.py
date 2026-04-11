@@ -130,7 +130,6 @@ def _normalize_major_types(m: dict) -> dict:
                 try:
                     cleaned[k] = int(v)
                 except (ValueError, TypeError):
-                    # 無法轉成數字的欄位（如 "激烈"）直接跳過，不納入門檻比較
                     print(f"[WARN] {m.get('school','')} {m.get('major','')} — {field}[{k}] 值 '{v}' 非數字，已略過")
             m[field] = cleaned
 
@@ -138,8 +137,8 @@ def _normalize_major_types(m: dict) -> dict:
         try:
             m["quota"] = int(m["quota"])
         except (TypeError, ValueError):
-            m["quota"] = 50  # 預設值
-    # past_thresholds 內層也正規化
+            m["quota"] = 50
+
     if "past_thresholds" in m and isinstance(m["past_thresholds"], dict):
         for yr, thr in m["past_thresholds"].items():
             if isinstance(thr, dict):
@@ -152,6 +151,7 @@ def _normalize_major_types(m: dict) -> dict:
                     except (ValueError, TypeError):
                         pass
                 m["past_thresholds"][yr] = fixed
+
     return m
 
 
