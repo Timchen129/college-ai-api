@@ -542,8 +542,19 @@ def match_majors(scores: dict, profile: dict = None) -> list:
                 gap = g
                 tiebreak_subject = subj
 
+        # ── Fallback：tiebreak 科目都沒有 cutoff 資料時，
+        #    改用 cutoff_map 裡任何一個有資料且學生有填分的科目 ──
+        if gap is None:
+            for subj, cutoff_val in cutoff_map.items():
+                if scores.get(subj, 0) > 0:
+                    g = int(scores.get(subj, 0)) - cutoff_val
+                    if gap is None or g < gap:
+                        gap = g
+                        tiebreak_subject = subj
+
         if gap is None:
             continue
+
         if gap < MIN_GAP_HARD:
             continue
 
