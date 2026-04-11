@@ -1950,15 +1950,9 @@ input[type=range]:active::-webkit-slider-thumb{
               <button class="cat-tab" data-mcat="理工"
                       onclick="switchMajorCat('理工',this)"
                       style="flex:none;padding:5px 14px;font-size:11.5px">⚙️ 理工</button>
-              <button class="cat-tab" data-mcat="商管"
-                      onclick="switchMajorCat('商管',this)"
-                      style="flex:none;padding:5px 14px;font-size:11.5px">💼 商管</button>
-              <button class="cat-tab" data-mcat="醫護"
-                      onclick="switchMajorCat('醫護',this)"
-                      style="flex:none;padding:5px 14px;font-size:11.5px">🏥 醫護</button>
-              <button class="cat-tab" data-mcat="文史"
-                      onclick="switchMajorCat('文史',this)"
-                      style="flex:none;padding:5px 14px;font-size:11.5px">📚 文史</button>
+              <button class="cat-tab" data-mcat="文商" onclick="switchMajorCat('文商',this)" style="flex:none;padding:5px 14px;font-size:11.5px">📚 文商</button>
+              <button class="cat-tab" data-mcat="醫藥" onclick="switchMajorCat('醫藥',this)" style="flex:none;padding:5px 14px;font-size:11.5px">🏥 醫藥</button>
+              <button class="cat-tab" data-mcat="農學" onclick="switchMajorCat('農學',this)" style="flex:none;padding:5px 14px;font-size:11.5px">🌱 農學</button>
             </div>
             <span style="font-size:10px;color:var(--ink3);font-family:var(--mono);display:block;margin-top:4px" id="search-hint"></span>
           </div>
@@ -1990,17 +1984,20 @@ input[type=range]:active::-webkit-slider-thumb{
             <button class="cat-tab" data-group="理工" onclick="switchGroup('理工',this)">
               <span class="cat-tab-label" style="font-size:11px">⚙️ 理工</span>
             </button>
-            <button class="cat-tab" data-group="文史" onclick="switchGroup('文史',this)">
-              <span class="cat-tab-label" style="font-size:11px">📚 文史</span>
+            <button class="cat-tab" data-group="理學" onclick="switchGroup('理學',this)">
+              <span class="cat-tab-label" style="font-size:11px">🔬 理學</span>
             </button>
-            <button class="cat-tab" data-group="商管" onclick="switchGroup('商管',this)">
-              <span class="cat-tab-label" style="font-size:11px">💼 商管</span>
+            <button class="cat-tab" data-group="文商" onclick="switchGroup('文商',this)">
+              <span class="cat-tab-label" style="font-size:11px">📚 文商</span>
             </button>
             <button class="cat-tab" data-group="醫藥" onclick="switchGroup('醫藥',this)">
               <span class="cat-tab-label" style="font-size:11px">🏥 醫藥</span>
             </button>
-            <button class="cat-tab" data-group="法政" onclick="switchGroup('法政',this)">
-              <span class="cat-tab-label" style="font-size:11px">⚖️ 法政</span>
+            <button class="cat-tab" data-group="農學" onclick="switchGroup('農學',this)">
+              <span class="cat-tab-label" style="font-size:11px">🌱 農學</span>
+            </button>
+            <button class="cat-tab" data-group="藝術" onclick="switchGroup('藝術',this)">
+              <span class="cat-tab-label" style="font-size:11px">🎨 藝術</span>
             </button>
           </div>
           <div class="match-meta-row">
@@ -2855,9 +2852,9 @@ function renderMatchCards(matches, schoolPrefVal){
     filtered = filtered.filter(m => {
       const g = (m.group || '');
       // 「醫護」對應後端可能回傳「醫藥」或「醫護」
-      if(_majorCatFilter === '醫護') return g.includes('醫') || g.includes('護');
-      // 「文史」對應「文史」「文法」「社會」
-      if(_majorCatFilter === '文史') return g.includes('文') || g.includes('社');
+      if(_majorCatFilter === '醫藥') return g.includes('醫') || g.includes('護') || g.includes('藥');
+      if(_majorCatFilter === '文商') return g.includes('文') || g.includes('商') || g.includes('社');
+      if(_majorCatFilter === '農學') return g.includes('農') || g.includes('生命') || g.includes('食品');
       return g.includes(_majorCatFilter);
     });
   }
