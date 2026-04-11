@@ -122,17 +122,17 @@ def _normalize_major_types(m: dict) -> dict:
     'str' > 'int' TypeError。
     """
     for field in ("last_year_cutoff_by_subject", "thresholds"):
-    if field in m and isinstance(m[field], dict):
-        cleaned = {}
-        for k, v in m[field].items():
-            if v is None:
-                continue
-            try:
-                cleaned[k] = int(v)
-            except (ValueError, TypeError):
-                # 無法轉成數字的欄位（如 "激烈"）直接跳過，不納入門檻比較
-                print(f"[WARN] {m.get('school','')} {m.get('major','')} — {field}[{k}] 值 '{v}' 非數字，已略過")
-        m[field] = cleaned
+        if field in m and isinstance(m[field], dict):
+            cleaned = {}
+            for k, v in m[field].items():
+                if v is None:
+                    continue
+                try:
+                    cleaned[k] = int(v)
+                except (ValueError, TypeError):
+                    # 無法轉成數字的欄位（如 "激烈"）直接跳過，不納入門檻比較
+                    print(f"[WARN] {m.get('school','')} {m.get('major','')} — {field}[{k}] 值 '{v}' 非數字，已略過")
+            m[field] = cleaned
 
     if "quota" in m:
         try:
