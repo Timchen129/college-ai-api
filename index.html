@@ -98,7 +98,7 @@
   opacity: 0;
 }
 .match-card-compact.expanded .mcc-expand{
-  max-height: 800px;
+  max-height: 500px;  /* 從 900px 降到 500px */
 }
 
 .match-card-compact{ transition: transform .25s var(--ease-spring), box-shadow .25s; }
@@ -866,6 +866,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   .timeline-tabs{flex-direction:column;border-radius:var(--r);gap:0}
   .ttab{border-right:none;border-bottom:1px solid var(--border)}
   .ttab:last-child{border-bottom:none}
+  .analyzer-two-col{grid-template-columns:1fr !important}  /* ← 加這行 */
 }
 @media(max-width:500px){
   .hero h1{font-size:2.3rem}
@@ -1025,7 +1026,13 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 /* Compact card expand panel */
 .mcc-expand{
   max-height:0;overflow:hidden;
-  transition:max-height .4s var(--ease-spring);
+  opacity:0;
+  transition:max-height .4s var(--ease-spring), opacity .3s ease;
+}
+.match-card-compact.expanded .mcc-expand{
+  max-height:500px;
+  opacity:1;
+  pointer-events:auto;
 }
 .match-card-compact.expanded .mcc-expand{max-height:800px;pointer-events:auto}
 .mcc-expand-inner{
@@ -1439,15 +1446,12 @@ input[type=range]:active::-webkit-slider-thumb{
 
 /* 展開的卡片佔滿整行（三欄都跨） */
 #match-list .match-card-compact.expanded{
-  grid-column: 1 / -1;
+
 }
 
 /* 展開內容兩欄顯示 */
 #match-list .match-card-compact.expanded .mcc-expand-inner{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 20px;
-  align-items: start;
+  display: block;  /* 改回 block，不用兩欄 */
 }
 
 /* 安全區間和 AI 評語佔滿整行 */
@@ -1864,133 +1868,68 @@ input[type=range]:active::-webkit-slider-thumb{
 <!-- ── ANALYZER ── -->
 <div id="analyzer-wrap">
 <div class="analyzer-inner">
+  <!-- 標題獨立一排 -->
   <div class="section-head" style="margin-bottom:1.8rem">
     <div class="section-kicker"><span class="section-kicker-line"></span>落點分析工具</div>
     <h2 class="section-h">輸入分數，<em>AI 幫你算</em></h2>
-    <p class="section-p">填入學測各科成績，立即獲得落點卡片、AI 預測錄取率、歷年趨勢與個人化升學報告。</p>
   </div>
 
-  <!-- ── 上方：輸入面板（置中窄欄）── -->
-  <div class="analyzer-input-wrap">
+  <!-- 兩欄：左側輸入 + 右側提示 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;margin-bottom:1.4rem">
+    
+    <!-- 左側：輸入面板 -->
     <div class="panel">
-      <div class="panel-hd">
-        <span class="panel-title">📋 輸入資料</span>
-        <span style="font-size:11px;color:var(--ink3);font-family:var(--mono)">STEP 1/2</span>
-      </div>
-      <div class="panel-body">
-        <div class="tabs">
-          <button class="tab active" onclick="switchTab('scores',this)">學測分數</button>
-          <button class="tab" onclick="switchTab('profile',this)">個人資料</button>
-          <button class="tab" onclick="switchTab('prefs',this)">偏好設定</button>
-        </div>
-
-        <!-- SCORES TAB -->
-        <div id="tab-scores">
-          <div class="score-section-label">必考科目</div>
-          <div class="subject-grid">
-            <div class="sub-item">
-              <div class="sub-label">國文 <span class="sub-val" id="v-chi">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-chi" oninput="updateSub('chi',this.value)">
-            </div>
-            <div class="sub-item">
-              <div class="sub-label">英文 <span class="sub-val" id="v-eng">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-eng" oninput="updateSub('eng',this.value)">
-            </div>
-            <div class="sub-item">
-              <div class="sub-label">數學 A <span class="sub-val" id="v-matA">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-matA" oninput="updateSub('matA',this.value)">
-            </div>
-            <div class="sub-item">
-              <div class="sub-label">自然 <span class="sub-val" id="v-sci">10</span></div>
-              <input type="range" min="1" max="15" value="10" id="s-sci" oninput="updateSub('sci',this.value)">
-            </div>
-          </div>
-          <div class="score-viz" id="scoreViz"></div>
-          <div class="score-section-label" style="margin-top:4px">選考科目</div>
-          <div class="subject-grid">
-            <div class="sub-item">
-              <div class="sub-label">數學 B <span class="sub-optional" id="matB-opt">未選考</span><span class="sub-val" id="v-matB" style="display:none">0</span></div>
-              <input type="range" min="0" max="15" value="0" id="s-matB" oninput="updateOptional('matB',this.value)">
-            </div>
-            <div class="sub-item">
-              <div class="sub-label">社會 <span class="sub-optional" id="soc-opt">未選考</span><span class="sub-val" id="v-soc" style="display:none">0</span></div>
-              <input type="range" min="0" max="15" value="0" id="s-soc" oninput="updateOptional('soc',this.value)">
-            </div>
-          </div>
-          <div class="optional-note">⚠ 數B 和社會為選考科目，未報名請保持 0。</div>
-          <div class="total-strip" style="margin-top:12px">
-            <span class="total-label">加權估算（理工向）</span>
-            <span class="total-num" id="total-score">—</span>
-          </div>
-        </div>
-
-        <!-- PROFILE TAB -->
-        <div id="tab-profile" style="display:none">
-          <div class="fg"><label class="fl">稱呼（選填）</label><input type="text" class="fi" id="name" placeholder="如：小明"></div>
-          <div class="fg">
-            <label class="fl">擅長科目</label>
-            <div class="tg-group">
-              <button class="tg-btn" onclick="toggleTag(this,'str')">數學</button>
-              <button class="tg-btn" onclick="toggleTag(this,'str')">物理</button>
-              <button class="tg-btn" onclick="toggleTag(this,'str')">化學</button>
-              <button class="tg-btn" onclick="toggleTag(this,'str')">英文</button>
-              <button class="tg-btn" onclick="toggleTag(this,'str')">國文</button>
-              <button class="tg-btn" onclick="toggleTag(this,'str')">生物</button>
-            </div>
-          </div>
-          <div class="fg">
-            <label class="fl">興趣領域</label>
-            <div class="tg-group">
-              <button class="tg-btn" onclick="toggleTag(this,'int')">科技工程</button>
-              <button class="tg-btn" onclick="toggleTag(this,'int')">醫療健康</button>
-              <button class="tg-btn" onclick="toggleTag(this,'int')">商業金融</button>
-              <button class="tg-btn" onclick="toggleTag(this,'int')">法律政治</button>
-              <button class="tg-btn" onclick="toggleTag(this,'int')">藝術設計</button>
-              <button class="tg-btn" onclick="toggleTag(this,'int')">教育社會</button>
-            </div>
-          </div>
-          <div class="fg"><label class="fl">個人特質（選填）</label><textarea class="fta" id="personality" placeholder="例如：做事細心、喜歡邏輯推理..."></textarea></div>
-        </div>
-
-        <!-- PREFS TAB -->
-        <div id="tab-prefs" style="display:none">
-          <div class="fg">
-            <label class="fl">出國深造意願</label>
-            <div class="tg-group">
-              <button class="tg-btn active" id="abroad-n" onclick="setAbroad('n')">目前沒有</button>
-              <button class="tg-btn" id="abroad-y" onclick="setAbroad('y')">有考慮</button>
-            </div>
-          </div>
-          <div class="fg">
-            <label class="fl">學校偏好 <span style="font-size:10px;color:var(--ink3);font-family:var(--mono)">（符合偏好的排前面，不隱藏其他）</span></label>
-            <select class="fs" id="school-pref">
-              <option value="any">不限，依分數優先</option>
-              <option value="top3">頂大（台清交成）優先</option>
-              <option value="north">北部學校優先</option>
-              <option value="south">南部學校優先</option>
-              <option value="national">國立大學優先</option>
-            </select>
-          </div>
-          <div class="prefs-note">
-            <div class="prefs-note-title">📋 顯示邏輯說明</div>
-            <div class="prefs-note-body">
-              所有符合條件的科系都顯示，包含未達門檻的「挑戰志願」（淡化呈現）。<br>
-              <span style="color:var(--sage);font-weight:500">穩健</span>（達門檻且分差 ≥ 0）·
-              <span style="color:var(--plum);font-weight:500">挑戰</span>（未達門檻或分差 &lt; 0）
-            </div>
-          </div>
-        </div>
-
-        <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis(event)">
-          <span id="btn-text">✦ 開始 AI 落點分析</span>
-          <div class="spinner" id="btn-spinner"></div>
-        </button>
-      </div>
+      ... （原本 analyzer-input-wrap 裡面的 panel 內容）
     </div>
-  </div><!-- /analyzer-input-wrap -->
+
+    <!-- 右側：提示卡片 -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <!-- 提示步驟卡 -->
+      <div style="background:var(--cream2);border:1px solid var(--border);border-radius:var(--r2);padding:1.4rem">
+        <div style="font-family:var(--serif);font-size:1rem;margin-bottom:1rem;color:var(--ink)">怎麼使用？</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink2)">
+            <span style="font-family:var(--mono);color:var(--terra);font-size:11px;font-weight:600;min-width:20px">01</span>
+            拖動滑桿填入各科成績（必填：國英數甲自然）
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink2)">
+            <span style="font-family:var(--mono);color:var(--terra);font-size:11px;font-weight:600;min-width:20px">02</span>
+            選填個人資料讓推薦更準確
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink2)">
+            <span style="font-family:var(--mono);color:var(--terra);font-size:11px;font-weight:600;min-width:20px">03</span>
+            點擊「開始 AI 落點分析」查看結果
+          </div>
+        </div>
+      </div>
+
+      <!-- 圖片卡 1 -->
+      <div onclick="scrollToSec('#compare-section')" style="border-radius:var(--r2);overflow:hidden;position:relative;aspect-ratio:16/7;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.1)">
+        <img src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=600&q=80&auto=format&fit=crop"
+             alt="備考" style="width:100%;height:100%;object-fit:cover;transition:transform .5s ease">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55),transparent 55%);display:flex;flex-direction:column;justify-content:flex-end;padding:1.2rem 1.4rem">
+          <div style="font-size:9.5px;font-family:var(--mono);color:rgba(255,255,255,.7);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem">資料都備齊了</div>
+          <div style="font-family:var(--serif);font-size:1.15rem;color:#fff;line-height:1.2">就差你的分數</div>
+        </div>
+      </div>
+
+      <!-- 產業標籤快覽 -->
+      <div style="background:var(--cream3);border:1px solid var(--border);border-radius:var(--r2);padding:1.1rem 1.3rem">
+        <div style="font-size:10px;font-family:var(--mono);color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.7rem">📊 今年熱門產業</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <span style="padding:3px 10px;border-radius:100px;font-size:10.5px;font-family:var(--mono);background:var(--sageL);color:var(--sage);border:1px solid rgba(107,158,122,.25)">▲ AI / 半導體</span>
+          <span style="padding:3px 10px;border-radius:100px;font-size:10.5px;font-family:var(--mono);background:var(--sageL);color:var(--sage);border:1px solid rgba(107,158,122,.25)">▲ 生醫科技</span>
+          <span style="padding:3px 10px;border-radius:100px;font-size:10.5px;font-family:var(--mono);background:var(--sageL);color:var(--sage);border:1px solid rgba(107,158,122,.25)">▲ 護理 月薪7萬+</span>
+          <span style="padding:3px 10px;border-radius:100px;font-size:10.5px;font-family:var(--mono);background:var(--clayL);color:var(--clay);border:1px solid rgba(184,112,64,.25)">▼ 翻譯 AI衝擊</span>
+          <span style="padding:3px 10px;border-radius:100px;font-size:10.5px;font-family:var(--mono);background:var(--clayL);color:var(--clay);border:1px solid rgba(184,112,64,.25)">▼ 非頂大商管</span>
+        </div>
+      </div>
+    </div><!-- /右側 -->
+
+  </div><!-- /兩欄 -->
 
   <!-- ── 下方：結果面板（全寬）── -->
-  <div class="panel analyzer-results-wrap" id="results-panel" style="margin-top:1.4rem">
+  <div class="panel analyzer-results-wrap" id="results-panel" style="margin-top:1.4rem;display:none">
     <div class="panel-hd">
       <span class="panel-title">📈 分析結果</span>
       <span style="font-size:11px;color:var(--ink3);font-family:var(--mono)" id="result-time">—</span>
@@ -2106,6 +2045,13 @@ input[type=range]:active::-webkit-slider-thumb{
 
         <!-- 顯示更多 -->
         <div class="show-more-row" id="show-more-row" style="display:none">
+          <!-- 收起按鈕：預設隱藏，showMoreCards() 後才顯示 -->
+          <button id="collapse-btn" onclick="collapseMoreCards()"
+            style="display:none;padding:9px 16px;border-radius:10px;border:1.5px solid var(--border2);
+            background:var(--cream3);font-family:var(--font);font-size:13px;color:var(--ink3);
+            cursor:pointer;transition:all .2s;display:none;align-items:center;gap:6px;flex-shrink:0">
+            ▲ 收起
+          </button>
           <button class="show-more-btn" onclick="showMoreCards()" id="show-more-btn">
             <span>▼</span> 顯示更多符合科系
           </button>
@@ -2866,24 +2812,26 @@ function showMoreCards(){
   showingAll = true;
   renderMatchCards(lastMatches, lastSchoolPrefVal);
 
-  const smBtn = document.getElementById('show-more-btn');
-  const smCount = document.getElementById('show-more-count');
-  smBtn.innerHTML = '<span>▲</span> 收起';
-  smCount.textContent = '';
-  smBtn.onclick = collapseMoreCards;
+  // 隱藏「顯示更多」按鈕，顯示「收起」按鈕
+  document.getElementById('show-more-btn').style.display = 'none';
+  document.getElementById('show-more-count').textContent = '';
+  const colBtn = document.getElementById('collapse-btn');
+  colBtn.style.display = 'flex';
+  // show-more-row 繼續顯示（因為收起按鈕還在）
+  document.getElementById('show-more-row').style.display = 'flex';
 }
 
 function collapseMoreCards(){
   showingAll = false;
-  // 先收起所有展開的卡片
   document.querySelectorAll('.match-card-compact.expanded').forEach(c=>{
     c.classList.remove('expanded');
     const h = c.querySelector('.mcc-pin-hint');
     if(h) h.textContent = '點擊展開詳情';
   });
   renderMatchCards(lastMatches, lastSchoolPrefVal);
-
-  // 收起後捲回結果區頂部
+  // 重設按鈕狀態（renderMatchCards 會重新控制 show-more-row）
+  document.getElementById('collapse-btn').style.display = 'none';
+  document.getElementById('show-more-btn').style.display = 'flex';
   document.getElementById('results-panel')
     ?.scrollIntoView({behavior:'smooth', block:'start'});
 }
@@ -3152,10 +3100,18 @@ card.innerHTML = `
 
   // Show-more button
   const smRow=document.getElementById('show-more-row');
+  const colBtn=document.getElementById('collapse-btn');
   if(hidden.length>0){
     smRow.style.display='flex';
+    document.getElementById('show-more-btn').style.display='flex';
     document.getElementById('show-more-btn').innerHTML=`<span>▼</span> 顯示更多符合科系`;
     document.getElementById('show-more-count').textContent=`還有 ${hidden.length} 筆`;
+    if(colBtn) colBtn.style.display='none';
+  } else if(showingAll){
+    // 已展開全部，只顯示收起按鈕
+    smRow.style.display='flex';
+    document.getElementById('show-more-btn').style.display='none';
+    if(colBtn){ colBtn.style.display='flex'; }
   } else {
     smRow.style.display='none';
   }
@@ -3211,6 +3167,7 @@ async function runAnalysis(e){
   document.getElementById('analyzeBtn').disabled=true;
   document.getElementById('btn-text').style.display='none';
   document.getElementById('btn-spinner').style.display='block';
+  document.getElementById('results-panel').style.display = '';
   document.getElementById('results-empty').style.display='none';
   document.getElementById('results-content').style.display='block';
   document.getElementById('match-list').innerHTML='';
@@ -3258,6 +3215,7 @@ async function runAnalysis(e){
     if(allGroupBtn) allGroupBtn.classList.add('active');
     renderMatchCards(data.matches||[],schoolPrefVal);
     document.getElementById('result-time').textContent=new Date().toLocaleTimeString('zh-TW');
+    document.getElementById('results-panel').style.display = '';
     notify('✓ 落點分析完成 🎉');
 
     // ── Perfect Score check — only triggered here, after backend success ──
