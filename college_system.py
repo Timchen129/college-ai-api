@@ -371,6 +371,99 @@ def compute_admission_probability(gap: int, passed_threshold: bool, quota: int =
     if gap == -2:  return 20
     return max(5, 15 + gap * 3)
 
+def predict_next_year_cutoff(m: dict) -> dict:
+    """
+    用 past_thresholds + last_year_cutoff_by_subject 預測明年各科落點。
+    策略：
+      1. 收集所有年份資料（含 last_year）
+      2. 對每個科目做加權平均（近年權重更高）+ 趨勢修正
+      3. 套用今年考試環境調整（EXAM_CONTEXT_2025 的難度趨勢）
+    回傳 {"科目": 預測級分, ...}
+    """
+    past = m.get("past_thresholds", {})
+    last = m.get("last_year_cutoff_by_subject", {})
+    
+    # 合併所有年份資料，按年份排序
+    all_years: dict[str, dict] = {}
+    for yr, thr in past.items():
+        if isinstance(thr, dict):
+            all_years[str(yr)] = {k: int(v) for k, v in thr.items() if v is not None}
+    
+    # last_year_cutoff 視為最新年（若 past_thresholds 沒有包含它）
+    sorted_years = sorted(all_years.keys())
+    if sorted_years:
+        latest_yr_in_past = sorted_years[-1]
+        # 如果 last_year 的資料比 past_thresholds 最新年還新，就補進去
+        last_subjects = set(last.keys())
+        past_latest_subjects = set(all_years.get(latest_yr_in_past, {}).keys())
+        for subj, val in last.items():
+            if subj not in all_years.get(latest_yr_in_past, {}):
+                # last_year 有，但 past 最新年沒有 → 代表 last_year 是更新的資料
+                new_yr = str(int(latest_yr_in_past) + 1)
+                if new_yr not in all_years:
+                    all_years[new_yr] = {}
+                all_years[new_yr][subj] = int(val)
+    else:
+        # 完全沒有 past_thresholds，只用 last_year
+        if last:
+            all_years["114"] = {k: int(v) for k, v in last.items()}
+
+    sorted_years = sorted(all_years.keys())
+    if not sorted_years:
+        return {}
+
+    # 收集所有出現過的科目
+    all_subjects = set()
+    for thr in all_years.values():
+        all_subjects.update(thr.keys())
+
+    # 今年考試難度調整係數（根據 EXAM_CONTEXT_2025）
+    # 數學A 難度上升 → 學生分數普遍下降 → 錄取線可能下修
+    difficulty_adjustment = {
+        "數學A": -0.5,   # 今年難度上升，錄取線預測下修 0.5 分
+        "英文":  -0.3,   # 新題型導致分散，微幅下修
+        "國文":   0.0,
+        "自然":  -0.2,
+        "社會":   0.0,
+    }
+
+    predictions = {}
+    n = len(sorted_years)
+    
+    for subj in all_subjects:
+        # 只取有此科目資料的年份
+        subj_data = [(yr, all_years[yr][subj]) for yr in sorted_years if subj in all_years[yr]]
+        if not subj_data:
+            continue
+        
+        if len(subj_data) == 1:
+            # 只有一年資料，直接用，不做趨勢預測
+            predictions[subj] = subj_data[0][1]
+            continue
+        
+        # 加權平均（越近期權重越高，指數加權）
+        weights = [math.exp(0.5 * i) for i in range(len(subj_data))]
+        total_w = sum(weights)
+        weighted_avg = sum(w * v for w, (_, v) in zip(weights, subj_data)) / total_w
+        
+        # 趨勢斜率（線性回歸，用 index 當 x）
+        xs = list(range(len(subj_data)))
+        ys = [v for _, v in subj_data]
+        x_mean = sum(xs) / len(xs)
+        y_mean = sum(ys) / len(ys)
+        
+        numerator   = sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys))
+        denominator = sum((x - x_mean) ** 2 for x in xs)
+        slope = numerator / denominator if denominator else 0
+        
+        # 預測 = 加權平均 + 趨勢斜率（預測下一年）+ 難度調整
+        adj = difficulty_adjustment.get(subj, 0.0)
+        raw_pred = weighted_avg + slope + adj
+        
+        # 夾在 1~15 之間，四捨五入
+        predictions[subj] = max(1, min(15, round(raw_pred)))
+    
+    return predictions
 
 def generate_ai_comment(m: dict, gap: int, passed_threshold: bool) -> str:
     """根據落點資料、時事背景，產生一句精簡的 AI 評語（30~50字）"""
@@ -622,6 +715,8 @@ def match_majors(scores: dict, profile: dict = None) -> list:
             "status":               safety,
             "threshold":            thresholds,
             "ai_comment":           generate_ai_comment(m, gap, passed_threshold),
+            "predicted_cutoff":     predict_next_year_cutoff(m),
+            "prediction_available": bool(m.get("past_thresholds")),
         }
         all_entries.append(entry)
 
@@ -742,6 +837,14 @@ def generate_advice(profile: dict, matches: list) -> str:
         salary = m.get("salary_median_raw", "—")
         ai_imp = m.get("ai_impact", "未知")
         gap_str = f"+{m['gap']}" if m["gap"] >= 0 else str(m["gap"])
+
+        # 預測明年落點
+        pred = m.get("predicted_cutoff", {})
+        pred_str = ""
+        if pred:
+            pred_parts = [f"{subj} 預測 {val} 級" for subj, val in pred.items()]
+            pred_str = f'<br><small style="color:#2980b9">📊 明年落點預測：{"、".join(pred_parts[:3])}</small>'
+
         fail_str = ""
         if m.get("failed_thresholds"):
             fail_str = "；".join(
@@ -753,7 +856,7 @@ def generate_advice(profile: dict, matches: list) -> str:
         recs_html += f"""
 <div style="margin-bottom:12px;padding:10px 14px;border-left:4px solid {'#27ae60' if m['safety']=='穩健' else '#e74c3c'};background:#fafafa;border-radius:4px">
   <strong>{i}. {m['school']} {m['major']}</strong>　{label}　錄取率 <strong>{prob}%</strong>（{pdesc}）<br>
-  決勝科目差距：{gap_str} 分　產業：{tags}　年薪中位：{salary}　AI影響：{ai_imp}{fail_str}
+  決勝科目差距：{gap_str} 分　產業：{tags}　年薪中位：{salary}　AI影響：{ai_imp}{fail_str}{pred_str}
   {'<br><small style="color:#555">' + tr + '</small>' if tr else ''}
 </div>"""
 
