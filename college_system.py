@@ -722,6 +722,7 @@ def match_majors(scores: dict, profile: dict = None) -> list:
         history_summary = {
             yr: thr 
             for yr, thr in sorted(past.items(), key=lambda x: int(x[0]))
+        }
         quota         = m.get("quota", 50)
         admission_prob = compute_admission_probability(gap, passed_threshold, quota)
         salary_year   = parse_salary_median(m.get("salary_median", 0))
