@@ -2841,10 +2841,7 @@ function renderMatchCards(matches, schoolPrefVal){
 
   // ── Filter 2: group tab ──
   if(currentGroup !== 'all'){
-    filtered = filtered.filter(m=> {
-      const g = (m.group||'').replace('文法','文史').replace('社會','文史');
-      return g === currentGroup || (m.group||'').includes(currentGroup);
-    });
+    filtered = filtered.filter(m => (m.group || '').includes(currentGroup));
   }
 
   // ── Filter 2b: major-search 類別按鈕 ──
@@ -2925,59 +2922,85 @@ visible.forEach((m, idx)=>{
     card.className=`match-card-compact${m._pref?' pref-hl':''}${(isChallenge||isHard)?' challenge-card':''}`;
     card.style.animationDelay=`${idx*.05}s`;
 
-    card.innerHTML=`
-      <!-- Collapsed summary bar -->
-      <div class="mcc-bar">
-        <span class="mcc-badge badge ${sc}">${badgeText}</span>
-        <span class="mcc-name">${m.major} ${chips.join('')}</span>
-        <span class="mcc-school">${m.school}</span>
-        <span class="mcc-gap ${gapCls}">決勝${gapSign}${m.gap}</span>
-        <span class="mcc-prob-pill" style="background:${probColor}22;color:${probColor};border:1px solid ${probColor}44">
-          ${pct}%
-        </span>
-        <span class="mcc-arrow">▾</span>
-      </div>
-      <!-- Expandable detail -->
-      <div class="mcc-expand">
-        <div class="mcc-expand-inner">
-          ${multHtml ? `
-            <div style="margin-bottom:7px">
-              <div style="font-size:10px;color:var(--ink3);font-family:var(--mono);
-                          margin-bottom:4px;letter-spacing:.04em">計分倍率</div>
-              <div style="display:flex;gap:4px;flex-wrap:wrap">${multHtml}</div>
-            </div>
-          ` : ''}
-          ${indTags?`<div class="industry-tags" style="margin-top:0;margin-bottom:7px">${indTags}</div>`:''}
-          ${buildProbRing(m.admission_prob||0)}
-          ${buildSafetyBand(m)}
+const multEntries = Object.entries(m.multipliers || {}).filter(([_, w]) => w > 0);
+const multHtml = multEntries.map(([subj, w]) => {
+  const subjectScore = m.subject_detail?.[subj]?.student;
+  const isKey = m.tiebreak_subject === subj;
+  const color = w >= 2 ? 'var(--terra)' : w >= 1.5 ? 'var(--clay)' : 'var(--slate)';
+  const bg    = w >= 2 ? 'var(--terraL)' : w >= 1.5 ? 'var(--clayL)' : 'var(--slateL)';
+  const border = w >= 2 ? 'rgba(194,78,40,.25)' : w >= 1.5 ? 'rgba(184,112,64,.25)' : 'rgba(109,138,170,.2)';
+  const outline = isKey ? `outline:1.5px solid ${color};` : '';
+  const styleStr = `display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:100px;font-size:10px;font-family:var(--mono);font-weight:500;background:${bg};color:${color};border:1px solid ${border};${outline}`;
+  const scoreHtml = subjectScore !== undefined ? ` <span style="opacity:.6">(你:${subjectScore})</span>` : '';
+  return `<span style="${styleStr}">${isKey ? '⭐ ' : ''}${subj} <b>×${w}</b>${scoreHtml}</span>`;
+}).join('');
 
-          ${(() => {
-            const entries = Object.entries(m.multipliers || {}).filter(([_, w]) => w > 0);
-            if (!entries.length) return '';
-            const pills = entries.map(([subj, w]) =>
-              `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);background:var(--slateL);color:var(--slate);border:1px solid rgba(109,138,170,.2)">${subj} <b style="color:var(--terra)">×${w}</b></span>`
-            ).join('');
-            return `<div style="margin:6px 0 7px">
-              <div style="font-size:10px;color:var(--ink3);font-family:var(--mono);margin-bottom:4px;letter-spacing:.04em">📐 計分倍率</div>
-              <div style="display:flex;gap:4px;flex-wrap:wrap">${pills}</div>
-            </div>`;
-          })()}
+card.innerHTML = `
+  <div class="mcc-bar">
+    <span class="mcc-badge badge ${sc}">${badgeText}</span>
+    <span class="mcc-name">${m.major} ${chips.join('')}</span>
+    <span class="mcc-school">${m.school}</span>
+    <span class="mcc-gap ${gapCls}">決勝${gapSign}${m.gap}</span>
+    <span class="mcc-prob-pill" style="background:${probColor}22;color:${probColor};border:1px solid ${probColor}44">
+      ${pct}%
+    </span>
+    <span class="mcc-arrow">▾</span>
+  </div>
+  <div class="mcc-expand">
+    <div class="mcc-expand-inner">
 
-          ${buildHistory(m.past_thresholds||{})}
-          <div class="mc-stats" style="margin-top:7px">
-            <div class="mc-stat">💰 ${salStr}</div>
-            ${m.group?`<div class="mc-stat">🏫 ${m.group}</div>`:''}
-            ${m.employment_rate?`<div class="mc-stat">📊 就業率 ${m.employment_rate}%</div>`:''}
-            ${m.ai_impact&&m.ai_impact!=='未知'?`<div class="mc-stat">🤖 ${m.ai_impact}</div>`:''}
+      ${multHtml ? `
+        <div style="margin-bottom:10px">
+          <div style="font-size:10px;color:var(--ink3);font-family:var(--mono);
+                      margin-bottom:5px;letter-spacing:.05em;display:flex;align-items:center;gap:5px">
+            <span style="width:3px;height:12px;background:var(--terra);border-radius:2px;display:inline-block"></span>
+            計分倍率 <span style="color:var(--ink3);font-size:9px">（⭐=決勝科目）</span>
           </div>
-          ${(m.career||[]).length?`<div class="career-tags">${(m.career||[]).map(c=>`<span class="ctag">${c}</span>`).join('')}</div>`:''}
-          ${m.notes?`<div style="font-size:11px;color:var(--ink3);margin-top:6px">💡 ${m.notes}</div>`:''}
-          ${isChallenge&&m.failed_thresholds&&Object.keys(m.failed_thresholds||{}).length?`<div class="challenge-warn">⚠ 未達門檻：${Object.entries(m.failed_thresholds).map(([s,r])=>`${s} 需 ${r} 級`).join('、')}</div>`:''}
-          ${m.ai_comment?`<div class="mcc-ai-comment">🤖 ${m.ai_comment}</div>`:''}
-          <div class="mcc-pin-hint">點擊固定展開</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">${multHtml}</div>
         </div>
+      ` : ''}
+
+      ${indTags ? `<div class="industry-tags" style="margin-top:0;margin-bottom:7px">${indTags}</div>` : ''}
+
+      ${buildProbRing(m.admission_prob || 0)}
+      ${buildSafetyBand(m)}
+
+      ${buildHistory(m.past_thresholds || {})}
+
+      <div class="mc-stats" style="margin-top:7px">
+        <div class="mc-stat">💰 ${salStr}</div>
+        ${m.group ? `<div class="mc-stat">🏫 ${m.group}</div>` : ''}
+        ${m.employment_rate ? `<div class="mc-stat">📊 就業率 ${m.employment_rate}%</div>` : ''}
+        ${m.ai_impact && m.ai_impact !== '未知' ? `<div class="mc-stat">🤖 ${m.ai_impact}</div>` : ''}
       </div>
-    `;
+
+      ${(m.career || []).length ? `
+        <div class="career-tags">
+          ${(m.career || []).map(c => `<span class="ctag">${c}</span>`).join('')}
+        </div>
+      ` : ''}
+
+      ${m.notes ? `<div style="font-size:11px;color:var(--ink3);margin-top:6px">💡 ${m.notes}</div>` : ''}
+
+      ${(isChallenge || isHard) && m.failed_thresholds && Object.keys(m.failed_thresholds || {}).length ? `
+        <div class="challenge-warn">
+          ⚠ 未達門檻：${Object.entries(m.failed_thresholds).map(([s, r]) => `${s} 需 ${r} 級`).join('、')}
+        </div>
+      ` : ''}
+
+      ${m.predicted_cutoff && Object.keys(m.predicted_cutoff).length ? `
+        <div style="margin-top:6px;padding:5px 8px;background:rgba(41,128,185,.07);border-radius:6px;
+                    font-size:10px;font-family:var(--mono);color:#2980b9;border-left:2px solid #2980b9">
+          📊 明年落點預測：${Object.entries(m.predicted_cutoff).slice(0,3).map(([s,v]) => `${s} ${v}級`).join('、')}
+        </div>
+      ` : ''}
+
+      ${m.ai_comment ? `<div class="mcc-ai-comment">🤖 ${m.ai_comment}</div>` : ''}
+
+      <div class="mcc-pin-hint">點擊固定展開</div>
+    </div>
+  </div>
+`;
 
     attachCardInteractions(card);
     ml.appendChild(card);
@@ -3276,13 +3299,13 @@ function openTlModal(){
   document.getElementById('tl-modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-function closeTlModal(e){
-  // Called directly from X button or by ESC key (no event arg)
-  // When called from overlay onclick, only close if clicking the dark backdrop itself
-  if(e && e.currentTarget && e.target !== e.currentTarget) return;
+
+function closeTlModal(fromOverlay, e){
+  if(fromOverlay && e && e.target !== e.currentTarget) return;
   document.getElementById('tl-modal-overlay').classList.remove('open');
   document.body.style.overflow = '';
 }
+
 function switchTlModal(name, btn){
   document.querySelectorAll('.tl-mpanel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tl-mtab').forEach(b=>b.classList.remove('active'));
@@ -3290,9 +3313,9 @@ function switchTlModal(name, btn){
   btn.classList.add('active');
 }
 // ESC to close
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeTlModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeTlModal(false); });
 document.getElementById('tl-modal-overlay')?.addEventListener('click', e=>{
-  if(e.target === document.getElementById('tl-modal-overlay')) closeTlModal();
+  if(e.target === document.getElementById('tl-modal-overlay')) closeTlModal(true, e);
 });
 
 
@@ -3578,11 +3601,11 @@ updateTotal();
 <!-- ══════════════════════════════════════
      TIMELINE MODAL — 精美可互動時程視窗
 ══════════════════════════════════════ -->
-<div class="tl-modal-overlay" id="tl-modal-overlay" id="tl-modal-overlay">
+<div class="tl-modal-overlay" id="tl-modal-overlay" onclick="closeTlModal(true, event)">
   <div class="tl-modal" onclick="event.stopPropagation()">
     <div class="tl-modal-hd">
       <div class="tl-modal-title">📅 115學年度申請時程總覽</div>
-      <button class="tl-modal-close" onclick="closeTlModal()">✕</button>
+      <button class="tl-modal-close" onclick="closeTlModal(false)">✕</button>
     </div>
     <div class="tl-modal-body">
       <div class="tl-modal-track-tabs">
