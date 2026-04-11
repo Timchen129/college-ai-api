@@ -503,7 +503,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 2px 8px rgba(194,78,40,.4)}
 
 /* Score viz */
-.score-viz{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:12px;background:var(--cream2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1.2rem}
+.score-viz{display:grid;grid-template-columns:repeat(auto-fit,minmax(40px,1fr));gap:6px;padding:12px;background:var(--cream2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1.2rem}
 .sv-col{display:flex;flex-direction:column;align-items:center;gap:4px}
 .sv-bar-wrap{width:100%;height:56px;display:flex;align-items:flex-end;justify-content:center}
 .sv-bar{width:14px;border-radius:3px 3px 0 0;transition:height .5s var(--ease-spring)}
@@ -525,7 +525,13 @@ input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 
 .btn-analyze::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--x,50%) var(--y,50%),rgba(255,255,255,.2) 0%,transparent 60%);opacity:0;transition:opacity .2s}
 .btn-analyze:hover::after{opacity:1}
 .btn-analyze:hover{background:var(--terra2);transform:translateY(-1px);box-shadow:0 6px 22px rgba(194,78,40,.28)}
-.btn-analyze:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-analyze:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+  transform:none;
+  box-shadow:none;
+  pointer-events:none;  /* 加這行 */
+}
 .spinner{display:none;width:17px;height:17px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite}
 
 /* ═══ RESULTS ═══ */
@@ -999,8 +1005,8 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   max-height:900px;
 }
 .match-card-compact.pref-hl{border-left:3px solid var(--terra)}
-.match-card-compact.challenge-card{filter:saturate(.75)}
-.match-card-compact.challenge-card:hover{filter:saturate(1)}
+.match-card-compact.challenge-card{opacity:.82}
+.match-card-compact.challenge-card:hover{opacity:1}
 
 /* Compact card collapsed row */
 .mcc-bar{
@@ -2037,7 +2043,7 @@ input[type=range]:active::-webkit-slider-thumb{
 
         <div class="match-meta-row">
           <div class="results-section-label" id="match-meta">載入中…</div>
-          <button class="match-sort-btn" onclick="toggleSort()">⇅ 降冪排序</button>
+          <button class="match-sort-btn" id="sort-btn" onclick="toggleSort()">⇅ 降冪排序</button>
         </div>
 
         <!-- 三欄卡片區 -->
@@ -2419,7 +2425,7 @@ input[type=range]:active::-webkit-slider-thumb{
   <div class="footer-inner">
     <div>
       <div class="footer-brand">升志 ScoreWise</div>
-
+      <div class="footer-tagline">用數據選系，不用靠感覺。<br>115 學年度 AI 落點分析平台。</div>
     </div>
     <div class="footer-links">
       <a href="#" onclick="showPage('analyzer');return false">落點分析</a>
@@ -2463,6 +2469,11 @@ function showPage(name){
   });
   window.scrollTo({top: 0, behavior: 'smooth'});
 
+  const tickerEl = document.querySelector('.ticker');
+  if(tickerEl){
+    tickerEl.style.animationPlayState = 
+      name === 'analyzer' ? 'running' : 'paused';
+  }
   // 換頁完成後重新啟用
   setTimeout(()=>{ navObsActive = true; }, 600);
 
@@ -2678,6 +2689,22 @@ function updateSub(id,v){
   updateTotal(); renderScoreViz();
   // Emit star burst on any subject reaching 15
   if(+v===15) spawnStarBurst(document.getElementById('s-'+id));
+  let _burstDebounce = {};
+}
+function updateSub(id,v){
+  const el=document.getElementById('v-'+id);
+  el.textContent=v;
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+  updateTotal(); renderScoreViz();
+  
+  if(+v===15){
+    clearTimeout(_burstDebounce[id]);
+    _burstDebounce[id] = setTimeout(()=>{
+      spawnStarBurst(document.getElementById('s-'+id));
+    }, 300);  // 停止拖動 300ms 後才觸發
+  }
 }
 
 function spawnStarBurst(rangeEl){
@@ -2761,8 +2788,9 @@ function setAbroad(v){
 /* ── Toggle sort ── */
 function toggleSort(){
   sortAsc=!sortAsc;
-  const btn = document.querySelector('.match-sort-btn');
-  if(btn) btn.innerHTML = sortAsc ? '⇅ 升冪' : '⇅ 降冪';
+  const btn = document.getElementById('sort-btn');
+  if(btn) btn.textContent = sortAsc ? '⇅ 升冪排序' : '⇅ 降冪排序';
+  showingAll = false;
   if(lastMatches.length) renderMatchCards(lastMatches,lastSchoolPrefVal);
 }
 
@@ -2977,7 +3005,7 @@ visible.forEach((m, idx)=>{
   const gapSign     = m.gap>=0?'+':'';
   const gapCls      = m.gap>0?'pos':m.gap<0?'neg':'zero';
 
-    if(idx===prefList.length && prefList.length>0 && final.indexOf(m)===prefList.length){
+    if(idx === prefList.length && prefList.length > 0){
       const sep=document.createElement('div');
       sep.style.cssText='font-size:10px;color:var(--ink3);font-family:var(--mono);padding:6px 0 4px;letter-spacing:.06em;border-top:1px dashed var(--border);margin-top:2px;display:flex;align-items:center;gap:6px';
       sep.innerHTML=`<span style="flex:1;height:1px;background:var(--border)"></span>其他科系（${otherList.length} 筆）<span style="flex:1;height:1px;background:var(--border)"></span>`;
@@ -3214,7 +3242,9 @@ async function runAnalysis(e){
     const allGroupBtn = document.querySelector('[data-group="all"]');
     if(allGroupBtn) allGroupBtn.classList.add('active');
     renderMatchCards(data.matches||[],schoolPrefVal);
-    document.getElementById('result-time').textContent=new Date().toLocaleTimeString('zh-TW');
+    const now = new Date();
+    document.getElementById('result-time').textContent=
+      `${now.getMonth()+1}/${now.getDate()} ${now.toLocaleTimeString('zh-TW')} 分析`;
     document.getElementById('results-panel').style.display = '';
     notify('✓ 落點分析完成 🎉');
 
@@ -3246,16 +3276,47 @@ async function sendChat(){
   const msg=inp.value.trim();
   if(!msg) return;
   const msgs=document.getElementById('chatMsgs');
-  msgs.innerHTML+=`<div class="msg user">${msg}</div>`;
-  inp.value=''; msgs.scrollTop=msgs.scrollHeight;
+  
+  // 安全插入使用者訊息（用 textContent 避免 XSS）
+  const userDiv=document.createElement('div');
+  userDiv.className='msg user';
+  userDiv.textContent=msg;
+  msgs.appendChild(userDiv);
+  
+  inp.value=''; 
+  msgs.scrollTop=msgs.scrollHeight;
+  
+  // loading 泡泡
   const loadEl=document.createElement('div');
-  loadEl.className='msg bot'; loadEl.textContent='...';
-  msgs.appendChild(loadEl); msgs.scrollTop=msgs.scrollHeight;
+  loadEl.className='msg bot';
+  
+  // 用 span 做動態點點動畫而不是純文字
+  loadEl.innerHTML=`<span style="display:inline-flex;gap:3px;align-items:center">
+    <span style="width:5px;height:5px;border-radius:50%;background:var(--ink3);
+      animation:pulse .8s ease-in-out infinite"></span>
+    <span style="width:5px;height:5px;border-radius:50%;background:var(--ink3);
+      animation:pulse .8s ease-in-out .2s infinite"></span>
+    <span style="width:5px;height:5px;border-radius:50%;background:var(--ink3);
+      animation:pulse .8s ease-in-out .4s infinite"></span>
+  </span>`;
+  msgs.appendChild(loadEl);
+  msgs.scrollTop=msgs.scrollHeight;
+  
   try{
-    const res=await fetch(`${API_BASE}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,session_id:'web_'+location.hostname})});
+    const res=await fetch(`${API_BASE}/chat`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:msg,session_id:'web_'+location.hostname})
+    });
     const data=await res.json();
+    
+    // 安全插入 bot 回覆（textContent 避免 XSS）
     loadEl.textContent=data.reply||'（無回應）';
-  }catch{loadEl.textContent='連線失敗，請稍後再試。';}
+    
+  }catch{
+    loadEl.textContent='連線失敗，請稍後再試。';
+  }
+  
   msgs.scrollTop=msgs.scrollHeight;
 }
 
@@ -3512,6 +3573,13 @@ document.addEventListener('click',(e)=>{
   setTimeout(()=>ripple.remove(),550);
 });
 
+const heroVisual = document.querySelector('.hero-visual');
+if(heroVisual && window.innerWidth <= 860){
+  heroVisual.querySelectorAll('.floating-card').forEach(c=>{
+    c.style.animationPlayState = 'paused';
+  });
+}
+
 /* — Feature banner bar animations on scroll-in — */
 const bannerObs=new IntersectionObserver((entries)=>{
   entries.forEach(e=>{
@@ -3659,10 +3727,19 @@ function launchConfetti(){
       document.body.appendChild(piece);
       setTimeout(()=>piece.remove(), 5000);
     }, i*30);
+    _confettiTimers.push(t);
   }
 }
 
 // Perfect-score check now runs only inside runAnalysis() after backend success.
+document.getElementById('results-search')?.addEventListener('input', (e)=>{
+  if(!e.target.value){
+    _searchQuery = '';
+    const hint = document.getElementById('search-hint');
+    if(hint) hint.textContent = '';
+    _applyFilterAndRender();
+  }
+});
 
 initMagnetic();
 
