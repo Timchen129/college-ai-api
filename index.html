@@ -1237,12 +1237,17 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   display:flex;align-items:center;justify-content:center;
   background:rgba(28,23,18,0);
   pointer-events:none;
-  transition:background .4s ease;
+  opacity:0;
+  visibility:hidden;
+  transition:background .4s ease, opacity .4s ease, visibility 0s linear .4s;
 }
 #perfect-overlay.active{
   pointer-events:auto;
   background:rgba(28,23,18,.55);
   backdrop-filter:blur(6px);
+  opacity:1;
+  visibility:visible;
+  transition:background .4s ease, opacity .4s ease, visibility 0s linear 0s;
 }
 .perfect-card{
   background:var(--cream2);
@@ -3019,10 +3024,6 @@ async function runAnalysis(e){
   document.getElementById('result-time').textContent='分析中...';
   document.getElementById('match-meta').textContent='// 載入中…';
 
-  //if (c === 15 && e === 15 && (ma === 15 || mb === 15) && s === 15 && n === 15) {
-    //launchConfetti(); // 這裡呼叫你剛剛找到的那段程式碼
-//}
-
   try{
     const res=await fetch(`${API_BASE}/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scores,profile})});
     const data=await res.json();
@@ -3454,50 +3455,61 @@ function showPerfectCelebration(){
       pills.appendChild(pill);
     }
   });
-  
+
+  // Launch confetti
+  launchConfetti();  
   
   // Auto close after 8 seconds
   setTimeout(closePerfect, 8000);
 }
 
 function closePerfect(){
+  // 停止尚未產生的 confetti
+  _confettiTimers.forEach(t => clearTimeout(t));
+  _confettiTimers = [];
+  // 淡出移除已飄出的 confetti 碎片
+  document.querySelectorAll('.confetti-piece').forEach(p => {
+    p.style.transition = 'opacity .3s ease';
+    p.style.opacity = '0';
+    setTimeout(() => p.remove(), 320);
+  });
+
+  // 關閉 overlay
   const overlay = document.getElementById('perfect-overlay');
-  overlay.style.transition = 'opacity .4s ease, background .4s ease';
-  overlay.style.opacity = '0';
+  overlay.classList.remove('active');
   setTimeout(()=>{
-    overlay.classList.remove('active');
-    overlay.style.opacity = '';
-    // Scroll to analyzer
     scrollToSec('#analyzer-wrap');
-  }, 400);
+  }, 420);
 }
 
-//function launchConfetti(){
-  //const COLORS = ['#c24e28','#6b9e7a','#c89830','#7a9fc0','#8b6a9a','#b87040'];
-  //const SHAPES = ['▪','●','◆','★','▲'];
-  //const count = 80;
-  //for(let i=0;i<count;i++){
-    //setTimeout(()=>{
-      //const piece = document.createElement('div');
-      //piece.className = 'confetti-piece';
-      //piece.style.cssText = `
-        //left:${Math.random()*100}vw;
-        //background:${COLORS[Math.floor(Math.random()*COLORS.length)]};
-        //--dur:${2.5+Math.random()*2.5}s;
-        //--delay:${Math.random()*1.2}s;
-        //--ease:cubic-bezier(${.25+Math.random()*.5},${.1+Math.random()*.4},${.25+Math.random()*.5},1);
-        //transform:rotate(${Math.random()*360}deg);
-        //width:${6+Math.random()*8}px;
-        //height:${8+Math.random()*14}px;
-        //border-radius:${Math.random()>0.5?'50%':'2px'};
-        //opacity:${.7+Math.random()*.3};
-      //`;
-      //document.body.appendChild(piece);
+let _confettiTimers = [];
 
-      //setTimeout(()=>piece.remove(), 5000);
-    //}, i*30);
-  //}
-//}
+function launchConfetti(){
+  const COLORS = ['#c24e28','#6b9e7a','#c89830','#7a9fc0','#8b6a9a','#b87040'];
+  const count = 80;
+  _confettiTimers = []; // 重置
+
+  for(let i = 0; i < count; i++){
+    const t = setTimeout(()=>{
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.cssText = `
+        left:${Math.random()*100}vw;
+        background:${COLORS[Math.floor(Math.random()*COLORS.length)]};
+        --dur:${2.5+Math.random()*2.5}s;
+        --delay:${Math.random()*1.2}s;
+        --ease:cubic-bezier(${.25+Math.random()*.5},${.1+Math.random()*.4},${.25+Math.random()*.5},1);
+        transform:rotate(${Math.random()*360}deg);
+        width:${6+Math.random()*8}px;
+        height:${8+Math.random()*14}px;
+        border-radius:${Math.random()>0.5?'50%':'2px'};
+        opacity:${.7+Math.random()*.3};
+      `;
+      document.body.appendChild(piece);
+      setTimeout(()=>piece.remove(), 5000);
+    }, i*30);
+  }
+}
 
 // Perfect-score check now runs only inside runAnalysis() after backend success.
 
