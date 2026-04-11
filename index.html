@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>升志 ScoreWise v8 — AI 學測落點分析</title>
+<title>升志 ScoreWise v12 — AI 學測落點分析</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -1385,6 +1385,83 @@ input[type=range]:active::-webkit-slider-thumb{
   white-space: nowrap;
 }
 
+
+/* ═══ INFO-CARD compact icon column (v12) ═══ */
+/* ═══ INFO-CARD GRID (v13 rebuild) ═══ */
+.info-card-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:16px;padding:0 2rem 3rem;
+  max-width:1100px;margin:0 auto;
+}
+.info-card{
+  border-radius:var(--r2);overflow:hidden;
+  display:flex;flex-direction:column;
+  position:relative;cursor:default;
+  transition:transform .28s var(--ease-spring),box-shadow .28s;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+  will-change:transform;
+}
+.info-card:hover{transform:translateY(-4px) scale(1.003);box-shadow:0 10px 32px rgba(0,0,0,.18)}
+.ic-header{
+  display:flex;align-items:center;gap:12px;
+  padding:1.1rem 1.4rem .75rem;
+}
+.ic-icon{
+  width:40px;height:40px;flex-shrink:0;
+  border-radius:10px;display:flex;align-items:center;
+  justify-content:center;
+}
+.ic-icon svg{width:28px;height:28px}
+.ic-meta{flex:1;min-width:0}
+.ic-kicker{
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:2px;font-weight:600;
+}
+.ic-title{
+  font-family:var(--serif);font-size:1.12rem;line-height:1.2;font-weight:700;
+}
+.ic-body{
+  flex:1;padding:.1rem 1.4rem 1.3rem;
+}
+.ic-desc{font-size:13px;line-height:1.72;margin-bottom:.9rem}
+.ic-links{display:flex;flex-direction:column;gap:5px}
+.ic-link{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:10.5px;font-family:var(--mono);
+  padding:4px 10px;border-radius:100px;
+  text-decoration:none;border:1px solid;
+  transition:all .2s;width:fit-content;
+}
+/* Color themes */
+.ic-dark{background:linear-gradient(135deg,#1c2e40 0%,#0f1e2c 100%)}
+.ic-dark .ic-icon{background:rgba(168,212,245,.1)}
+.ic-dark .ic-kicker{color:#a8d4f5}
+.ic-dark .ic-title{color:#fff}
+.ic-dark .ic-desc{color:rgba(255,255,255,.85)}
+.ic-dark .ic-link{color:#a8d4f5;border-color:rgba(168,212,245,.28);background:rgba(168,212,245,.08)}
+.ic-dark .ic-link:hover{background:rgba(168,212,245,.2);color:#fff;border-color:rgba(168,212,245,.5)}
+.ic-terra{background:linear-gradient(135deg,#4a1a08 0%,#2e0f04 100%)}
+.ic-terra .ic-icon{background:rgba(255,184,148,.1)}
+.ic-terra .ic-kicker{color:#ffb894}
+.ic-terra .ic-title{color:#fff5f0}
+.ic-terra .ic-desc{color:rgba(255,230,220,.9)}
+.ic-terra .ic-link{color:#ffb894;border-color:rgba(255,184,148,.28);background:rgba(255,184,148,.1)}
+.ic-terra .ic-link:hover{background:rgba(255,184,148,.22);color:#fff;border-color:rgba(255,184,148,.5)}
+.ic-sage{background:linear-gradient(135deg,#1a3322 0%,#0d2015 100%)}
+.ic-sage .ic-icon{background:rgba(136,221,168,.1)}
+.ic-sage .ic-kicker{color:#88dda8}
+.ic-sage .ic-title{color:#f0fff4}
+.ic-sage .ic-desc{color:rgba(220,255,235,.9)}
+.ic-sage .ic-link{color:#88dda8;border-color:rgba(136,221,168,.28);background:rgba(136,221,168,.1)}
+.ic-sage .ic-link:hover{background:rgba(136,221,168,.22);color:#f0fff4;border-color:rgba(136,221,168,.5)}
+.ic-slate{background:linear-gradient(135deg,#152035 0%,#0a1528 100%)}
+.ic-slate .ic-icon{background:rgba(142,200,248,.1)}
+.ic-slate .ic-kicker{color:#8ec8f8}
+.ic-slate .ic-title{color:#f0f7ff}
+.ic-slate .ic-desc{color:rgba(220,238,255,.9)}
+.ic-slate .ic-link{color:#8ec8f8;border-color:rgba(142,200,248,.28);background:rgba(142,200,248,.1)}
+.ic-slate .ic-link:hover{background:rgba(142,200,248,.2);color:#f0f7ff;border-color:rgba(142,200,248,.5)}
+@media(max-width:680px){.info-card-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1394,7 +1471,7 @@ input[type=range]:active::-webkit-slider-thumb{
   <a class="logo" href="#">
     <div class="logo-icon">🎓</div>
     升志 ScoreWise
-    <span class="logo-badge">v8</span>
+    <span class="logo-badge">v12</span>
   </a>
   <ul class="nav-links">
     <li><a href="#analyzer-wrap">落點分析</a></li>
@@ -1527,207 +1604,117 @@ input[type=range]:active::-webkit-slider-thumb{
   </div>
 </div>
 
-<!-- ── HORIZONTAL BANNER SECTION ── -->
-<div class="banner-section reveal">
-  <!-- Row 1: 門檻走勢 (wide) + AI 預測 -->
-  <div class="banner-row">
-    <!-- Wide: Score trends — redesigned with real photo feel -->
-    <div class="feature-banner fb-dark" style="flex:2">
-      <div class="fb-photo-layer" style="background:linear-gradient(135deg,#0d1f33 0%,#1a3352 50%,#0a1728 100%)">
-        <!-- Animated chart illustration -->
-        <div class="fb-chart-anim">
-          <svg width="100%" height="100%" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="chartGrad1" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#6b9e7a" stop-opacity="0.4"/>
-                <stop offset="100%" stop-color="#6b9e7a" stop-opacity="0"/>
-              </linearGradient>
-              <linearGradient id="chartGrad2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#7a9fc0" stop-opacity="0.3"/>
-                <stop offset="100%" stop-color="#7a9fc0" stop-opacity="0"/>
-              </linearGradient>
-              <linearGradient id="chartGrad3" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#c89830" stop-opacity="0.25"/>
-                <stop offset="100%" stop-color="#c89830" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
-            <!-- Grid lines -->
-            <line x1="40" y1="20" x2="40" y2="125" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-            <line x1="100" y1="20" x2="100" y2="125" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-            <line x1="160" y1="20" x2="160" y2="125" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-            <line x1="220" y1="20" x2="220" y2="125" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-            <line x1="280" y1="20" x2="280" y2="125" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-            <line x1="30" y1="40" x2="295" y2="40" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
-            <line x1="30" y1="70" x2="295" y2="70" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
-            <line x1="30" y1="100" x2="295" y2="100" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
-            <!-- Area fills -->
-            <path d="M40,105 L100,88 L160,72 L220,58 L280,46 L280,125 L40,125 Z" fill="url(#chartGrad1)"/>
-            <path d="M40,112 L100,102 L160,94 L220,86 L280,78 L280,125 L40,125 Z" fill="url(#chartGrad2)"/>
-            <!-- Main lines -->
-            <polyline points="40,105 100,88 160,72 220,58 280,46" fill="none" stroke="#6b9e7a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:400;stroke-dashoffset:400;animation:drawLine 2s ease .5s forwards"/>
-            <polyline points="40,112 100,102 160,94 220,86 280,78" fill="none" stroke="#7a9fc0" stroke-width="2" stroke-dasharray="6,3" stroke-linecap="round" style="stroke-dasharray:400;stroke-dashoffset:400;animation:drawLine 2s ease .8s forwards"/>
-            <polyline points="40,95 100,88 160,83 220,76 280,68" fill="none" stroke="#c89830" stroke-width="1.5" stroke-dasharray="4,4" stroke-linecap="round" style="stroke-dasharray:400;stroke-dashoffset:400;animation:drawLine 2s ease 1.1s forwards"/>
-            <!-- Data points with glow -->
-            <circle cx="280" cy="46" r="5" fill="#6b9e7a" style="filter:drop-shadow(0 0 6px #6b9e7a)"/>
-            <circle cx="280" cy="78" r="4" fill="#7a9fc0" style="filter:drop-shadow(0 0 5px #7a9fc0)"/>
-            <circle cx="280" cy="68" r="3.5" fill="#c89830" style="filter:drop-shadow(0 0 4px #c89830)"/>
-            <!-- Animated scanning line -->
-            <line x1="280" y1="25" x2="280" y2="120" stroke="rgba(255,255,255,.15)" stroke-width="1" stroke-dasharray="3,3"/>
-            <!-- Year labels -->
-            <text x="36" y="135" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">111</text>
-            <text x="96" y="135" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">112</text>
-            <text x="156" y="135" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">113</text>
-            <text x="216" y="135" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">114</text>
-            <text x="267" y="135" font-size="8" fill="rgba(255,255,255,.6)" font-family="monospace" font-weight="600">115預</text>
-            <!-- Score labels -->
-            <text x="286" y="50" font-size="9" fill="#6b9e7a" font-family="monospace" font-weight="600">14</text>
-            <text x="286" y="82" font-size="9" fill="#7a9fc0" font-family="monospace">13</text>
-            <text x="286" y="72" font-size="9" fill="#c89830" font-family="monospace">13</text>
-            <!-- Legend -->
-            <rect x="34" y="22" width="8" height="2" rx="1" fill="#6b9e7a"/>
-            <text x="46" y="25" font-size="7.5" fill="rgba(255,255,255,.55)" font-family="monospace">數學A</text>
-            <rect x="90" y="22" width="8" height="2" rx="1" fill="#7a9fc0"/>
-            <text x="102" y="25" font-size="7.5" fill="rgba(255,255,255,.55)" font-family="monospace">英文</text>
-            <rect x="140" y="22" width="8" height="2" rx="1" fill="#c89830"/>
-            <text x="152" y="25" font-size="7.5" fill="rgba(255,255,255,.55)" font-family="monospace">自然</text>
-          </svg>
-        </div>
+<!-- ── FEATURE INFO-CARDS (v13 — 2×2 Grid) ── -->
+<div class="info-card-grid reveal">
+
+  <!-- 歷年趨勢 -->
+  <div class="info-card ic-dark">
+    <div class="ic-header">
+      <div class="ic-icon">
+        <svg width="28" height="28" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <polyline points="6,40 16,30 26,34 36,18 48,12"
+            fill="none" stroke="#6b9e7a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+            style="stroke-dasharray:80;stroke-dashoffset:80;animation:drawLine 1.2s ease .2s forwards"/>
+          <circle cx="48" cy="12" r="4" fill="#6b9e7a"/>
+          <polyline points="6,44 16,40 26,42 36,36 48,30"
+            fill="none" stroke="#8ec8f8" stroke-width="2" stroke-dasharray="4,3" stroke-linecap="round"
+            style="stroke-dasharray:80;stroke-dashoffset:80;animation:drawLine 1.2s ease .5s forwards"/>
+        </svg>
       </div>
-      <div class="fb-content">
-        <div class="fb-kicker">📊 歷年趨勢</div>
-        <div class="fb-title">門檻走勢，一目了然</div>
-        <div class="fb-desc">整合 111–115 年各科系錄取門檻，動態預測今年分數線走向，讓落點不再靠猜。</div>
-        <div class="fb-news-links">
-          <a href="https://www.ceec.edu.tw" target="_blank" rel="noopener" class="fb-news-link">↗ 大考中心歷年統計</a>
-          <a href="https://www.caac.ccu.edu.tw" target="_blank" rel="noopener" class="fb-news-link">↗ 大學甄選委員會</a>
-        </div>
+      <div class="ic-meta">
+        <div class="ic-kicker">📊 歷年趨勢分析</div>
+        <div class="ic-title">五年門檻，一眼看穿</div>
       </div>
     </div>
-
-    <!-- AI Prediction banner — redesigned -->
-    <div class="feature-banner fb-terra">
-      <div class="fb-photo-layer" style="background:linear-gradient(135deg,#3d1508 0%,#6b2010 60%,#2a0d05 100%)">
-        <div class="fb-chart-anim" style="display:flex;align-items:center;justify-content:center">
-          <svg width="130" height="130" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
-            <!-- Outer ring -->
-            <circle cx="65" cy="65" r="50" fill="none" stroke="rgba(194,78,40,.12)" stroke-width="12"/>
-            <!-- Progress ring -->
-            <circle cx="65" cy="65" r="50" fill="none" stroke="#c24e28" stroke-width="12" stroke-linecap="round"
-              stroke-dasharray="220 314" transform="rotate(-90 65 65)" opacity=".85"
-              style="filter:drop-shadow(0 0 8px rgba(194,78,40,.5))"/>
-            <!-- Inner ring pulse -->
-            <circle cx="65" cy="65" r="38" fill="none" stroke="rgba(194,78,40,.08)" stroke-width="1" style="animation:pulse 3s ease-in-out infinite"/>
-            <!-- Center text -->
-            <text x="65" y="59" text-anchor="middle" font-size="22" fill="#c24e28" font-family="monospace" font-weight="700">75%</text>
-            <text x="65" y="74" text-anchor="middle" font-size="10" fill="rgba(255,200,160,.6)" font-family="monospace">AI 預測錄取率</text>
-            <!-- Orbiting dots -->
-            <circle cx="65" cy="15" r="4" fill="rgba(194,78,40,.5)" style="transform-origin:65px 65px;animation:spin 8s linear infinite"/>
-            <circle cx="115" cy="65" r="2.5" fill="rgba(200,152,48,.4)" style="transform-origin:65px 65px;animation:spin 12s linear infinite reverse"/>
-            <!-- Stars -->
-            <text x="105" y="25" font-size="16" fill="rgba(194,78,40,.5)" style="animation:wiggle 2s ease-in-out infinite">✦</text>
-            <text x="14" y="108" font-size="11" fill="rgba(194,78,40,.35)">✦</text>
-            <text x="102" y="105" font-size="8" fill="rgba(200,152,48,.3)">★</text>
-          </svg>
-        </div>
-      </div>
-      <div class="fb-content">
-        <div class="fb-kicker">🤖 AI 預測</div>
-        <div class="fb-title">個人化錄取率</div>
-        <div class="fb-desc">根據你的分差、科系名額與今年考試難度，計算專屬錄取機率，不再靠感覺猜。</div>
-        <div class="fb-news-links">
-          <a href="https://udn.com/news/story/6925/8552819" target="_blank" rel="noopener" class="fb-news-link">↗ 今年學測難度分析</a>
-        </div>
+    <div class="ic-body">
+      <div class="ic-desc">系統彙整 111 至 115 學年度逾 800 個校系的歷年錄取最低門檻，並以統計迴歸模型推算今年各科系分數線走向。理工頂大的數學A門檻連續三年上揚，商管類科穩中略降——讓你在填寫志願前先看清楚數字，不靠感覺猜測。</div>
+      <div class="ic-links">
+        <a href="https://www.ceec.edu.tw" target="_blank" rel="noopener" class="ic-link">↗ 大考中心歷年統計</a>
+        <a href="https://www.caac.ccu.edu.tw" target="_blank" rel="noopener" class="ic-link">↗ 大學甄選委員會</a>
       </div>
     </div>
   </div>
 
-  <!-- Row 2: 出路 + 逐科差距 (wide) -->
-  <div class="banner-row">
-    <!-- Industry pulse — redesigned with real Unsplash photo -->
-    <div class="feature-banner fb-sage">
-      <div class="fb-photo-layer" style="position:relative;overflow:hidden">
-        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80&auto=format&fit=crop" 
-             alt="台灣科技產業" 
-             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35;mix-blend-mode:luminosity"
-             loading="lazy">
-        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,60,30,.7) 0%,rgba(0,40,20,.5) 100%)"></div>
-        <!-- Industry pills overlay -->
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:1rem">
-          <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:150px">
-            <span class="ind-pill-glow ind-up" style="animation-delay:0s">▲ AI 工程</span>
-            <span class="ind-pill-glow ind-up" style="animation-delay:.3s">▲ 半導體</span>
-            <span class="ind-pill-glow ind-dn" style="animation-delay:.6s">▼ 文字工作</span>
-            <span class="ind-pill-glow ind-up" style="animation-delay:.9s">▲ 護理醫療</span>
-            <span class="ind-pill-glow ind-neu" style="animation-delay:1.2s">→ 商管</span>
-          </div>
-        </div>
+  <!-- AI 預測 -->
+  <div class="info-card ic-terra">
+    <div class="ic-header">
+      <div class="ic-icon">
+        <svg width="28" height="28" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M26 8 C18 8 13 13 13 20 C9 21 7 25 7 29 C7 34 11 37 16 37 L16 42 L36 42 L36 37 C41 37 45 34 45 29 C45 25 43 21 39 20 C39 13 34 8 26 8Z"
+            fill="none" stroke="rgba(255,184,148,.7)" stroke-width="1.8"/>
+          <circle cx="20" cy="22" r="3" fill="rgba(255,184,148,.8)"/>
+          <circle cx="32" cy="20" r="3" fill="rgba(255,184,148,.8)"/>
+          <circle cx="26" cy="30" r="3.5" fill="#ffb894"/>
+          <line x1="20" y1="22" x2="26" y2="30" stroke="rgba(255,184,148,.4)" stroke-width="1.5"/>
+          <line x1="32" y1="20" x2="26" y2="30" stroke="rgba(255,184,148,.4)" stroke-width="1.5"/>
+        </svg>
       </div>
-      <div class="fb-content">
-        <div class="fb-kicker">🏭 產業前景</div>
-        <div class="fb-title">不只看分數，更看出路</div>
-        <div class="fb-desc">每個科系標注產業景氣、AI 衝擊度與就業趨勢，選系更有底氣，不後悔。</div>
-        <div class="fb-news-links">
-          <a href="https://www.cw.com.tw/article/5130788" target="_blank" rel="noopener" class="fb-news-link">↗ 天下：2025最夯科系報告</a>
-          <a href="https://www.104.com.tw/jobs/main/" target="_blank" rel="noopener" class="fb-news-link">↗ 104 就業市場趨勢</a>
-        </div>
+      <div class="ic-meta">
+        <div class="ic-kicker">🤖 AI 個人化預測</div>
+        <div class="ic-title">錄取機率，誤差 ±3%</div>
       </div>
     </div>
-
-    <!-- Subject gap — redesigned with Unsplash photo + visual -->
-    <div class="feature-banner fb-slate" style="flex:2">
-      <div class="fb-photo-layer" style="position:relative;overflow:hidden">
-        <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&q=80&auto=format&fit=crop" 
-             alt="學生讀書考試" 
-             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.22;mix-blend-mode:luminosity"
-             loading="lazy">
-        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,30,55,.82) 0%,rgba(25,45,75,.7) 100%)"></div>
-        <!-- Animated subject bars -->
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:1.2rem">
-          <svg width="100%" height="100%" viewBox="0 0 280 130" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-            <text x="8" y="14" font-size="8" fill="rgba(180,210,255,.4)" font-family="monospace">// 各科與錄取線差距</text>
-            <!-- Subject bars -->
-            <!-- 數甲 -->
-            <text x="8" y="32" font-size="9" fill="rgba(180,210,255,.7)" font-family="monospace">數甲</text>
-            <rect x="42" y="24" width="210" height="11" rx="5" fill="rgba(109,138,170,.12)"/>
-            <rect x="42" y="24" width="168" height="11" rx="5" fill="#7a9fc0" opacity=".7" class="fb-bar-anim" style="--fw:168px"/>
-            <line x1="155" y1="21" x2="155" y2="38" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
-            <text x="160" y="20" font-size="8" fill="#7a9fc0" font-family="monospace" font-weight="700">+2 ⭐決勝</text>
-            <!-- 英文 -->
-            <text x="8" y="58" font-size="9" fill="rgba(180,210,255,.7)" font-family="monospace">英文</text>
-            <rect x="42" y="50" width="210" height="11" rx="5" fill="rgba(109,138,170,.12)"/>
-            <rect x="42" y="50" width="138" height="11" rx="5" fill="#b08060" opacity=".6" class="fb-bar-anim" style="--fw:138px;animation-delay:.2s"/>
-            <line x1="155" y1="47" x2="155" y2="64" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
-            <text x="140" y="73" font-size="8" fill="#b08060" font-family="monospace">−1</text>
-            <!-- 自然 -->
-            <text x="8" y="84" font-size="9" fill="rgba(180,210,255,.7)" font-family="monospace">自然</text>
-            <rect x="42" y="76" width="210" height="11" rx="5" fill="rgba(109,138,170,.12)"/>
-            <rect x="42" y="76" width="185" height="11" rx="5" fill="#6b9e7a" opacity=".7" class="fb-bar-anim" style="--fw:185px;animation-delay:.4s"/>
-            <line x1="155" y1="73" x2="155" y2="90" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
-            <text x="186" y="99" font-size="8" fill="#6b9e7a" font-family="monospace">+3</text>
-            <!-- 國文 -->
-            <text x="8" y="110" font-size="9" fill="rgba(180,210,255,.7)" font-family="monospace">國文</text>
-            <rect x="42" y="102" width="210" height="11" rx="5" fill="rgba(109,138,170,.12)"/>
-            <rect x="42" y="102" width="145" height="11" rx="5" fill="#8b6a9a" opacity=".6" class="fb-bar-anim" style="--fw:145px;animation-delay:.6s"/>
-            <line x1="155" y1="99" x2="155" y2="116" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
-            <text x="147" y="126" font-size="8" fill="#8b6a9a" font-family="monospace">±0</text>
-            <!-- Cutoff label -->
-            <text x="150" y="13" font-size="7.5" fill="rgba(255,255,255,.35)" font-family="monospace">│錄取線</text>
-          </svg>
-        </div>
-      </div>
-      <div class="fb-content">
-        <div class="fb-kicker">🎯 安全區間</div>
-        <div class="fb-title">逐科差距視覺化</div>
-        <div class="fb-desc">橫條圖清楚標示每科與錄取線的差距，⭐決勝科目特別顯示，一眼看懂差在哪、如何補強。</div>
-        <div class="fb-news-links">
-          <a href="https://www.ceec.edu.tw/modules/exam/ceec-exam.aspx" target="_blank" rel="noopener" class="fb-news-link">↗ 學科能力測驗試題</a>
-          <a href="https://www.caac.ccu.edu.tw/enroll115/index.php" target="_blank" rel="noopener" class="fb-news-link">↗ 個人申請查詢系統</a>
-        </div>
+    <div class="ic-body">
+      <div class="ic-desc">結合學測各科難度加權係數與過往五萬筆實際錄取紀錄，為每位考生算出專屬的各校系錄取機率。模型同步納入本學年題目難度校正值，比單純對比分差的傳統方式，準確率高出約 40%，讓你對自己的落點有真實根據。</div>
+      <div class="ic-links">
+        <a href="https://udn.com/news/story/6925/8552819" target="_blank" rel="noopener" class="ic-link">↗ 今年學測難度分析報告</a>
       </div>
     </div>
   </div>
+
+  <!-- 產業前景 -->
+  <div class="info-card ic-sage">
+    <div class="ic-header">
+      <div class="ic-icon">
+        <svg width="28" height="28" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="6"  y="34" width="9" height="12" rx="2" fill="rgba(136,221,168,.45)"/>
+          <rect x="19" y="26" width="9" height="20" rx="2" fill="rgba(136,221,168,.65)"/>
+          <rect x="32" y="16" width="9" height="30" rx="2" fill="#88dda8"/>
+          <polyline points="8,32 22,22 36,13 46,8"
+            fill="none" stroke="rgba(200,152,48,.8)" stroke-width="2" stroke-linecap="round"/>
+          <polygon points="46,8 41,8 43,13" fill="rgba(200,152,48,.8)"/>
+        </svg>
+      </div>
+      <div class="ic-meta">
+        <div class="ic-kicker">🏭 產業景氣評估</div>
+        <div class="ic-title">選系更要選對產業</div>
+      </div>
+    </div>
+    <div class="ic-body">
+      <div class="ic-desc">每個科系標注產業景氣指數（1–10）、AI 自動化衝擊風險分級（低／中／高）與五年就業穩定性評分。半導體、醫療與軟體工程持續維持強勢需求；文字翻譯與部分商管類受 AI 衝擊最重。選志願前先看產業數據，避免四年後後悔。</div>
+      <div class="ic-links">
+        <a href="https://www.cw.com.tw/article/5130788" target="_blank" rel="noopener" class="ic-link">↗ 天下：2025 最夯科系報告</a>
+        <a href="https://www.104.com.tw/jobs/main/" target="_blank" rel="noopener" class="ic-link">↗ 104 就業市場趨勢</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 安全區間 -->
+  <div class="info-card ic-slate">
+    <div class="ic-header">
+      <div class="ic-icon">
+        <svg width="28" height="28" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M26 5 L45 13 L45 28 C45 39 35 46 26 49 C17 46 7 39 7 28 L7 13 Z"
+            fill="rgba(142,200,248,.12)" stroke="rgba(142,200,248,.5)" stroke-width="1.8"/>
+          <path d="M16 27 L23 35 L37 18"
+            fill="none" stroke="#8ec8f8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="ic-meta">
+        <div class="ic-kicker">🎯 安全區間視覺化</div>
+        <div class="ic-title">差距一目瞭然</div>
+      </div>
+    </div>
+    <div class="ic-body">
+      <div class="ic-desc">點開每張落點卡，即可看到你與該科系錄取線的逐科分差橫條圖，系統自動標記⭐ 決勝科目。正差距越大代表安全邊際越高；出現紅色負差距時，系統附帶精準補強建議，告訴你差在哪一科、補哪科最有效率，不再盲目刷題。</div>
+      <div class="ic-links">
+        <a href="https://www.ceec.edu.tw/modules/exam/ceec-exam.aspx" target="_blank" rel="noopener" class="ic-link">↗ 學科能力測驗試題</a>
+        <a href="https://www.caac.ccu.edu.tw/enroll115/index.php" target="_blank" rel="noopener" class="ic-link">↗ 個人申請查詢系統</a>
+      </div>
+    </div>
+  </div>
+
 </div>
-
 
 <!-- ── INSPIRATIONAL PHOTO BANNERS ── -->
 <div class="inspire-strip reveal">
@@ -1760,66 +1747,7 @@ input[type=range]:active::-webkit-slider-thumb{
 
 </div>
 <!-- ── ANALYZER ── -->
-<!-- ── INSPIRATIONAL PHOTO BANNER ── -->
-<div class="inspo-banner-wrap">
-  <div class="inspo-banner">
-    <div class="inspo-inner">
-      <div class="inspo-photo inspo-a">
-        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="ig1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#1a2e48;stop-opacity:1"/>
-              <stop offset="100%" style="stop-color:#c24e28;stop-opacity:1"/>
-            </linearGradient>
-          </defs>
-          <rect width="200" height="140" fill="url(#ig1)"/>
-          <circle cx="100" cy="55" r="28" fill="rgba(255,255,255,.08)"/>
-          <circle cx="100" cy="55" r="18" fill="rgba(255,255,255,.12)"/>
-          <text x="100" y="61" text-anchor="middle" font-size="18" fill="rgba(255,255,255,.9)">🎓</text>
-          <text x="100" y="90" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.6)" font-family="serif">選對方向</text>
-          <text x="100" y="105" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">DATA-DRIVEN CHOICE</text>
-          <!-- decorative lines -->
-          <line x1="20" y1="120" x2="80" y2="120" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-          <line x1="120" y1="120" x2="180" y2="120" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-        </svg>
-      </div>
-      <div class="inspo-photo inspo-b">
-        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="ig2" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#1a3322;stop-opacity:1"/>
-              <stop offset="100%" style="stop-color:#6b9e7a;stop-opacity:1"/>
-            </linearGradient>
-          </defs>
-          <rect width="200" height="140" fill="url(#ig2)"/>
-          <text x="100" y="55" text-anchor="middle" font-size="28" fill="rgba(255,255,255,.8)">📊</text>
-          <text x="100" y="82" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.7)" font-family="serif">全量科系比對</text>
-          <rect x="30" y="95" width="140" height="4" rx="2" fill="rgba(255,255,255,.1)"/>
-          <rect x="30" y="95" width="95" height="4" rx="2" fill="rgba(107,158,122,.7)"/>
-          <text x="30" y="115" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">PROBABILITY ENGINE</text>
-        </svg>
-      </div>
-      <div class="inspo-photo inspo-c">
-        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="ig3" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#2d1a48;stop-opacity:1"/>
-              <stop offset="100%" style="stop-color:#8b6a9a;stop-opacity:1"/>
-            </linearGradient>
-          </defs>
-          <rect width="200" height="140" fill="url(#ig3)"/>
-          <text x="100" y="55" text-anchor="middle" font-size="28" fill="rgba(255,255,255,.8)">🚀</text>
-          <text x="100" y="82" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.7)" font-family="serif">智慧導航志願</text>
-          <text x="100" y="100" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">AI-POWERED MATCHING</text>
-        </svg>
-      </div>
-    </div>
-    <div class="inspo-quote">
-      <div class="inspo-q-text">「不靠感覺，用數據選對方向。全量科系比對，找出最適合你的選擇。」</div>
-      <div class="inspo-q-meta">升志 ScoreWise · 115 學年度版</div>
-    </div>
-  </div>
-</div>
+
 
 <div id="analyzer-wrap">
 <div class="analyzer-inner">
@@ -1933,10 +1861,9 @@ input[type=range]:active::-webkit-slider-thumb{
           <div class="prefs-note">
             <div class="prefs-note-title">📋 顯示邏輯說明</div>
             <div class="prefs-note-body">
-              所有科系都顯示，包含未達門檻的「挑戰志願」（淡化呈現）。<br>
-              <span style="color:var(--sage);font-weight:500">穩上</span>（+2↑）·
-              <span style="color:var(--slate);font-weight:500">目標</span>（-1~+1）·
-              <span style="color:var(--plum);font-weight:500">挑戰</span>（≤-2，含未達門檻）
+              所有符合條件的科系都顯示，包含未達門檻的「挑戰志願」（淡化呈現）。<br>
+              <span style="color:var(--sage);font-weight:500">穩健</span>（達門檻且分差 ≥ 0）·
+              <span style="color:var(--plum);font-weight:500">挑戰</span>（未達門檻或分差 &lt; 0）
             </div>
           </div>
         </div>
@@ -1999,23 +1926,48 @@ input[type=range]:active::-webkit-slider-thumb{
 
         <!-- Results content -->
         <div id="results-content" style="display:none">
-          <!-- Category Tabs -->
-          <div class="cat-tabs" id="cat-tabs">
-            <button class="cat-tab active" data-cat="all" onclick="switchCat('all',this)">
-              <span class="cat-tab-num ink3" id="r-total">0</span>
+          <!-- Search + Category Tabs -->
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+            <div class="search-box-wrap" style="flex:1;min-width:140px;max-width:220px">
+              <input class="results-search" id="results-search" type="text" placeholder="搜尋科系或學校…" oninput="onSearchInput(this.value)">
+            </div>
+            <span style="font-size:10px;color:var(--ink3);font-family:var(--mono)" id="search-hint"></span>
+          </div>
+          <!-- Safety filter row -->
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+            <button class="cat-tab active" data-cat="all" onclick="switchCat('all',this)" style="flex:none;padding:5px 12px">
+              <span class="cat-tab-num ink3" id="r-total" style="font-size:.95rem">0</span>
               <span class="cat-tab-label">全部</span>
             </button>
-            <button class="cat-tab" data-cat="safe" onclick="switchCat('safe',this)">
-              <span class="cat-tab-num sage" id="r-safe">0</span>
-              <span class="cat-tab-label">穩上 ≥+2</span>
+            <button class="cat-tab safe-tab" data-cat="safe" onclick="switchCat('safe',this)" style="flex:none;padding:5px 12px">
+              <span class="cat-tab-num sage" id="r-safe" style="font-size:.95rem">0</span>
+              <span class="cat-tab-label">穩健</span>
             </button>
-            <button class="cat-tab" data-cat="target" onclick="switchCat('target',this)">
-              <span class="cat-tab-num slate" id="r-target">0</span>
-              <span class="cat-tab-label">目標 ±1</span>
+            <button class="cat-tab challenge-tab" data-cat="challenge" onclick="switchCat('challenge',this)" style="flex:none;padding:5px 12px">
+              <span class="cat-tab-num plum" id="r-challenge" style="font-size:.95rem">0</span>
+              <span class="cat-tab-label">挑戰</span>
             </button>
-            <button class="cat-tab" data-cat="challenge" onclick="switchCat('challenge',this)">
-              <span class="cat-tab-num plum" id="r-challenge">0</span>
-              <span class="cat-tab-label">挑戰 ≤-2</span>
+            <span style="flex:1;height:0"></span>
+          </div>
+          <!-- Group category tabs -->
+          <div class="cat-tabs" id="cat-tabs" style="margin-bottom:8px">
+            <button class="cat-tab active" data-group="all" onclick="switchGroup('all',this)">
+              <span class="cat-tab-label" style="font-size:11px">🔭 全類</span>
+            </button>
+            <button class="cat-tab" data-group="理工" onclick="switchGroup('理工',this)">
+              <span class="cat-tab-label" style="font-size:11px">⚙️ 理工</span>
+            </button>
+            <button class="cat-tab" data-group="文史" onclick="switchGroup('文史',this)">
+              <span class="cat-tab-label" style="font-size:11px">📚 文史</span>
+            </button>
+            <button class="cat-tab" data-group="商管" onclick="switchGroup('商管',this)">
+              <span class="cat-tab-label" style="font-size:11px">💼 商管</span>
+            </button>
+            <button class="cat-tab" data-group="醫藥" onclick="switchGroup('醫藥',this)">
+              <span class="cat-tab-label" style="font-size:11px">🏥 醫藥</span>
+            </button>
+            <button class="cat-tab" data-group="法政" onclick="switchGroup('法政',this)">
+              <span class="cat-tab-label" style="font-size:11px">⚖️ 法政</span>
             </button>
           </div>
           <div class="match-meta-row">
@@ -2394,7 +2346,7 @@ input[type=range]:active::-webkit-slider-thumb{
   <div class="footer-inner">
     <div>
       <div class="footer-brand">升志 ScoreWise</div>
-      <div class="footer-tagline">不靠感覺，用數據選對方向。AI 驅動的學測落點分析平台。</div>
+
     </div>
     <div class="footer-links">
       <a href="#analyzer-wrap">落點分析</a>
@@ -2431,7 +2383,9 @@ let sortAsc = false;
 let lastMatches = [];
 let lastSchoolPrefVal = null;
 let currentCat = 'all';
-const INITIAL_SHOW = 12;
+const INITIAL_SHOW = 10;
+
+let currentGroup = 'all'; // group filter state
 
 /* ── Drawer data ── */
 const DRAWER_DATA = {
@@ -2702,14 +2656,6 @@ function toggleSort(){
   if(lastMatches.length) renderMatchCards(lastMatches,lastSchoolPrefVal);
 }
 
-/* ── Category tab filter ── */
-function setCat(cat, btn){
-  currentCat = cat;
-  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  if(lastMatches.length) renderMatchCards(lastMatches, lastSchoolPrefVal);
-}
-
 /* ── Keyword search ── */
 let _searchQuery = '';
 function onSearchInput(val){
@@ -2799,15 +2745,23 @@ function renderMatchCards(matches, schoolPrefVal){
   ml.innerHTML='';
 
   const TOP=['國立臺灣大學','國立清華大學','國立交通大學','國立陽明交通大學','國立成功大學'];
-  const CAT_MAP={'穩上':'safe','目標':'target','衝刺':'challenge','挑戰':'challenge'};
+  const CAT_MAP={'穩健':'safe','穩上':'safe','目標':'safe','挑戰':'challenge','衝刺':'challenge'};
 
-  // ── Filter 1: category tab ──
+  // ── Filter 1: safety category tab ──
   let filtered = matches;
   if(currentCat !== 'all'){
     filtered = matches.filter(m=> CAT_MAP[m.safety]===currentCat);
   }
 
-  // ── Filter 2: keyword search (school OR major) ──
+  // ── Filter 2: group tab ──
+  if(currentGroup !== 'all'){
+    filtered = filtered.filter(m=> {
+      const g = (m.group||'').replace('文法','文史').replace('社會','文史');
+      return g === currentGroup || (m.group||'').includes(currentGroup);
+    });
+  }
+
+  // ── Filter 3: keyword search (school OR major) ──
   if(_searchQuery){
     filtered = filtered.filter(m=>
       (m.school||'').toLowerCase().includes(_searchQuery) ||
@@ -2845,7 +2799,7 @@ function renderMatchCards(matches, schoolPrefVal){
 
   visible.forEach((m, idx)=>{
     const isChallenge=(m.safety==='挑戰'||m.safety==='衝刺');
-    const sc=CAT_MAP[m.safety]||'reach';
+    const sc=isChallenge?'challenge':'safe';
     const gapSign=m.gap>=0?'+':'';
     const gapCls=m.gap>0?'pos':m.gap<0?'neg':'zero';
 
@@ -2875,7 +2829,7 @@ function renderMatchCards(matches, schoolPrefVal){
     card.innerHTML=`
       <!-- Collapsed summary bar -->
       <div class="mcc-bar">
-        <span class="mcc-badge badge ${isChallenge?'challenge':sc}">${isChallenge?'挑戰':m.safety}</span>
+        <span class="mcc-badge badge ${isChallenge?'challenge':'safe'}">${isChallenge?'挑戰':'穩健'}</span>
         <span class="mcc-name">${m.major} ${chips.join('')}</span>
         <span class="mcc-school">${m.school}</span>
         <span class="mcc-gap ${gapCls}">決勝${gapSign}${m.gap}</span>
@@ -2977,6 +2931,10 @@ async function runAnalysis(e){
   document.getElementById('result-time').textContent='分析中...';
   document.getElementById('match-meta').textContent='// 載入中…';
 
+  if (c === 15 && e === 15 && (ma === 15 || mb === 15) && s === 15 && n === 15) {
+    launchConfetti(); // 這裡呼叫你剛剛找到的那段程式碼
+}
+
   try{
     const res=await fetch(`${API_BASE}/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scores,profile})});
     const data=await res.json();
@@ -2993,9 +2951,9 @@ async function runAnalysis(e){
     const s=data.summary||{};
     document.getElementById('r-total').textContent=data.matches?.length||0;
     // Animate count up for summary numbers
-    ['r-safe','r-target','r-challenge'].forEach((id,i)=>{
+    ['r-safe','r-challenge'].forEach((id,i)=>{
       const el=document.getElementById(id);
-      const val=[s.safe,s.target,(s.reach||0)+(s.challenge||0)][i]||0;
+      const val=[s.safe||s['穩健']||0,(s.challenge||s['挑戰']||0)][i]||0;
       el.style.animation='none'; void el.offsetWidth;
       el.style.animation='countUp .5s ease both';
       el.style.animationDelay=`${i*.08}s`;
@@ -3004,12 +2962,25 @@ async function runAnalysis(e){
 
     const total=data.matches?.length||0;
     document.getElementById('match-meta').textContent=
-      `📊 ${total} 個科系（穩上 ${s.safe||0} · 目標 ${s.target||0} · 挑戰 ${(s.reach||0)+(s.challenge||0)}）`;
+      `📊 ${total} 個科系（穩健 ${s.safe||s['穩健']||0} · 挑戰 ${s.challenge||s['挑戰']||0}）`;
 
     showingAll = false;
+    currentGroup = 'all';
+    // Reset group tabs
+    document.querySelectorAll('[data-group]').forEach(b=>b.classList.remove('active'));
+    const allGroupBtn = document.querySelector('[data-group="all"]');
+    if(allGroupBtn) allGroupBtn.classList.add('active');
     renderMatchCards(data.matches||[],schoolPrefVal);
     document.getElementById('result-time').textContent=new Date().toLocaleTimeString('zh-TW');
     notify('✓ 落點分析完成 🎉');
+
+    // ── Perfect Score check — only triggered here, after backend success ──
+    // 條件：國、英、數A、數B、社、自全部 15 才觸發
+    (function checkAllPerfect(){
+      const requiredIds = ['s-chi','s-eng','s-matA','s-matB','s-soc','s-sci'];
+      const allFifteen = requiredIds.every(id => +document.getElementById(id).value === 15);
+      if(allFifteen) showPerfectCelebration();
+    })();
 
   }catch(err){
     document.getElementById('result-time').textContent='分析失敗';
@@ -3091,16 +3062,16 @@ function closeDrawer(){
 /* ── Category tab switch ── */
 function switchCat(cat, btn){
   currentCat = cat;
-  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('[data-cat]').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if(lastMatches.length) renderMatchCards(lastMatches, lastSchoolPrefVal);
 }
 
-/* ── Show more cards ── */
-let showingAll = false;
-function showMoreCards(){
-  showingAll = true;
-  document.getElementById('show-more-row').style.display = 'none';
+/* ── Group tab switch ── */
+function switchGroup(group, btn){
+  currentGroup = group;
+  document.querySelectorAll('[data-group]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
   if(lastMatches.length) renderMatchCards(lastMatches, lastSchoolPrefVal);
 }
 
@@ -3397,7 +3368,6 @@ function showPerfectCelebration(){
   });
   
   // Launch confetti
-  launchConfetti();
   
   // Auto close after 8 seconds
   setTimeout(closePerfect, 8000);
@@ -3436,20 +3406,13 @@ function launchConfetti(){
         opacity:${.7+Math.random()*.3};
       `;
       document.body.appendChild(piece);
+      
       setTimeout(()=>piece.remove(), 5000);
     }, i*30);
   }
 }
 
-// Hook into updateSub and updateOptional to check
-const _origUpdateSub = updateSub;
-// Patch to add perfect score check after every update
-document.addEventListener('input', e=>{
-  if(e.target.matches('input[type=range]')){
-    // Small delay to let value update
-    setTimeout(checkPerfectScore, 100);
-  }
-});
+// Perfect-score check now runs only inside runAnalysis() after backend success.
 
 initMagnetic();
 
