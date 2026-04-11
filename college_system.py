@@ -122,12 +122,18 @@ def _normalize_major_types(m: dict) -> dict:
     'str' > 'int' TypeError。
     """
     for field in ("last_year_cutoff_by_subject", "thresholds"):
-        if field in m and isinstance(m[field], dict):
-            m[field] = {
-                k: int(v)
-                for k, v in m[field].items()
-                if v is not None
-            }
+    if field in m and isinstance(m[field], dict):
+        cleaned = {}
+        for k, v in m[field].items():
+            if v is None:
+                continue
+            try:
+                cleaned[k] = int(v)
+            except (ValueError, TypeError):
+                # 無法轉成數字的欄位（如 "激烈"）直接跳過，不納入門檻比較
+                print(f"[WARN] {m.get('school','')} {m.get('major','')} — {field}[{k}] 值 '{v}' 非數字，已略過")
+        m[field] = cleaned
+
     if "quota" in m:
         try:
             m["quota"] = int(m["quota"])
@@ -137,9 +143,15 @@ def _normalize_major_types(m: dict) -> dict:
     if "past_thresholds" in m and isinstance(m["past_thresholds"], dict):
         for yr, thr in m["past_thresholds"].items():
             if isinstance(thr, dict):
-                m["past_thresholds"][yr] = {
-                    k: int(v) for k, v in thr.items() if v is not None
-                }
+                fixed = {}
+                for k, v in thr.items():
+                    if v is None:
+                        continue
+                    try:
+                        fixed[k] = int(v)
+                    except (ValueError, TypeError):
+                        pass
+                m["past_thresholds"][yr] = fixed
     return m
 
 
@@ -660,7 +672,7 @@ def generate_advice(profile: dict, matches: list) -> str:
     """
     純靜態分析：依落點數據 + 時事背景產生 HTML，不呼叫任何外部 API。
     """
-    cache_key = make_cache_key("advice_v3", profile.get("scores"), [m["major"] for m in matches[:5]])
+    cache_key = make_cache_key("advice_v3", profile.get("scores"), [(m["school"], m["major"]) for m in matches])
     cached = cache_get(cache_key)
     if cached:
         return cached
