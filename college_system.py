@@ -3,6 +3,7 @@ import numpy as np
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from collections import defaultdict
 
 # ============================================================
 # 初始化
@@ -30,6 +31,28 @@ except Exception as e:
 
 app = Flask(__name__)
 CORS(app, origins="*")
+
+_rate_store: dict = defaultdict(list)
+RATE_LIMIT  = 30    # 每個 IP 每小時最多 30 次分析
+RATE_WINDOW = 3600  # 時間窗：1 小時（秒）
+
+def check_rate_limit(ip: str) -> bool:
+    now   = time.time()
+    calls = _rate_store[ip]
+    # 清除超過時間窗的舊記錄
+    _rate_store[ip] = [t for t in calls if now - t < RATE_WINDOW]
+    if len(_rate_store[ip]) >= RATE_LIMIT:
+        return False
+    _rate_store[ip].append(now)
+    return True
+
+def get_client_ip() -> str:
+    # Render / 一般 reverse proxy 會把真實 IP 放在 X-Forwarded-For
+    forwarded = request.headers.get('X-Forwarded-For', '')
+    if forwarded:
+        # X-Forwarded-For 可能是逗號分隔的多個 IP，取第一個
+        return forwarded.split(',')[0].strip()
+    return request.remote_addr or '0.0.0.0'
 
 # ============================================================
 # 第一階段：科目名稱對照表 & 正規化
@@ -361,15 +384,33 @@ def calculate_combined_pr(scores: dict) -> int:
 # ============================================================
 
 def compute_admission_probability(gap: int, passed_threshold: bool, quota: int = 50) -> int:
+    """
+    使用 sigmoid 曲線讓機率分布更自然，避免過度集中在極端值。
+    gap: 決勝科目分差（你的分數 - 去年錄取線）
+    """
+    import math
+
     if not passed_threshold:
-        # 未達最低門檻，機會極低
-        return max(0, min(15, 5 + gap * 2))
-    if gap >= 2:   return 97
-    if gap == 1:   return 85
-    if gap == 0:   return 70
-    if gap == -1:  return 40
-    if gap == -2:  return 20
-    return max(5, 15 + gap * 3)
+        # 未達門檻：機率低但不是零，每差1分扣約8%，base=20%
+        base = 20
+        prob = base + gap * 8   # gap 為負，所以會往下
+        return max(2, min(35, int(prob)))
+
+    # sigmoid: 1 / (1 + e^(-k*(gap - midpoint)))
+    # 調整參數讓 gap=0 約 55%，gap=+3 約 80%，gap=-3 約 25%
+    k = 0.7          # 斜率（越大越陡）
+    midpoint = 0.5   # 中心點往正側偏移，反映「去年線 ≈ 今年略難」
+    raw = 1 / (1 + math.exp(-k * (gap - midpoint)))
+    prob = int(raw * 100)
+
+    # 名額修正：名額越少競爭越激烈，小幅下修
+    if quota < 30:
+        prob -= 5
+    elif quota > 100:
+        prob += 3
+
+    # 夾在合理區間
+    return max(8, min(92, prob))
 
 def predict_next_year_cutoff(m: dict) -> dict:
     """
@@ -588,7 +629,7 @@ def match_majors(scores: dict, profile: dict = None) -> list:
     if profile is None:
         profile = {}
 
-    MIN_GAP_HARD = -5  # gap < -5 直接排除，太遠沒意義
+    MIN_GAP_HARD = -4  # gap < -5 直接排除，太遠沒意義
 
     all_entries: list = []
 
@@ -656,9 +697,12 @@ def match_majors(scores: dict, profile: dict = None) -> list:
         elif gap >= 0:
             safety = "穩健"
         elif gap >= -2:
-            safety = "挑戰"   # 門檻全達，但決勝科目差 1 分，機率約 40%
-        else:                 # gap <= -2，門檻達但差距太大
+            safety = "挑戰"
+        elif gap >= -3:
             safety = "困難"
+        else:
+            # 理論上不會到這裡，因為 MIN_GAP_HARD = -4 已排除
+            continue
 
         subject_detail = {}
         for subj, mult in multipliers.items():
@@ -675,7 +719,9 @@ def match_majors(scores: dict, profile: dict = None) -> list:
                     "below_threshold": sv < thresholds.get(subj, 0) if subj in thresholds else False,
                 }
 
-        history_summary = {yr: thr for yr, thr in sorted(past.items())}
+        history_summary = {
+            yr: thr 
+            for yr, thr in sorted(past.items(), key=lambda x: int(x[0]))
         quota         = m.get("quota", 50)
         admission_prob = compute_admission_probability(gap, passed_threshold, quota)
         salary_year   = parse_salary_median(m.get("salary_median", 0))
@@ -780,7 +826,12 @@ def generate_advice(profile: dict, matches: list) -> str:
     """
     純靜態分析：依落點數據 + 時事背景產生 HTML，不呼叫任何外部 API。
     """
-    cache_key = make_cache_key("advice_v3", profile.get("scores"), [(m["school"], m["major"]) for m in matches])
+    cache_key = make_cache_key(
+    "advice_v3", 
+    profile.get("scores"), 
+    profile.get("name", ""),
+    [(m["school"], m["major"]) for m in matches]
+)
     cached = cache_get(cache_key)
     if cached:
         return cached
@@ -978,6 +1029,14 @@ def home():
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
+    # Rate limit 檢查
+    ip = get_client_ip()
+    if not check_rate_limit(ip):
+        return jsonify({
+            "status":  "error",
+            "message": f"請求過於頻繁，每小時最多分析 {RATE_LIMIT} 次，請稍後再試。"
+        }), 429
+
     try:
         data    = request.json or {}
         scores  = data.get("scores", {})
@@ -1047,6 +1106,13 @@ def analyze():
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    ip = get_client_ip()
+    if not check_chat_rate_limit(ip):
+        return jsonify({
+            "status": "error",
+            "reply":  f"請求過於頻繁，每小時最多對話 {CHAT_RATE_LIMIT} 次，請稍後再試。"
+        }), 429
+
     try:
         body         = request.json or {}
         user_message = body.get("message", "").strip()
@@ -1101,15 +1167,17 @@ def get_majors():
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({
-        "status": "ok",
-        "model": MODEL_NAME,
+        "status":           "ok",
+        "model":            MODEL_NAME,
         "gemini_available": GEMINI_AVAILABLE,
-        "memory_size": len(memory_store),
-        "cache_size": len(_cache),
-        "majors_count": len(majors_db),
-        "active_sessions": len(chat_sessions),
-        "api_key_set": bool(os.environ.get("GEMINI_API_KEY", "").strip()),
-        "exam_year": EXAM_CONTEXT_2025["year"],
+        "memory_size":      len(memory_store),
+        "cache_size":       len(_cache),
+        "majors_count":     len(majors_db),
+        "active_sessions":  len(chat_sessions),
+        "api_key_set":      bool(os.environ.get("GEMINI_API_KEY", "").strip()),
+        "exam_year":        EXAM_CONTEXT_2025["year"],
+        "rate_tracked_ips": len(_rate_store),      # 加這行
+        "chat_tracked_ips": len(_chat_rate_store), # 加這行
     })
 
 
