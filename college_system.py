@@ -35,6 +35,15 @@ CORS(app, origins="*")
 _rate_store: dict = defaultdict(list)
 RATE_LIMIT  = 30    # 每個 IP 每小時最多 30 次分析
 RATE_WINDOW = 3600  # 時間窗：1 小時（秒）
+CHAT_RATE_LIMIT = 60
+
+def check_chat_rate_limit(ip: str) -> bool:
+    now = time.time()
+    _chat_rate_store[ip] = [t for t in _chat_rate_store[ip] if now - t < RATE_WINDOW]
+    if len(_chat_rate_store[ip]) >= CHAT_RATE_LIMIT:
+        return False
+    _chat_rate_store[ip].append(now)
+    return True
 
 def check_rate_limit(ip: str) -> bool:
     now   = time.time()
@@ -379,132 +388,184 @@ def calculate_combined_pr(scores: dict) -> int:
     if not scores: return 0
     return round(sum(calculate_pr(v) for v in scores.values()) / len(scores))
 
-# ============================================================
-# 落點配對
-# ============================================================
-
-def compute_admission_probability(gap: int, passed_threshold: bool, quota: int = 50) -> int:
-    """
-    使用 sigmoid 曲線讓機率分布更自然，避免過度集中在極端值。
-    gap: 決勝科目分差（你的分數 - 去年錄取線）
-    """
+def compute_admission_probability(
+    gap: int,
+    passed_threshold: bool,
+    quota: int = 50,
+    applicants: int = 0,
+    waitlist_count: int = 0,
+    difficulty_trend: str = "stable"
+) -> int:
     import math
 
     if not passed_threshold:
-        # 未達門檻：機率低但不是零，每差1分扣約8%，base=20%
-        base = 20
-        prob = base + gap * 8   # gap 為負，所以會往下
-        return max(2, min(35, int(prob)))
+        # 未達門檻：base 25%，每差一分扣 7%
+        prob = 25 + gap * 7
+        if quota > 100: prob += 3
+        elif quota < 30: prob -= 3
+        return max(3, min(30, int(prob)))
 
-    # sigmoid: 1 / (1 + e^(-k*(gap - midpoint)))
-    # 調整參數讓 gap=0 約 55%，gap=+3 約 80%，gap=-3 約 25%
-    k = 0.7          # 斜率（越大越陡）
-    midpoint = 0.5   # 中心點往正側偏移，反映「去年線 ≈ 今年略難」
+    # ── 基礎 sigmoid，中心點移至 gap=-1.8（使 gap=0 → 65%）
+    k = 0.55
+    midpoint = -0.5
     raw = 1 / (1 + math.exp(-k * (gap - midpoint)))
-    prob = int(raw * 100)
+    prob = raw * 100
 
-    # 名額修正：名額越少競爭越激烈，小幅下修
-    if quota < 30:
-        prob -= 5
-    elif quota > 100:
-        prob += 3
+    # ── 競爭比修正（報考人數 / 錄取名額）
+    if applicants > 0 and quota > 0:
+        comp = applicants / quota
+        if   comp > 12: prob -= 10
+        elif comp > 9:  prob -= 7
+        elif comp > 6:  prob -= 4
+        elif comp > 4:  prob -= 2
+        elif comp < 3:  prob += 5
+        elif comp < 2:  prob += 8
 
-    # 夾在合理區間
-    return max(8, min(92, prob))
+    # ── 備取深度修正（備取名額 / 錄取名額）
+    # 備取越深 → 落榜後候補機會越大 → 實際錄取機率提升
+    if waitlist_count > 0 and quota > 0:
+        wr = waitlist_count / quota
+        if   wr > 0.4: prob += 6
+        elif wr > 0.2: prob += 3
+        elif wr < 0.05: prob -= 4
+
+    # ── 趨勢修正
+    if   difficulty_trend == "rising":  prob -= 5
+    elif difficulty_trend == "falling": prob += 5
+
+    # ── 名額規模修正
+    if   quota < 30:  prob -= 4
+    elif quota > 120: prob += 3
+
+    return max(8, min(95, int(prob)))
 
 def predict_next_year_cutoff(m: dict) -> dict:
-    """
-    用 past_thresholds + last_year_cutoff_by_subject 預測明年各科落點。
-    策略：
-      1. 收集所有年份資料（含 last_year）
-      2. 對每個科目做加權平均（近年權重更高）+ 趨勢修正
-      3. 套用今年考試環境調整（EXAM_CONTEXT_2025 的難度趨勢）
-    回傳 {"科目": 預測級分, ...}
-    """
+    import math
+
     past = m.get("past_thresholds", {})
     last = m.get("last_year_cutoff_by_subject", {})
-    
-    # 合併所有年份資料，按年份排序
-    all_years: dict[str, dict] = {}
+    applicants = m.get("applicants", 0)
+    quota = m.get("quota", 50)
+    trend = m.get("difficulty_trend", "stable")
+
+    # ── 合併所有年份資料
+    all_years: dict = {}
     for yr, thr in past.items():
         if isinstance(thr, dict):
             all_years[str(yr)] = {k: int(v) for k, v in thr.items() if v is not None}
-    
-    # last_year_cutoff 視為最新年（若 past_thresholds 沒有包含它）
     sorted_years = sorted(all_years.keys())
     if sorted_years:
-        latest_yr_in_past = sorted_years[-1]
-        # 如果 last_year 的資料比 past_thresholds 最新年還新，就補進去
-        last_subjects = set(last.keys())
-        past_latest_subjects = set(all_years.get(latest_yr_in_past, {}).keys())
+        latest = sorted_years[-1]
         for subj, val in last.items():
-            if subj not in all_years.get(latest_yr_in_past, {}):
-                # last_year 有，但 past 最新年沒有 → 代表 last_year 是更新的資料
-                new_yr = str(int(latest_yr_in_past) + 1)
-                if new_yr not in all_years:
-                    all_years[new_yr] = {}
-                all_years[new_yr][subj] = int(val)
-    else:
-        # 完全沒有 past_thresholds，只用 last_year
-        if last:
-            all_years["114"] = {k: int(v) for k, v in last.items()}
+            if subj not in all_years.get(latest, {}):
+                new_yr = str(int(latest) + 1)
+                all_years.setdefault(new_yr, {})[subj] = int(val)
+    elif last:
+        all_years["114"] = {k: int(v) for k, v in last.items()}
 
     sorted_years = sorted(all_years.keys())
     if not sorted_years:
         return {}
 
-    # 收集所有出現過的科目
     all_subjects = set()
     for thr in all_years.values():
         all_subjects.update(thr.keys())
 
-    # 今年考試難度調整係數（根據 EXAM_CONTEXT_2025）
-    # 數學A 難度上升 → 學生分數普遍下降 → 錄取線可能下修
-    difficulty_adjustment = {
-        "數學A": -0.5,   # 今年難度上升，錄取線預測下修 0.5 分
-        "英文":  -0.3,   # 新題型導致分散，微幅下修
-        "國文":   0.0,
-        "自然":  -0.2,
-        "社會":   0.0,
+    # 動態從 Gemini 取得，失敗自動 fallback
+    difficulty_adj = {
+        subj: get_ai_difficulty_adjustment(subj)
+        for subj in all_subjects
     }
 
+    # ── 競爭比對錄取線的影響
+    # 競爭比下降（少子化）→ 錄取線微降；上升 → 微升
+    comp_adj = 0.0
+    if applicants > 0 and quota > 0:
+        comp = applicants / quota
+        # 與歷史平均競爭比 7x 相比
+        comp_adj = (comp - 7) * 0.05  # 每差 1x，影響 0.05 分
+
     predictions = {}
-    n = len(sorted_years)
-    
     for subj in all_subjects:
-        # 只取有此科目資料的年份
-        subj_data = [(yr, all_years[yr][subj]) for yr in sorted_years if subj in all_years[yr]]
+        subj_data = [
+            (yr, all_years[yr][subj])
+            for yr in sorted_years
+            if subj in all_years[yr]
+        ]
         if not subj_data:
             continue
-        
         if len(subj_data) == 1:
-            # 只有一年資料，直接用，不做趨勢預測
             predictions[subj] = subj_data[0][1]
             continue
-        
-        # 加權平均（越近期權重越高，指數加權）
+
+        # ── 指數加權平均（近年權重更高）
         weights = [math.exp(0.5 * i) for i in range(len(subj_data))]
         total_w = sum(weights)
         weighted_avg = sum(w * v for w, (_, v) in zip(weights, subj_data)) / total_w
-        
-        # 趨勢斜率（線性回歸，用 index 當 x）
+
+        # ── 線性趨勢斜率
         xs = list(range(len(subj_data)))
         ys = [v for _, v in subj_data]
         x_mean = sum(xs) / len(xs)
         y_mean = sum(ys) / len(ys)
-        
-        numerator   = sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys))
-        denominator = sum((x - x_mean) ** 2 for x in xs)
-        slope = numerator / denominator if denominator else 0
-        
-        # 預測 = 加權平均 + 趨勢斜率（預測下一年）+ 難度調整
-        adj = difficulty_adjustment.get(subj, 0.0)
-        raw_pred = weighted_avg + slope + adj
-        
-        # 夾在 1~15 之間，四捨五入
-        predictions[subj] = max(1, min(15, round(raw_pred)))
-    
+        num = sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys))
+        den = sum((x - x_mean) ** 2 for x in xs)
+        slope = num / den if den else 0
+
+        # ── difficulty_trend 整體調整
+        trend_bonus = {"rising": 0.3, "falling": -0.3, "stable": 0.0}.get(trend, 0.0)
+
+        raw = weighted_avg + slope + difficulty_adj.get(subj, 0.0) + comp_adj + trend_bonus
+        predictions[subj] = max(1, min(15, round(raw)))
+
     return predictions
+
+_difficulty_cache: dict = {}
+
+def get_ai_difficulty_adjustment(subject: str) -> float:
+    """
+    呼叫 Gemini 取得今年該科目的難度調整係數。
+    快取 24 小時避免重複呼叫。
+    """
+    cache_key = f"difficulty_{subject}_2025"
+    if cache_key in _difficulty_cache:
+        ts, val = _difficulty_cache[cache_key]
+        if time.time() - ts < 86400:  # 24小時有效
+            return val
+
+    fallback = {"數學A": -0.5, "英文": -0.3, "國文": 0.0, "自然": -0.2, "社會": 0.0}
+
+    if not GEMINI_AVAILABLE or not genai:
+        return fallback.get(subject, 0.0)
+
+    try:
+        model = genai.GenerativeModel(MODEL_NAME)
+        prompt = (
+            f"你是台灣學測分析專家。"
+            f"請根據2025年（115學年度）台灣學科能力測驗「{subject}」的實際考試難度，"
+            f"相較於2024年（114學年度），給出一個難度調整係數。"
+            f"規則：若今年比去年難，係數為負（如-0.5代表預測錄取線下修0.5級）；"
+            f"若今年比去年容易，係數為正；持平則為0。"
+            f"範圍限制在-2.0到+2.0之間。"
+            f"只回傳一個浮點數，不要任何說明或文字。"
+        )
+        res = model.generate_content(
+            prompt,
+            generation_config={"max_output_tokens": 10, "temperature": 0.1}
+        )
+        val = float(res.text.strip())
+        val = max(-2.0, min(2.0, val))
+        _difficulty_cache[cache_key] = (time.time(), val)
+        print(f"[AI難度] {subject} 係數：{val}")
+        return val
+    except Exception as e:
+        print(f"[WARN] 難度係數取得失敗 ({subject})：{e}")
+        return fallback.get(subject, 0.0)
+
+# ============================================================
+# 落點配對
+# ============================================================
+
 
 def generate_ai_comment(m: dict, gap: int, passed_threshold: bool) -> str:
     """根據落點資料、時事背景，產生一句精簡的 AI 評語（30~50字）"""
@@ -629,7 +690,7 @@ def match_majors(scores: dict, profile: dict = None) -> list:
     if profile is None:
         profile = {}
 
-    MIN_GAP_HARD = -4  # gap < -5 直接排除，太遠沒意義
+    MIN_GAP_HARD = -5  # gap < -5 直接排除，太遠沒意義
 
     all_entries: list = []
 
@@ -680,12 +741,10 @@ def match_majors(scores: dict, profile: dict = None) -> list:
         #    改用 cutoff_map 裡任何一個有資料且學生有填分的科目 ──
         if gap is None:
             for subj, cutoff_val in cutoff_map.items():
-                if scores.get(subj, 0) > 0:
-                    g = int(scores.get(subj, 0)) - cutoff_val
-                    if gap is None or g < gap:
-                        gap = g
-                        tiebreak_subject = subj
-
+                if int(scores.get(subj, 0)) > 0:
+                    gap = int(scores.get(subj, 0)) - cutoff_val
+                    tiebreak_subject = subj
+                    break
         if gap is None:
             continue
 
@@ -694,9 +753,9 @@ def match_majors(scores: dict, profile: dict = None) -> list:
 
         if not passed_threshold:
             safety = "困難"
-        elif gap >= 0:
+        elif gap > 0:
             safety = "穩健"
-        elif gap >= -2:
+        elif gap >= -1:
             safety = "挑戰"
         elif gap >= -3:
             safety = "困難"
@@ -724,7 +783,14 @@ def match_majors(scores: dict, profile: dict = None) -> list:
             for yr, thr in sorted(past.items(), key=lambda x: int(x[0]))
         }
         quota         = m.get("quota", 50)
-        admission_prob = compute_admission_probability(gap, passed_threshold, quota)
+        admission_prob = compute_admission_probability(
+            gap,
+            passed_threshold,
+            quota=m.get("quota", 50),
+            applicants=m.get("applicants", 0),
+            waitlist_count=m.get("waitlist_count", 0),
+            difficulty_trend=m.get("difficulty_trend", "stable")
+        )
         salary_year   = parse_salary_median(m.get("salary_median", 0))
         combined_pr   = calculate_combined_pr({s: scores.get(s, 0) for s in active})
         relevance     = score_relevance(m, profile)
