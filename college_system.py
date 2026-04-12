@@ -33,6 +33,7 @@ app = Flask(__name__)
 CORS(app, origins="*")
 
 _rate_store: dict = defaultdict(list)
+_chat_rate_store: dict = defaultdict(list)
 RATE_LIMIT  = 30    # 每個 IP 每小時最多 30 次分析
 RATE_WINDOW = 3600  # 時間窗：1 小時（秒）
 CHAT_RATE_LIMIT = 60
