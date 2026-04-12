@@ -380,7 +380,10 @@ def _warmup_difficulty_cache():
 
 # 延遲 5 秒執行，不阻塞啟動
 import threading
-threading.Timer(5.0, _warmup_difficulty_cache).start()
+try:
+    precompute_difficulty()
+except Exception as e:
+    print(f"[WARN] 難度預計算失敗，將使用 fallback：{e}")
 # ============================================================
 # PR 值計算
 # ============================================================
@@ -483,7 +486,7 @@ def predict_next_year_cutoff(m: dict) -> dict:
 
     # 動態從 Gemini 取得，失敗自動 fallback
     difficulty_adj = {
-        subj: get_ai_difficulty_adjustment(subj)
+        subj: _DIFFICULTY_PRECOMPUTED.get(subj, get_ai_difficulty_adjustment(subj))
         for subj in all_subjects
     }
 
@@ -685,7 +688,16 @@ def score_relevance(m_entry: dict, profile: dict) -> float:
     score += min(emp / 1000, 0.1)   # 最多 +0.1
 
     return min(score, 1.0)
+# 在 load_majors() 後面加，module level
+_DIFFICULTY_PRECOMPUTED: dict = {}
 
+def precompute_difficulty():
+    """啟動時預計算所有科目難度係數（blocking，確保完成）"""
+    global _DIFFICULTY_PRECOMPUTED
+    subjects = ["國文", "英文", "數學A", "數學B", "自然", "社會"]
+    for subj in subjects:
+        _DIFFICULTY_PRECOMPUTED[subj] = get_ai_difficulty_adjustment(subj)
+    print(f"[OK] 難度係數預計算完成：{_DIFFICULTY_PRECOMPUTED}")
 
 def match_majors(scores: dict, profile: dict = None) -> list:
     """
@@ -1257,6 +1269,9 @@ def health():
         "chat_tracked_ips": len(_chat_rate_store), # 加這行
     })
 
+@app.route("/ping")
+def ping():
+    return jsonify({"ok": True}), 200
 
 # ============================================================
 # 啟動
