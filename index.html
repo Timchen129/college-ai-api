@@ -899,9 +899,9 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
     bottom: 16px;
     z-index: 50;
     box-shadow: 0 4px 20px rgba(194,78,40,.35);
-    .analyzer-two-col{
-      grid-template-columns: 1fr !important;
-    }
+  }
+  .analyzer-two-col{
+    grid-template-columns: 1fr !important;
   }
   .scroll-hint{ display: none; }
 }
@@ -2134,7 +2134,7 @@ input[type=range]:active::-webkit-slider-thumb{
         <!-- 在 <div id="major-search"...> 之前加 -->
         <div id="next-step-banner" style="display:none;margin-bottom:12px;padding:10px 14px;
           background:linear-gradient(135deg,#1a2e40,#0f1e2c);border-radius:10px;
-          display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          align-items:center;gap:10px;flex-wrap:wrap">
           <span style="font-size:16px">📋</span>
           <div style="flex:1;min-width:0">
             <div style="font-size:11px;color:rgba(255,255,255,.6);font-family:var(--mono);margin-bottom:2px">落點確認後的下一步</div>
@@ -3953,8 +3953,17 @@ function launchConfetti(){
 document.getElementById('results-search')?.addEventListener('input', (e)=>{
   if(!e.target.value){
     _searchQuery = '';
-    const hint = document.getElementById('search-hint');
-    if(hint) hint.textContent = '';
+    // 還原 match-meta 顯示（如果有快取數據）
+    if(lastMatches.length){
+      const s = {
+        safe: lastMatches.filter(m=>m.safety==='穩健').length,
+        challenge: lastMatches.filter(m=>m.safety==='挑戰').length,
+        hard: lastMatches.filter(m=>m.safety==='困難').length,
+      };
+      const metaEl = document.getElementById('match-meta');
+      if(metaEl) metaEl.textContent =
+        `📊 ${lastMatches.length} 個科系（穩健 ${s.safe} · 挑戰 ${s.challenge} · 困難 ${s.hard}）`;
+    }
     _applyFilterAndRender();
   }
 });
