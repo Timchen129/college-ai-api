@@ -2847,6 +2847,21 @@ function renderScoreViz(){
 }
 
 function updateSub(id, v) {
+  const DIFFICULTY_HINT = {
+    chi:  {15:'頂標',14:'前標',12:'均標',10:'後標'},
+    eng:  {15:'頂標',14:'前標',12:'均標',10:'後標'},
+    matA: {13:'頂標(今年偏難)',11:'前標',8:'均標',6:'後標'},
+    sci:  {13:'頂標',11:'前標',8:'均標',6:'後標'},
+  };
+  function getDifficultyHint(id, v) {
+    const table = DIFFICULTY_HINT[id];
+    if (!table) return '';
+    const thresholds = Object.keys(table).map(Number).sort((a,b)=>b-a);
+    for (const t of thresholds) {
+      if (v >= t) return table[t];
+    }
+    return '後標以下';
+  }
   const el = document.getElementById('v-' + id);
   el.textContent = v;
   el.classList.remove('bump');
@@ -3342,6 +3357,7 @@ async function runAnalysis(e){
   // Ripple effect on button
   if(e){
     const btn=document.getElementById('analyzeBtn');
+    if (btn.disabled) return;
     const r=btn.getBoundingClientRect();
     btn.style.setProperty('--x',((e.clientX-r.left)/r.width*100)+'%');
     btn.style.setProperty('--y',((e.clientY-r.top)/r.height*100)+'%');
@@ -3388,7 +3404,28 @@ async function runAnalysis(e){
   document.getElementById('match-meta').textContent='// 載入中…';
 
   try{
-    const res=await fetch(`${API_BASE}/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scores,profile})});
+    const controller = new AbortController();
+    const TIMEOUT_MS = 55000; // 55 秒
+
+    // 5 秒後還沒回來 → 顯示「伺服器喚醒中」提示
+    const coldStartTimer = setTimeout(() => {
+      document.getElementById('result-time').textContent = '⏳ 伺服器首次喚醒中，約需 30 秒…';
+    }, 5000);
+
+    const hardTimeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+    let res;
+    try {
+      res = await fetch(`${API_BASE}/analyze`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({scores, profile}),
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(coldStartTimer);
+      clearTimeout(hardTimeout);
+    }
     const data=await res.json();
     if(data.status!=='success'){
       const msg=data.message||'分析失敗';
@@ -3951,22 +3988,48 @@ function launchConfetti(){
 
 // Perfect-score check now runs only inside runAnalysis() after backend success.
 document.getElementById('results-search')?.addEventListener('input', (e)=>{
-  if(!e.target.value){
-    _searchQuery = '';
-    // 還原 match-meta 顯示（如果有快取數據）
+  _searchQuery = e.target.value.toLowerCase().trim();
+
+  if(!_searchQuery){
+    // 還原 match-meta
     if(lastMatches.length){
       const s = {
-        safe: lastMatches.filter(m=>m.safety==='穩健').length,
+        safe:      lastMatches.filter(m=>m.safety==='穩健').length,
         challenge: lastMatches.filter(m=>m.safety==='挑戰').length,
-        hard: lastMatches.filter(m=>m.safety==='困難').length,
+        hard:      lastMatches.filter(m=>m.safety==='困難').length,
       };
       const metaEl = document.getElementById('match-meta');
       if(metaEl) metaEl.textContent =
         `📊 ${lastMatches.length} 個科系（穩健 ${s.safe} · 挑戰 ${s.challenge} · 困難 ${s.hard}）`;
     }
-    _applyFilterAndRender();
+
+    // ✅ 修復：同時清掉 strategy-hint（原本忘記還原）
+    const strategyEl = document.getElementById('strategy-hint');
+    if(strategyEl) strategyEl.innerHTML = '';
+
+  } else {
+    // 有搜尋關鍵字時更新提示文字
+    const metaEl = document.getElementById('match-meta');
+    if(metaEl) metaEl.textContent = `🔍 搜尋「${_searchQuery}」的結果`;
   }
+
+  _applyFilterAndRender();
 });
+/* ══ Render 冷啟動探針 ══ */
+async function pingBackend(){
+  try{
+    await fetch(`${API_BASE}/ping`,{
+      method:'GET',
+      signal: AbortSignal.timeout(4000)
+    });
+    console.log('[ping] 後端喚醒成功');
+  }catch(e){
+    console.log('[ping] 後端未回應，等待中');
+  }
+}
+// 頁面載入立即 ping，之後每 8 分鐘 ping 一次（Render 10 分鐘無活動才睡）
+pingBackend();
+setInterval(pingBackend, 8 * 60 * 1000);
 
 initMagnetic();
 
