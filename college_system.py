@@ -372,6 +372,15 @@ store_memory(
     tag="knowledge"
 )
 
+# 啟動時預熱難度係數快取，避免第一次請求時大量呼叫 Gemini
+def _warmup_difficulty_cache():
+    subjects = ["國文", "英文", "數學A", "數學B", "自然", "社會"]
+    for subj in subjects:
+        get_ai_difficulty_adjustment(subj)
+
+# 延遲 5 秒執行，不阻塞啟動
+import threading
+threading.Timer(5.0, _warmup_difficulty_cache).start()
 # ============================================================
 # PR 值計算
 # ============================================================
@@ -595,7 +604,7 @@ def generate_ai_comment(m: dict, gap: int, passed_threshold: bool) -> str:
     elif gap == 1:
         safety_note = "分差有把握"
     elif gap == 0:
-        safety_note = "與去年錄取線相當"
+        safety_note = "決勝科目與去年錄取線相當，約有六成把握"
     elif gap == -1:
         safety_note = "略低於去年錄取線，需評估"
     else:
@@ -899,7 +908,7 @@ def generate_advice(profile: dict, matches: list) -> str:
     profile.get("scores"), 
     profile.get("name", ""),
     [(m["school"], m["major"]) for m in matches]
-)
+    )
     cached = cache_get(cache_key)
     if cached:
         return cached
