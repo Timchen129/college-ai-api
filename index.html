@@ -556,7 +556,7 @@ input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 
 .sum-num.sage{color:var(--sage)}.sum-num.slate{color:var(--slate)}.sum-num.clay{color:var(--clay)}.sum-num.plum{color:var(--plum)}
 .sum-label{font-size:10px;color:var(--ink3);margin-top:4px;font-family:var(--mono)}
 .sum-emoji{font-size:16px;position:absolute;top:8px;right:10px;opacity:.4}
-.match-meta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.match-meta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .match-meta-text{font-size:11px;color:var(--ink3);font-family:var(--mono)}
 .match-sort-btn{font-size:11px;font-family:var(--mono);color:var(--terra);background:var(--terraL);border:1px solid rgba(194,78,40,.2);padding:3px 10px;border-radius:100px;cursor:pointer;transition:all .2s}
 .match-sort-btn:hover{background:var(--terra);color:#fff}
@@ -626,7 +626,17 @@ input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 
 .mc-stat{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink3)}
 .career-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
 .ctag{padding:2px 8px;background:var(--slateL);border:1px solid rgba(109,138,170,.15);color:var(--slate);border-radius:4px;font-size:10px;font-family:var(--mono)}
-.challenge-warn{margin-top:8px;padding:6px 9px;background:var(--plumL);border-radius:6px;border-left:2px solid var(--plum);font-size:11px;color:var(--plum);font-family:var(--mono)}
+.challenge-warn{
+  margin-top:8px;padding:9px 12px;
+  background:rgba(220,38,38,.1);
+  border-radius:8px;
+  border:1.5px solid rgba(220,38,38,.45);
+  border-left:4px solid #dc2626;
+  font-size:12px;color:#b91c1c;
+  font-family:var(--mono);font-weight:600;
+  display:flex;align-items:flex-start;gap:6px;
+}
+
 
 /* Skeleton */
 .skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--cream3) 50%,var(--surface) 75%);background-size:1200px 100%;animation:shimmer 1.6s ease-in-out infinite;border-radius:4px}
@@ -2167,9 +2177,9 @@ input[type=range]:active::-webkit-slider-thumb{
           </button>
         </div>
 
-      div class="match-meta-row">
-        <div class="results-section-label" id="match-meta">載入中…</div>
-          <div style="display:flex;gap:6px;align-items:center">
+        <div class="match-meta-row" style="margin-bottom:10px;">
+          <div class="results-section-label" id="match-meta">載入中…</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-left:auto">
             <button class="match-sort-btn" id="collapse-inline-btn"
               onclick="collapseMoreCards()"
               style="display:none;background:var(--cream3);color:var(--ink3);border-color:var(--border2)">
@@ -3153,7 +3163,10 @@ visible.forEach((m, idx)=>{
     card.className=`match-card-compact${m._pref?' pref-hl':''}${(isChallenge||isHard)?' challenge-card':''}`;
     card.style.animationDelay=`${idx*.05}s`;
 
-const multEntries = Object.entries(m.multipliers || {}).filter(([_, w]) => w > 0);
+const multEntries = Object.entries(m.multipliers || {})
+  .filter(([_, w]) => w > 0)
+  .sort((a, b) => b[1] - a[1]);  // ← 加這行，倍率高的排前面
+
 const multHtml = multEntries.map(([subj, w]) => {
   const subjectScore = m.subject_detail?.[subj]?.student;
   const isKey = m.tiebreak_subject === subj;
@@ -3214,6 +3227,7 @@ card.innerHTML = `
 
       <div class="mc-stats" style="margin-top:7px">
         <div class="mc-stat">💰 ${salStr}</div>
+        ${m.quota ? `<div class="mc-stat">👥 錄取 ${m.quota} 人</div>` : ''}
         ${m.group ? `<div class="mc-stat">🏫 ${m.group}</div>` : ''}
         ${m.employment_rate ? `<div class="mc-stat">📊 就業率 ${m.employment_rate}%</div>` : ''}
         ${m.ai_impact && m.ai_impact !== '未知' ? `<div class="mc-stat">🤖 ${m.ai_impact}</div>` : ''}
