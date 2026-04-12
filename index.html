@@ -2167,9 +2167,16 @@ input[type=range]:active::-webkit-slider-thumb{
           </button>
         </div>
 
-        <div class="match-meta-row">
-          <div class="results-section-label" id="match-meta">載入中…</div>
-          <button class="match-sort-btn" id="sort-btn" onclick="toggleSort()">⇅ 降冪排序</button>
+      div class="match-meta-row">
+        <div class="results-section-label" id="match-meta">載入中…</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="match-sort-btn" id="collapse-inline-btn"
+              onclick="collapseMoreCards()"
+              style="display:none;background:var(--cream3);color:var(--ink3);border-color:var(--border2)">
+              ▲ 收起
+            </button>
+            <button class="match-sort-btn" id="sort-btn" onclick="toggleSort()">⇅ 降冪排序</button>
+          </div>
         </div>
 
         <!-- 三欄卡片區 -->
@@ -2963,6 +2970,7 @@ function showMoreCards(){
   colBtn.style.display = 'flex';
   // show-more-row 繼續顯示（因為收起按鈕還在）
   document.getElementById('show-more-row').style.display = 'flex';
+  document.getElementById('collapse-inline-btn').style.display = '';
 }
 
 function collapseMoreCards(){
@@ -2978,6 +2986,7 @@ function collapseMoreCards(){
   document.getElementById('show-more-btn').style.display = 'flex';
   document.getElementById('results-panel')
     ?.scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('collapse-inline-btn').style.display = 'none';
 }
 
 /* ── Prob ring ── */
