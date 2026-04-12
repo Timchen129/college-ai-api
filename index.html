@@ -263,7 +263,7 @@ body{font-family:var(--font);background:var(--cream);color:var(--ink);overflow-x
 /* ═══ KEYFRAMES ═══ */
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes floatA{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
 @keyframes floatB{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-6px) rotate(-3deg)}}
 @keyframes floatC{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.05)}}
@@ -536,7 +536,7 @@ input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 
 
 /* ═══ RESULTS ═══ */
 .results-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:1rem;text-align:center;padding:2rem}
-.empty-mascot{width:120px;height:120px;margin:0 auto;animation:float 4s ease-in-out infinite}
+.empty-mascot{width:120px;height:120px;margin:0 auto;animation:float 6s ease-in-out infinite}
 .empty-mascot svg{width:100%;height:100%}
 .empty-steps{display:flex;flex-direction:column;gap:6px;width:100%;max-width:260px;margin-top:.5rem}
 .empty-step{background:var(--cream2);border:1px solid var(--border);border-radius:var(--r);padding:9px 14px;font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:8px;transition:transform .2s}
@@ -579,6 +579,9 @@ input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 
 .badge.target{background:var(--slateL);color:var(--slate)}
 .badge.reach{background:var(--clayL);color:var(--clay)}
 .badge.challenge{background:var(--plumL);color:var(--plum)}
+.match-card-compact.challenge-card[data-safety="困難"]{
+  border-left: 3px solid rgba(220,38,38,.5);
+}
 .chip{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-family:var(--mono);padding:2px 7px;border-radius:4px;white-space:nowrap}
 .chip-pref{background:var(--terraL);color:var(--terra);border:1px solid rgba(194,78,40,.2)}
 .chip-related{background:var(--surface);color:var(--ink3);border:1px solid var(--border2)}
@@ -745,8 +748,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 .footer-links{display:flex;gap:1.5rem;flex-wrap:wrap}
 .footer-links a{color:var(--ink3);text-decoration:none;font-size:12.5px;transition:color .2s}
 .footer-links a:hover{color:var(--ink2)}
-.footer-note{font-size:11px;color:var(--ink3);margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);max-width:1100px;margin-left:auto;margin-right:auto;text-align:center}
-
+.footer-note{font-size:12px;color:var(--ink2);margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);max-width:1100px;margin-left:auto;margin-right:auto;text-align:center}
 /* ═══ INTERACTIVE ELEMENTS ═══ */
 /* Scroll reveal */
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s var(--ease-spring)}
@@ -891,7 +893,15 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
   .summary-row{grid-template-columns:1fr 1fr}
   .hero-actions{flex-direction:column}
 }
-
+@media(max-width:768px){
+  .btn-analyze{
+    position: sticky;
+    bottom: 16px;
+    z-index: 50;
+    box-shadow: 0 4px 20px rgba(194,78,40,.35);
+  }
+  .scroll-hint{ display: none; }
+}
 /* ═══════════════════════════════════
    INSPIRATIONAL PHOTO BANNERS
 ═══════════════════════════════════ */
@@ -969,7 +979,7 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 
 .show-more-row{
   display:flex;align-items:center;gap:10px;
-  margin:10px 0;
+  margin:10px 0 16px;
 }
 .show-more-btn{
   flex:1;padding:9px 16px;
@@ -1906,6 +1916,11 @@ input[type=range]:active::-webkit-slider-thumb{
 
         <!-- ── Tab: 成績 ── -->
         <div id="tab-scores">
+          <div style="font-size:11px;color:var(--ink3);font-family:var(--mono);
+                      margin-bottom:12px;padding:8px 10px;background:var(--cream3);
+                      border-radius:7px;border-left:2px solid var(--slate)">
+            💡 台灣學測滿分 15 級分，頂標約 13–14，均標約 8–9
+          </div>
           <div class="score-section-label">必考科目</div>
           <div class="subject-grid">
             <div class="sub-item">
@@ -2071,7 +2086,7 @@ input[type=range]:active::-webkit-slider-thumb{
   </div><!-- /兩欄 -->
 
   <!-- ── 下方：結果面板（全寬）── -->
-  <div class="panel analyzer-results-wrap" id="results-panel" style="margin-top:1.4rem;display:none">
+  <div class="panel analyzer-results-wrap" id="results-panel" style="margin-top:1.4rem;">
     <div class="panel-hd">
       <span class="panel-title">📈 分析結果</span>
       <span style="font-size:11px;color:var(--ink3);font-family:var(--mono)" id="result-time">—</span>
@@ -2113,7 +2128,20 @@ input[type=range]:active::-webkit-slider-thumb{
 
       <!-- 結果內容 -->
       <div id="results-content" style="display:none">
-
+        <!-- 在 <div id="major-search"...> 之前加 -->
+        <div id="next-step-banner" style="display:none;margin-bottom:12px;padding:10px 14px;
+          background:linear-gradient(135deg,#1a2e40,#0f1e2c);border-radius:10px;
+          display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:16px">📋</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:rgba(255,255,255,.6);font-family:var(--mono);margin-bottom:2px">落點確認後的下一步</div>
+            <div style="font-size:12.5px;color:#fff">備審資料上傳截止最早 4/30，現在就該開始準備學習歷程</div>
+          </div>
+          <button onclick="showPage('timeline')" style="padding:6px 14px;border-radius:100px;
+            background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+            color:#fff;font-family:var(--mono);font-size:11px;cursor:pointer;
+            white-space:nowrap;flex-shrink:0">查看時程 →</button>
+        </div>
         <!-- 搜尋列 -->
         <div id="major-search" style="margin-bottom:10px">
           <div class="search-box-wrap" style="max-width:100%;margin-bottom:8px">
@@ -2121,14 +2149,6 @@ input[type=range]:active::-webkit-slider-thumb{
                   placeholder="搜尋科系名稱或學校…"
                   oninput="onMajorSearchInput(this.value)">
           </div>
-          <div style="display:flex;gap:5px;flex-wrap:wrap" id="major-cat-btns">
-            <button class="cat-tab active" data-mcat="all" onclick="switchMajorCat('all',this)" style="flex:none;padding:5px 14px;font-size:11.5px">全部</button>
-            <button class="cat-tab" data-mcat="理工" onclick="switchMajorCat('理工',this)" style="flex:none;padding:5px 14px;font-size:11.5px">⚙️ 理工</button>
-            <button class="cat-tab" data-mcat="文商" onclick="switchMajorCat('文商',this)" style="flex:none;padding:5px 14px;font-size:11.5px">📚 文商</button>
-            <button class="cat-tab" data-mcat="醫藥" onclick="switchMajorCat('醫藥',this)" style="flex:none;padding:5px 14px;font-size:11.5px">🏥 醫藥</button>
-            <button class="cat-tab" data-mcat="農學" onclick="switchMajorCat('農學',this)" style="flex:none;padding:5px 14px;font-size:11.5px">🌱 農學</button>
-          </div>
-          <span style="font-size:10px;color:var(--ink3);font-family:var(--mono);display:block;margin-top:4px" id="search-hint"></span>
         </div>
 
         <!-- 安全層篩選 -->
@@ -3057,11 +3077,34 @@ function buildSafetyBand(m){
 /* ── History mini ── */
 function buildHistory(past){
   if(!past||!Object.keys(past).length) return '';
-  const items=Object.entries(past).map(([yr,thr])=>{
-    const vals=Object.values(thr).join('/');
+  const years = Object.keys(past).sort();
+  
+  // 計算趨勢
+  let trendHtml = '';
+  if(years.length >= 2){
+    const lastYr = years[years.length-1];
+    const prevYr = years[years.length-2];
+    const lastVals = Object.values(past[lastYr]).filter(v=>typeof v==='number');
+    const prevVals = Object.values(past[prevYr]).filter(v=>typeof v==='number');
+    if(lastVals.length && prevVals.length){
+      const lastAvg = lastVals.reduce((a,b)=>a+b,0)/lastVals.length;
+      const prevAvg = prevVals.reduce((a,b)=>a+b,0)/prevVals.length;
+      const delta = lastAvg - prevAvg;
+      if(delta > 0.3)       trendHtml = `<span style="color:var(--clay);font-size:9px;font-family:var(--mono)">↑ 門檻上升中</span>`;
+      else if(delta < -0.3) trendHtml = `<span style="color:var(--sage);font-size:9px;font-family:var(--mono)">↓ 門檻下降中</span>`;
+      else                  trendHtml = `<span style="color:var(--slate);font-size:9px;font-family:var(--mono)">→ 門檻穩定</span>`;
+    }
+  }
+
+  const items = years.map(yr=>{
+    const vals = Object.values(past[yr]).join('/');
     return `<span class="mc-history-item"><span class="mc-history-yr">${yr}年</span><span class="mc-history-val">${vals}</span></span>`;
   }).join('');
-  return `<div class="mc-history">歷年門檻：${items}</div>`;
+
+  return `<div class="mc-history" style="justify-content:space-between">
+    <div style="display:flex;gap:10px;flex-wrap:wrap">歷年門檻：${items}</div>
+    ${trendHtml}
+  </div>`;
 }
 
 /* ── Render match cards (compact + hover-expand, category tabs, search) ── */
@@ -3161,6 +3204,7 @@ visible.forEach((m, idx)=>{
 
     const card=document.createElement('div');
     card.className=`match-card-compact${m._pref?' pref-hl':''}${(isChallenge||isHard)?' challenge-card':''}`;
+    if(isHard) card.dataset.safety = '困難';
     card.style.animationDelay=`${idx*.05}s`;
 
 const multEntries = Object.entries(m.multipliers || {})
@@ -3185,6 +3229,7 @@ card.innerHTML = `
     <!-- 第一行：badge + 機率 + 箭頭 -->
     <div style="display:flex;align-items:center;gap:6px">
       <span class="mcc-badge badge ${sc}">${badgeText}</span>
+      ${!isHard && !isChallenge ? `<span style="font-size:9px;color:var(--ink3);font-family:var(--mono);padding:1px 5px;background:var(--surface);border-radius:3px;flex-shrink:0">需過一階</span>` : ''}
       ${chips.join('')}
       <span class="mcc-prob-pill" style="margin-left:auto;background:${probColor}22;color:${probColor};border:1px solid ${probColor}44;font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 7px;border-radius:100px;flex-shrink:0">
         ${pct}%
@@ -3373,7 +3418,34 @@ async function runAnalysis(e){
     const total=data.matches?.length||0;
     document.getElementById('match-meta').textContent =
       `📊 ${total} 個科系（穩健 ${s.safe||s['穩健']||0} · 挑戰 ${s.challenge||s['挑戰']||0} · 困難 ${s.hard||s['困難']||0}）`;
+        // 在 match-meta 下方加策略建議區塊
+    const safeN  = s.safe      || s['穩健'] || 0;
+    const chalN  = s.challenge || s['挑戰'] || 0;
+    const hardN  = s.hard      || s['困難'] || 0;
 
+    let strategyHtml = '';
+    if(safeN === 0){
+      strategyHtml = `<div style="margin-top:8px;padding:8px 12px;background:rgba(220,38,38,.08);border-left:3px solid #dc2626;border-radius:6px;font-size:12px;color:#b91c1c;font-family:var(--mono)">
+        ⚠ 目前無穩健志願，建議調整填寫方向或考慮備案學校
+      </div>`;
+    } else if(safeN >= 3 && chalN >= 2){
+      strategyHtml = `<div style="margin-top:8px;padding:8px 12px;background:var(--sageL);border-left:3px solid var(--sage);border-radius:6px;font-size:12px;color:#2e5e3a;font-family:var(--mono)">
+        ✓ 建議策略：選 2–3 個穩健保底、2 個挑戰衝刺、1 個困難試試
+      </div>`;
+    } else {
+      strategyHtml = `<div style="margin-top:8px;padding:8px 12px;background:var(--slateL);border-left:3px solid var(--slate);border-radius:6px;font-size:12px;color:#2a4a6e;font-family:var(--mono)">
+        💡 個人申請最多填 6 個志願，建議穩健 2 個 + 挑戰 2–3 個搭配
+      </div>`;
+    }
+
+    // 插入到 match-meta 後面
+    const metaEl = document.getElementById('match-meta');
+    // 先移除舊的策略提示（避免重複）
+    document.getElementById('strategy-hint')?.remove();
+    const strategyEl = document.createElement('div');
+    strategyEl.id = 'strategy-hint';
+    strategyEl.innerHTML = strategyHtml;
+    metaEl.parentNode.insertBefore(strategyEl, metaEl.nextSibling);
     showingAll = false;
     currentGroup = 'all';
     // Reset group tabs
@@ -3386,6 +3458,11 @@ async function runAnalysis(e){
       `${now.getMonth()+1}/${now.getDate()} ${now.toLocaleTimeString('zh-TW')} 分析`;
     document.getElementById('results-panel').style.display = '';
     notify('✓ 落點分析完成 🎉');
+    document.getElementById('next-step-banner').style.display = 'flex';
+    setTimeout(()=>{
+      document.getElementById('results-panel')
+        ?.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 300);
 
     // ── Perfect Score check — only triggered here, after backend success ──
     // 條件：國、英、數A、數B、社、自全部 15 才觸發
@@ -3583,7 +3660,8 @@ function attachCardInteractions(card){
 
     // 展開後滾動讓卡片完整顯示
     setTimeout(()=>{
-      card.scrollIntoView({behavior:'smooth', block:'nearest'});
+      const cardTop = card.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({top: cardTop, behavior:'smooth'});
     }, 420);
   });
 }
