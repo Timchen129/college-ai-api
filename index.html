@@ -899,6 +899,9 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
     bottom: 16px;
     z-index: 50;
     box-shadow: 0 4px 20px rgba(194,78,40,.35);
+    .analyzer-two-col{
+      grid-template-columns: 1fr !important;
+    }
   }
   .scroll-hint{ display: none; }
 }
@@ -1900,7 +1903,7 @@ input[type=range]:active::-webkit-slider-thumb{
   </div>
 
   <!-- 兩欄：左側輸入 + 右側提示 -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;margin-bottom:1.4rem">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;margin-bottom:1.4rem" class="analyzer-two-col">
     
     <!-- 左側：輸入面板 -->
     <div class="panel">
@@ -2086,7 +2089,7 @@ input[type=range]:active::-webkit-slider-thumb{
   </div><!-- /兩欄 -->
 
   <!-- ── 下方：結果面板（全寬）── -->
-  <div class="panel analyzer-results-wrap" id="results-panel" style="margin-top:1.4rem;">
+  <div class="panel analyzer-results-wrap" id="results-panel" style="margin-top:2.4rem;border-top:2px solid var(--border);">
     <div class="panel-hd">
       <span class="panel-title">📈 分析結果</span>
       <span style="font-size:11px;color:var(--ink3);font-family:var(--mono)" id="result-time">—</span>
@@ -2980,11 +2983,9 @@ function _applyFilterAndRender(){
   showingAll = false;       // 重設為只顯示前10筆
   renderMatchCards(lastMatches, lastSchoolPrefVal);
   // 更新 search-hint 提示文字
-  const hint = document.getElementById('search-hint');
-  if(hint && _searchQuery){
-    hint.textContent = `搜尋中：「${_searchQuery}」`;
-  } else if(hint){
-    hint.textContent = '';
+  const metaEl = document.getElementById('match-meta');
+  if(metaEl && _searchQuery){
+    metaEl.textContent = `🔍 搜尋「${_searchQuery}」的結果`;
   }
 }
 
