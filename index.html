@@ -3995,24 +3995,28 @@ async function runAnalysis(e){
     btn.style.setProperty('--y',((e.clientY-r.top)/r.height*100)+'%');
   }
 
-  const chiV=+document.getElementById('s-chi').value;
-  const engV=+document.getElementById('s-eng').value;
-  const matAV=+document.getElementById('s-matA').value;
-  const sciV=+document.getElementById('s-sci').value;
+  const chiV  = +document.getElementById('s-chi').value;
+  const engV  = +document.getElementById('s-eng').value;
+  const matAV = +document.getElementById('s-matA').value;
+  const matBV = +document.getElementById('s-matB').value;
+  const sciV  = +document.getElementById('s-sci').value;
+  const socV  = +document.getElementById('s-soc').value;
 
-  // Client-side validation
-  const missing=[];
-  if(!chiV||chiV<1||chiV>15) missing.push('國文');
-  if(!engV||engV<1||engV>15) missing.push('英文');
-  if(!matAV||matAV<1||matAV>15) missing.push('數學A');
-  if(!sciV||sciV<1||sciV>15) missing.push('自然');
-  if(missing.length){notify('請確認必考科目：'+missing.join('、'),false);return;}
+  const missing = [];
+  if(!chiV  || chiV  < 1 || chiV  > 15) missing.push('國文');
+  if(!engV  || engV  < 1 || engV  > 15) missing.push('英文');
+  if(matAV < 1 && matBV < 1) missing.push('數學A 或 數學B（至少填一科）');
 
-  const scores={'國文':chiV,'英文':engV,'數學A':matAV,'自然':sciV};
-  const matB=+document.getElementById('s-matB').value;
-  const soc=+document.getElementById('s-soc').value;
-  if(matB>0) scores['數學B']=matB;
-  if(soc>0) scores['社會']=soc;
+  if(missing.length){
+    notify('請確認：' + missing.join('、'), false);
+    return;
+  }
+
+  const scores = {'國文': chiV, '英文': engV};
+  if(matAV > 0) scores['數學A'] = matAV;
+  if(matBV > 0) scores['數學B'] = matBV;
+  if(sciV  > 0) scores['自然']  = sciV;
+  if(socV  > 0) scores['社會']  = socV;
 
   const schoolPref=document.getElementById('school-pref').value;
   const schoolPrefVal=schoolPref!=='any'?schoolPref:null;
