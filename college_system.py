@@ -372,18 +372,9 @@ store_memory(
     tag="knowledge"
 )
 
-# 啟動時預熱難度係數快取，避免第一次請求時大量呼叫 Gemini
-def _warmup_difficulty_cache():
-    subjects = ["國文", "英文", "數學A", "數學B", "自然", "社會"]
-    for subj in subjects:
-        get_ai_difficulty_adjustment(subj)
-
 # 延遲 5 秒執行，不阻塞啟動
 import threading
-try:
-    precompute_difficulty()
-except Exception as e:
-    print(f"[WARN] 難度預計算失敗，將使用 fallback：{e}")
+
 # ============================================================
 # PR 值計算
 # ============================================================
@@ -688,7 +679,7 @@ def score_relevance(m_entry: dict, profile: dict) -> float:
     score += min(emp / 1000, 0.1)   # 最多 +0.1
 
     return min(score, 1.0)
-# 在 load_majors() 後面加，module level
+
 _DIFFICULTY_PRECOMPUTED: dict = {}
 
 def precompute_difficulty():
@@ -698,6 +689,11 @@ def precompute_difficulty():
     for subj in subjects:
         _DIFFICULTY_PRECOMPUTED[subj] = get_ai_difficulty_adjustment(subj)
     print(f"[OK] 難度係數預計算完成：{_DIFFICULTY_PRECOMPUTED}")
+# ── 伺服器啟動時立即預計算，確保第一次請求不卡頓 ──
+    try:
+        precompute_difficulty()
+    except Exception as e:
+        print(f"[WARN] 難度預計算失敗，將使用 fallback：{e}")
 
 def match_majors(scores: dict, profile: dict = None) -> list:
     """
@@ -779,11 +775,8 @@ def match_majors(scores: dict, profile: dict = None) -> list:
             safety = "穩健"
         elif gap >= -1:
             safety = "挑戰"
-        elif gap >= -3:
-            safety = "困難"
         else:
-            # 理論上不會到這裡，因為 MIN_GAP_HARD = -4 已排除
-            continue
+            safety = "困難"
 
         subject_detail = {}
         for subj, mult in multipliers.items():
@@ -816,6 +809,16 @@ def match_majors(scores: dict, profile: dict = None) -> list:
         salary_year   = parse_salary_median(m.get("salary_median", 0))
         combined_pr   = calculate_combined_pr({s: scores.get(s, 0) for s in active})
         relevance     = score_relevance(m, profile)
+
+        try:
+            ai_comment_val = generate_ai_comment(m, gap, passed_threshold)
+        except Exception:
+            ai_comment_val = ""
+
+        try:
+            predicted_cutoff_val = predict_next_year_cutoff(m)
+        except Exception:
+            predicted_cutoff_val = {}
 
         entry = {
             "school":               m["school"],
