@@ -1927,19 +1927,43 @@ input[type=range]:active::-webkit-slider-thumb{
           <div class="score-section-label">必考科目</div>
           <div class="subject-grid">
             <div class="sub-item">
-              <div class="sub-label">國文<span class="sub-val" id="v-chi">7</span></div>
+              <div class="sub-label">
+                國文
+                <span id="hint-chi" style="font-size:9px;font-family:var(--mono);
+                      color:var(--slate);background:var(--slateL);padding:1px 6px;
+                      border-radius:3px;margin-left:2px;display:none"></span>
+                <span class="sub-val" id="v-chi">7</span>
+              </div>
               <input type="range" id="s-chi" min="1" max="15" value="7" oninput="updateSub('chi',this.value)">
             </div>
             <div class="sub-item">
-              <div class="sub-label">英文<span class="sub-val" id="v-eng">7</span></div>
+              <div class="sub-label">
+                英文
+                <span id="hint-eng" style="font-size:9px;font-family:var(--mono);
+                      color:var(--slate);background:var(--slateL);padding:1px 6px;
+                      border-radius:3px;margin-left:2px;display:none"></span>
+                <span class="sub-val" id="v-eng">7</span>
+              </div>
               <input type="range" id="s-eng" min="1" max="15" value="7" oninput="updateSub('eng',this.value)">
             </div>
             <div class="sub-item">
-              <div class="sub-label">數學A<span class="sub-val" id="v-matA">7</span></div>
+              <div class="sub-label">
+                數學A
+                <span id="hint-matA" style="font-size:9px;font-family:var(--mono);
+                      color:var(--clay);background:var(--clayL);padding:1px 6px;
+                      border-radius:3px;margin-left:2px;display:none"></span>
+                <span class="sub-val" id="v-matA">7</span>
+              </div>
               <input type="range" id="s-matA" min="1" max="15" value="7" oninput="updateSub('matA',this.value)">
             </div>
             <div class="sub-item">
-              <div class="sub-label">自然<span class="sub-val" id="v-sci">7</span></div>
+              <div class="sub-label">
+                自然
+                <span id="hint-sci" style="font-size:9px;font-family:var(--mono);
+                      color:var(--slate);background:var(--slateL);padding:1px 6px;
+                      border-radius:3px;margin-left:2px;display:none"></span>
+                <span class="sub-val" id="v-sci">7</span>
+              </div>
               <input type="range" id="s-sci" min="1" max="15" value="7" oninput="updateSub('sci',this.value)">
             </div>
           </div>
@@ -2867,6 +2891,13 @@ function updateSub(id, v) {
   el.classList.remove('bump');
   void el.offsetWidth;
   el.classList.add('bump');
+    // 更新難度提示標籤（只有 matA 目前有提示）
+  const hintEl = document.getElementById('hint-' + id);
+  if(hintEl){
+    const hint = getDifficultyHint(id, +v);
+    hintEl.textContent = hint;
+    hintEl.style.display = hint ? '' : 'none';
+  }
   updateTotal();
   renderScoreViz();
 
@@ -3354,10 +3385,10 @@ card.innerHTML = `
 
 /* ── Main ── */
 async function runAnalysis(e){
-  // Ripple effect on button
+  const btn = document.getElementById('analyzeBtn');
+  if (btn.disabled) return;   // ← 移到外面，不管有沒有 event 都防重複點擊
+
   if(e){
-    const btn=document.getElementById('analyzeBtn');
-    if (btn.disabled) return;
     const r=btn.getBoundingClientRect();
     btn.style.setProperty('--x',((e.clientX-r.left)/r.width*100)+'%');
     btn.style.setProperty('--y',((e.clientY-r.top)/r.height*100)+'%');
@@ -3409,8 +3440,9 @@ async function runAnalysis(e){
 
     // 5 秒後還沒回來 → 顯示「伺服器喚醒中」提示
     const coldStartTimer = setTimeout(() => {
-      document.getElementById('result-time').textContent = '⏳ 伺服器首次喚醒中，約需 30 秒…';
-    }, 5000);
+        document.getElementById('result-time').textContent = '⏳ 伺服器喚醒中，請稍候 30 秒…';
+        notify('🌙 後端伺服器首次喚醒中，請稍待…', true);
+    }, 3000);
 
     const hardTimeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -3510,12 +3542,61 @@ async function runAnalysis(e){
       if(allFifteen) showPerfectCelebration();
     })();
 
-  }catch(err){
-    document.getElementById('result-time').textContent='分析失敗';
-    notify('分析失敗：'+err.message,false);
-    document.getElementById('analyzeBtn').disabled=false;
-    document.getElementById('btn-text').style.display='';
-    document.getElementById('btn-spinner').style.display='none';
+  } catch(err) {
+      const isTimeout = err.name === 'AbortError' || err.message?.includes('abort');
+      const isNetwork = err.message?.includes('fetch') || err.message?.includes('network') || err.message?.includes('Failed');
+      
+      let userMsg = '分析失敗，請再試一次';
+      let timeMsg = '連線失敗';
+
+      if(isTimeout){
+          userMsg = '⏳ 伺服器回應超時（首次使用需喚醒，約 30–60 秒）';
+          timeMsg = '超時，請重試';
+      } else if(isNetwork){
+          userMsg = '🌐 網路連線異常，請確認網路後重試';
+          timeMsg = '網路異常';
+      } else if(err.message){
+          userMsg = err.message;
+          timeMsg = '分析失敗';
+      }
+
+      document.getElementById('result-time').textContent = timeMsg;
+
+      // 在結果區顯示友善的錯誤說明 + 重試按鈕
+      document.getElementById('match-list').innerHTML = `
+          <div style="grid-column:1/-1;padding:2rem;text-align:center;
+                      background:var(--cream2);border:1px solid var(--border);
+                      border-radius:var(--r2)">
+              <div style="font-size:2rem;margin-bottom:.8rem">😵</div>
+              <div style="font-family:var(--serif);font-size:1.1rem;margin-bottom:.5rem">
+                  分析未完成
+              </div>
+              <div style="font-size:13px;color:var(--ink3);max-width:320px;
+                          margin:0 auto 1.2rem;line-height:1.7">
+                  ${userMsg}
+              </div>
+              ${isTimeout ? `
+              <div style="font-size:11.5px;color:var(--ink3);background:var(--cream3);
+                          padding:8px 14px;border-radius:8px;margin-bottom:1rem;
+                          font-family:var(--mono);max-width:300px;margin:0 auto 1rem">
+                  💡 Render 免費版伺服器閒置後會休眠，第一次請求需要 30–60 秒喚醒，
+                  喚醒後速度正常。
+              </div>` : ''}
+              <button onclick="runAnalysis(null)"
+                  style="padding:10px 28px;background:var(--terra);color:#fff;
+                        border:none;border-radius:100px;font-family:var(--font);
+                        font-size:14px;cursor:pointer;transition:all .2s">
+                  🔄 重新分析
+              </button>
+          </div>
+      `;
+      document.getElementById('results-content').style.display = 'block';
+      document.getElementById('results-empty').style.display = 'none';
+
+      notify(isTimeout ? '⏳ 超時，點「重新分析」再試' : '分析失敗，請重試', false);
+      document.getElementById('analyzeBtn').disabled = false;
+      document.getElementById('btn-text').style.display = '';
+      document.getElementById('btn-spinner').style.display = 'none';
   }
 }
 
@@ -4028,8 +4109,22 @@ async function pingBackend(){
   }
 }
 // 頁面載入立即 ping，之後每 8 分鐘 ping 一次（Render 10 分鐘無活動才睡）
+// 頁面載入立即 ping（喚醒伺服器）
 pingBackend();
-setInterval(pingBackend, 8 * 60 * 1000);
+
+// 每 6 分鐘 ping 一次（比 Render 10 分鐘休眠更短）
+setInterval(pingBackend, 6 * 60 * 1000);
+
+// 使用者開始操作滑桿時也 ping（確保分析前伺服器是醒的）
+document.querySelectorAll('input[type=range]').forEach(slider => {
+    let _sliderPinged = false;
+    slider.addEventListener('input', () => {
+        if(!_sliderPinged){
+            _sliderPinged = true;
+            pingBackend();
+        }
+    }, { once: false });
+});
 
 initMagnetic();
 
