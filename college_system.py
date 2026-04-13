@@ -572,65 +572,58 @@ def get_ai_difficulty_adjustment(subject: str) -> float:
 
 
 def generate_ai_comment(m: dict, gap: int, passed_threshold: bool) -> str:
-    """根據落點資料、時事背景，產生一句精簡的 AI 評語（30~50字）"""
-    ai_impact = m.get("ai_impact", "未知")
-    tags  = m.get("industry_tags", [])
-    career = m.get("career", [])
-    hot = EXAM_CONTEXT_2025["hot_industries"]
-    declining = EXAM_CONTEXT_2025["declining_fields"]
-
-    # 趨勢判斷
-    past = m.get("past_thresholds", {})
+    subj_detail = m.get("subject_detail", {})
+    tiebreak    = m.get("tiebreak_subject", "")
+    
+    # 找出學生在決勝科目的具體分數與錄取線
+    student_score = None
+    cutoff_score  = None
+    if tiebreak and tiebreak in subj_detail:
+        student_score = subj_detail[tiebreak].get("student")
+        cutoff_score  = subj_detail[tiebreak].get("cutoff")
+    
+    # 歷年趨勢判斷
+    past  = m.get("past_thresholds", {})
     years = sorted(past.keys())
-    trend_note = ""
+    trend_text = ""
     if len(years) >= 2:
         def avg(thr):
-            v = [x for x in thr.values() if isinstance(x, (int,float))]
+            v = [x for x in thr.values() if isinstance(x, (int, float))]
             return sum(v)/len(v) if v else 0
         delta = avg(past[years[-1]]) - avg(past[years[-2]])
-        if delta > 0.3:   trend_note = "門檻近年上升，競爭加劇"
-        elif delta < -0.3: trend_note = "門檻近年下滑，今年略有利"
-        else:              trend_note = "門檻近年穩定"
-
-    # 錄取層
-    if gap >= 2:
-        safety_note = "落點穩健"
-    elif gap == 1:
-        safety_note = "分差有把握"
-    elif gap == 0:
-        safety_note = "決勝科目與去年錄取線相當，約有六成把握"
-    elif gap == -1:
-        safety_note = "略低於去年錄取線，需評估"
-    else:
-        safety_note = f"低於錄取線 {abs(gap)} 分，屬挑戰志願"
-
+        if delta > 0.3:
+            trend_text = f"（門檻連年上升 +{delta:.1f}，今年競爭更激烈）"
+        elif delta < -0.3:
+            trend_text = f"（門檻近年下滑 {delta:.1f}，對你有利）"
+    
+    # 組合個人化評語
     if not passed_threshold:
-        safety_note = "尚未達到最低門檻，屬高難度挑戰"
-
-    # 產業前景
-    hot_match = any(any(h.split('/')[0] in tag for h in hot) for tag in tags)
-    dn_match  = any(any(d in tag for d in declining) for tag in tags)
-    if hot_match:
-        industry_note = "屬熱門成長產業，就業前景佳"
-    elif dn_match:
-        industry_note = "所屬領域近年承壓，需留意就業趨勢"
+        fails = m.get("failed_thresholds", {})
+        fail_details = "、".join(f"{s} 還差 {abs(student_score - req) if student_score else '?'} 分" 
+                                  for s, req in fails.items())
+        return f"未過最低門檻（{fail_details}），列為衝刺志願。{trend_text}"
+    
+    if tiebreak and student_score is not None and cutoff_score is not None:
+        diff = student_score - cutoff_score
+        if diff > 2:
+            score_part = f"決勝科目 {tiebreak} 你拿 {student_score}，比去年錄取線 {cutoff_score} 高 {diff} 分，安全邊際足夠"
+        elif diff > 0:
+            score_part = f"{tiebreak} 你拿 {student_score}，僅比去年錄取線 {cutoff_score} 高 {diff} 分，建議確認今年倍率"
+        elif diff == 0:
+            score_part = f"{tiebreak} 你拿 {student_score}，恰好與去年錄取線持平，需觀察今年競爭"
+        else:
+            score_part = f"{tiebreak} 你拿 {student_score}，低於去年錄取線 {cutoff_score} 達 {abs(diff)} 分"
     else:
-        industry_note = "產業穩定"
-
-    # AI 影響
-    ai_note = ""
+        score_part = "落點符合歷年錄取區間" if gap >= 0 else f"低於去年錄取線 {abs(gap)} 分"
+    
+    ai_impact = m.get("ai_impact", "")
+    ai_part = ""
     if ai_impact in ("高度受益", "受益"):
-        ai_note = "AI 時代高度加分"
-    elif ai_impact in ("輔助工具化",):
-        ai_note = "AI 為輔助工具，核心技能不受威脅"
-    elif ai_impact in ("部分衝擊",):
-        ai_note = "AI 有部分替代風險"
-
-    parts = [safety_note]
-    if trend_note: parts.append(trend_note)
-    if industry_note: parts.append(industry_note)
-    if ai_note: parts.append(ai_note)
-    return "；".join(parts[:3]) + "。"
+        ai_part = "，AI時代優勢明顯"
+    elif ai_impact == "部分衝擊":
+        ai_part = "，留意AI對部分職位的替代風險"
+    
+    return f"{score_part}{trend_text}{ai_part}。"
 
 
 
@@ -690,10 +683,11 @@ def precompute_difficulty():
         _DIFFICULTY_PRECOMPUTED[subj] = get_ai_difficulty_adjustment(subj)
     print(f"[OK] 難度係數預計算完成：{_DIFFICULTY_PRECOMPUTED}")
 # ── 伺服器啟動時立即預計算，確保第一次請求不卡頓 ──
-    try:
-        precompute_difficulty()
-    except Exception as e:
-        print(f"[WARN] 難度預計算失敗，將使用 fallback：{e}")
+
+try:
+    precompute_difficulty()
+except Exception as e:
+    print(f"[WARN] 難度預計算失敗，將使用 fallback：{e}")
 
 def match_majors(scores: dict, profile: dict = None) -> list:
     """
@@ -919,10 +913,10 @@ def generate_advice(profile: dict, matches: list) -> str:
     純靜態分析：依落點數據 + 時事背景產生 HTML，不呼叫任何外部 API。
     """
     cache_key = make_cache_key(
-    "advice_v3", 
-    profile.get("scores"), 
-    profile.get("name", ""),
-    [(m["school"], m["major"]) for m in matches]
+        "advice_v3",
+        scores,  # 直接用外層的 scores 變數
+        profile.get("name", ""),
+        [(m["school"], m["major"]) for m in matches]
     )
     cached = cache_get(cache_key)
     if cached:
@@ -1142,6 +1136,10 @@ def analyze():
             return jsonify({"status": "error", "message": f"缺少科目分數：{', '.join(missing)}"}), 400
         if scores.get("數學A", 0) == 0 and scores.get("數學B", 0) == 0:
             return jsonify({"status": "error", "message": "請至少填入 數學A 或 數學B"}), 400
+        # 自然和社會皆為選考，不強制要求
+        # 但如果兩者都是 0，給出提示（不擋住）
+        if scores.get("自然", 0) == 0 and scores.get("社會", 0) == 0:
+            pass  # 允許通過，只是落點會侷限在不需要這兩科的科系
 
         for subj, val in list(scores.items()):
             try:
