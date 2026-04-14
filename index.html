@@ -187,9 +187,6 @@
   transition: max-height .38s cubic-bezier(.16,1,.3,1), opacity .28s ease;
   opacity: 0;
 }
-.match-card-compact.expanded .mcc-expand{
-  max-height: 500px;  /* 從 900px 降到 500px */
-}
 
 .match-card-compact{ transition: transform .25s var(--ease-spring), box-shadow .25s; }
 .match-card-compact.expanded{
@@ -1122,9 +1119,6 @@ footer{border-top:1px solid var(--border);padding:3rem 2rem}
 }
 .match-card-compact.expanded .mcc-arrow{
   transform:rotate(180deg);
-}
-.match-card-compact.expanded .mcc-expand{
-  max-height:900px;
 }
 .match-card-compact.pref-hl{border-left:3px solid var(--terra)}
 .match-card-compact.challenge-card{opacity:.82}
@@ -2261,24 +2255,6 @@ input[type=range]:active::-webkit-slider-thumb{
             <textarea class="fta" id="extra-note" placeholder="例：希望離家近、有興趣雙主修…"></textarea>
           </div>
         </div>
-        <!-- 找到 section-head 的下方，btn-analyze 前加 -->
-        <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
-          <button onclick="setGroupMode('lib')" id="mode-lib"
-            class="tg-btn active"
-            style="display:flex;align-items:center;gap:5px">
-            🔬 理工組
-          </button>
-          <button onclick="setGroupMode('soc')" id="mode-soc"
-            class="tg-btn"
-            style="display:flex;align-items:center;gap:5px">
-            📚 社會組
-          </button>
-          <button onclick="setGroupMode('all')" id="mode-all"
-            class="tg-btn"
-            style="display:flex;align-items:center;gap:5px">
-            🌐 自訂
-          </button>
-        </div>
         <!-- ── 分析按鈕 ── -->
         <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis(event)">
           <span id="btn-text">✦ 開始 AI 落點分析</span>
@@ -2395,8 +2371,7 @@ input[type=range]:active::-webkit-slider-thumb{
         <div id="major-search" style="margin-bottom:10px">
           <div class="search-box-wrap" style="max-width:100%;margin-bottom:8px">
             <input class="results-search" id="results-search" type="text"
-                  placeholder="搜尋科系名稱或學校…"
-                  oninput="onMajorSearchInput(this.value)">
+                  placeholder="搜尋科系名稱或學校…">
           </div>
         </div>
 
@@ -4006,6 +3981,7 @@ async function runAnalysis(e){
   if(!chiV  || chiV  < 1 || chiV  > 15) missing.push('國文');
   if(!engV  || engV  < 1 || engV  > 15) missing.push('英文');
   if(matAV < 1 && matBV < 1) missing.push('數學A 或 數學B（至少填一科）');
+  if(missing.length){ notify('請確認：' + missing.join('、'), false); return; }
 
   if(missing.length){
     notify('請確認：' + missing.join('、'), false);
@@ -4194,6 +4170,17 @@ async function runAnalysis(e){
     const allGroupBtn = document.querySelector('[data-group="all"]');
     if(allGroupBtn) allGroupBtn.classList.add('active');
     renderMatchCards(data.matches||[],schoolPrefVal);
+    const adviceEl = document.getElementById('ai-advice-box');
+    if(adviceEl && data.result){
+      adviceEl.innerHTML = `
+        <div class="ai-box" style="margin-top:1.4rem">
+          <div class="ai-box-hd">
+            <div class="ai-icon">✦</div>
+            AI 個人化分析報告
+          </div>
+          <div class="ai-content ai-reveal">${data.result}</div>
+        </div>`;
+    }
     const now = new Date();
     document.getElementById('result-time').textContent=
       `${now.getMonth()+1}/${now.getDate()} ${now.toLocaleTimeString('zh-TW')} 分析`;
@@ -4212,7 +4199,7 @@ async function runAnalysis(e){
       `;
       shareBtn.onclick = () => encodeResultToUrl(
         {'國文':chiV,'英文':engV,'數學A':matAV,'自然':sciV,
-        ...(matB>0?{'數學B':matB}:{}), ...(soc>0?{'社會':soc}:{})},
+        ...(matBV>0?{'數學B':matBV}:{}), ...(socV>0?{'社會':socV}:{})},
         document.getElementById('name').value
       );
       resultPanelHd.appendChild(shareBtn);
