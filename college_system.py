@@ -400,7 +400,6 @@ def compute_admission_probability(
     waitlist_count: int = 0,
     difficulty_trend: str = "stable"
 ) -> int:
-    import math
 
     if not passed_threshold:
         # 未達門檻：base 25%，每差一分扣 7%
@@ -444,7 +443,6 @@ def compute_admission_probability(
     return max(8, min(95, int(prob)))
 
 def predict_next_year_cutoff(m: dict) -> dict:
-    import math
 
     past = m.get("past_thresholds", {})
     last = m.get("last_year_cutoff_by_subject", {})
@@ -599,8 +597,10 @@ def generate_ai_comment(m: dict, gap: int, passed_threshold: bool) -> str:
     # 組合個人化評語
     if not passed_threshold:
         fails = m.get("failed_thresholds", {})
-        fail_details = "、".join(f"{s} 還差 {abs(student_score - req) if student_score else '?'} 分" 
-                                  for s, req in fails.items())
+        fail_details = "、".join(
+            f"{s} 還差 {abs(subj_detail.get(s, {}).get('student', 0) - req)} 分"
+            for s, req in fails.items()
+        )
         return f"未過最低門檻（{fail_details}），列為衝刺志願。{trend_text}"
     
     if tiebreak and student_score is not None and cutoff_score is not None:
@@ -846,8 +846,8 @@ def match_majors(scores: dict, profile: dict = None) -> list:
             # ── 新增欄位 ──
             "status":               safety,
             "threshold":            thresholds,
-            "ai_comment":           generate_ai_comment(m, gap, passed_threshold),
-            "predicted_cutoff":     predict_next_year_cutoff(m),
+            "ai_comment":           ai_comment_val,
+            "predicted_cutoff":     predicted_cutoff_val,
             "prediction_available": bool(m.get("past_thresholds")),
         }
         all_entries.append(entry)
@@ -912,19 +912,19 @@ def generate_advice(profile: dict, matches: list) -> str:
     """
     純靜態分析：依落點數據 + 時事背景產生 HTML，不呼叫任何外部 API。
     """
+    name   = profile.get("name", "同學")
+    scores = profile.get("scores", {})
+    abroad = profile.get("出國意願", "n")
+
     cache_key = make_cache_key(
         "advice_v3",
-        scores,  # 直接用外層的 scores 變數
+        scores,
         profile.get("name", ""),
         [(m["school"], m["major"]) for m in matches]
     )
     cached = cache_get(cache_key)
     if cached:
         return cached
-
-    name    = profile.get("name", "同學")
-    scores  = profile.get("scores", {})
-    abroad  = profile.get("出國意願", "n")
 
     # ── 1. 志願推薦（前4名）──
     top4 = matches[:4]
